@@ -1,0 +1,52 @@
+#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+[Core]
+Name = rabbitmq
+Module = rabbitmq
+
+[Documentation]
+Author = Marcus LaFerrera
+Version = 0.9
+Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
+Description = Publish and Consume messages from a RabbitMQ Server
+
+[options]
+# Does this plugin support multiprocessing?
+multiprocess = False
+
+# Host of the RabbitMQ server
+host = 127.0.0.1
+
+# RabbitMQ server port
+port = 5672
+
+# RabbitMQ username
+user = stoq
+
+# RabbitMQ password
+password = stoq-password
+
+exchange_name = stoq
+
+exchange_type = direct
+
+virtual_host = stoq
+
+# How many times should we try to publish a message to the error queue
+# before timing out?
+retries = 5
+
+# Each worker will grab N many messages from the queue.
+prefetch = 2

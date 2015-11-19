@@ -1,0 +1,43 @@
+#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+[Core]
+Name = mongodb
+Module = mongodb
+
+[Documentation]
+Author = Marcus LaFerrera
+Version = 0.9
+Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
+Description = Sends and retrieves content from MongoDB
+
+[options]
+# What is the hostname/ip and port of the mongodb server?
+# Note: Should be inline with pymongo documentation at
+#       http://api.mongodb.org/python/current/api/pymongo/mongo_client.html
+#
+# Examples:
+# Connect to localhost on port 27017
+# conn = 'localhost', 27017
+#
+# Connect to localhost on port 27017 using MongoDB URI Format
+# conn = mongodb://localhost:27017/
+
+conn = mongodb://localhost:27017/
+
+# Collections that the API is permitted to access
+api_collections_list = yara, exif, trid, peinfo, gridfs
+
+# API Keys
+api_keys_list = md5, sha1, sha256, sha512

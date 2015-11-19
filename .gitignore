@@ -1,0 +1,6 @@
+*.pyc
+__pycache__
+*.[oa]
+*~
+.DS_Store
+*.log
