@@ -41,10 +41,10 @@ class OpswatScan(StoqWorkerPlugin):
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
         worker_opts = parser.add_argument_group("Plugin Options")
-        worker_opts.add_option("-o", "--url",
-                               dest='url',
-                               default=None,
-                               help="Metascan API url")
+        worker_opts.add_argument("-o", "--url",
+                                 dest='url',
+                                 default=None,
+                                 help="Metascan API url")
 
         options = parser.parse_args(sys.argv[2:])
         super().activate(options=options)

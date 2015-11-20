@@ -18,7 +18,7 @@ Module = fireeye
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1
+Version = 0.1.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Saves a file into a directory fireeye monitors via CIFS for analysis
 

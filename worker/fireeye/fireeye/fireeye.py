@@ -40,14 +40,14 @@ class FireeyeScan(StoqWorkerPlugin):
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
         worker_opts = parser.add_argument_group("Plugin Options")
-        worker_opts.add_option("-r", "--root",
-                               dest='root',
-                               help="Root path Fireeye shares are located")
-        worker_opts.add_option("-i", "--images",
-                               dest='images_list',
-                               action='append',
-                               help="Fireeye images that should be used. May"
-                                    " be used more than once.")
+        worker_opts.add_argument("-r", "--root",
+                                 dest='root',
+                                 help="Root path Fireeye shares are located")
+        worker_opts.add_argument("-i", "--images",
+                                 dest='images_list',
+                                 action='append',
+                                 help="Fireeye images that should be used. May"
+                                      " be used more than once.")
 
         options = parser.parse_args(sys.argv[2:])
 
