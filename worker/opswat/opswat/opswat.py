@@ -71,8 +71,10 @@ class OpswatScan(StoqWorkerPlugin):
         else:
             headers['filename'] = self.stoq.get_uuid
 
-        if self.apikey:
+        try:
             headers['apikey'] = self.apikey
+        except:
+            pass
 
         # We are going to keep retrying to submit the sample
         while True:
