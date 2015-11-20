@@ -73,7 +73,7 @@ class OpswatScan(StoqWorkerPlugin):
 
         try:
             headers['apikey'] = self.apikey
-        except:
+        except AttributeError:
             pass
 
         # We are going to keep retrying to submit the sample
