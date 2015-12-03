@@ -18,7 +18,7 @@ Module = exif
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9
+Version = 0.9.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Processes a payload using ExifTool
 

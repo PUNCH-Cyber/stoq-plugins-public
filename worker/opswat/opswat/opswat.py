@@ -21,7 +21,6 @@ retrieve the results
 
 """
 
-import sys
 import requests
 import argparse
 from time import sleep
@@ -46,7 +45,8 @@ class OpswatScan(StoqWorkerPlugin):
                                  default=None,
                                  help="Metascan API url")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         return True

@@ -22,7 +22,6 @@ Interact with stoQ Plugins using Slack as an interface
 
 import os
 import re
-import sys
 import time
 import argparse
 import threading
@@ -43,7 +42,9 @@ class SlackWorker(StoqWorkerPlugin):
 
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
-        options = parser.parse_args(sys.argv[2:])
+
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         self.workers = {}

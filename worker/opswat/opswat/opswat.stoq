@@ -18,7 +18,7 @@ Module = opswat
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9.1
+Version = 0.9.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Submit content to an OPSWAT Metascan server for scanning and retrieve the results
 

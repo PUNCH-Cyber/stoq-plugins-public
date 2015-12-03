@@ -18,7 +18,7 @@ Module = basicworker
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1
+Version = 0.1.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = stoQ framework example of a basic worker plugin
 

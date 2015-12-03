@@ -21,7 +21,6 @@ Saves a file into a directory fireeye monitors via CIFS for analysis
 """
 
 import os
-import sys
 import argparse
 
 from stoq.args import StoqArgs
@@ -49,7 +48,7 @@ class FireeyeScan(StoqWorkerPlugin):
                                  help="Fireeye images that should be used. May"
                                       " be used more than once.")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
 
         super().activate(options=options)
 

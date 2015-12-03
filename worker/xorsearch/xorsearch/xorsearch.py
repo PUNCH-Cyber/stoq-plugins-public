@@ -21,7 +21,6 @@ Search a payload for XOR'd strings
 """
 
 import os
-import sys
 import argparse
 from subprocess import check_output
 
@@ -49,7 +48,8 @@ class XorSearchScan(StoqWorkerPlugin):
                                  dest='terms',
                                  help="Path to the xorsearch terms file")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         return True

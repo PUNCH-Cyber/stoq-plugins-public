@@ -20,7 +20,6 @@ Gather relevant information about an executable using pefile
 
 """
 
-import sys
 import argparse
 import peutils
 import pefile
@@ -48,7 +47,8 @@ class PEInfoScan(StoqWorkerPlugin):
                                  dest="peidrules",
                                  help="Path to peid rules file")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         self.signatures = peutils.SignatureDatabase(self.peidrules)

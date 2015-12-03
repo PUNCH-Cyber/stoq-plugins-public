@@ -21,7 +21,6 @@ from documents
 
 """
 
-import sys
 import argparse
 
 from stoq.args import StoqArgs
@@ -44,7 +43,8 @@ class IOCExtract(StoqWorkerPlugin):
                                  default=False,
                                  help="Password for encrypted file")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         self.load_reader('iocregex')

@@ -18,7 +18,7 @@ Module = clamav
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1
+Version = 0.1.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Scan content with ClamAV
 

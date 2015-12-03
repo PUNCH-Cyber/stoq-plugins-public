@@ -20,7 +20,6 @@ Query PassiveTotal API for a domain or IP address
 
 """
 
-import sys
 import argparse
 
 from stoq.args import StoqArgs
@@ -45,7 +44,8 @@ class PassiveTotalWorker(StoqWorkerPlugin):
                                  default=False,
                                  help="Connector to use for queries")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         return True

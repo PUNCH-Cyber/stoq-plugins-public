@@ -21,7 +21,6 @@ Publish messages to single or multiple queues for processing
 """
 
 import os
-import sys
 import argparse
 
 from stoq.scan import get_sha1
@@ -52,7 +51,8 @@ class PublisherWorker(StoqWorkerPlugin):
                                  help="Worker queues that should process \
                                        sample. May be used multiple times")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         # Activate the appropriate plugin so we can publish messages, if needed.

@@ -20,7 +20,6 @@ Query TotalHash API for analysis results
 
 """
 
-import sys
 import hmac
 import hashlib
 import argparse
@@ -50,7 +49,8 @@ class TotalHashScan(StoqWorkerPlugin):
                                  default=False,
                                  help="Retrieve analysis from TotalHash for a SHA1 hash")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         return True

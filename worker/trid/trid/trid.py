@@ -21,7 +21,6 @@ Identify file types from their TrID signature
 """
 
 import os
-import sys
 import argparse
 from subprocess import check_output
 
@@ -46,7 +45,8 @@ class TridScan(StoqWorkerPlugin):
                                  dest='defs',
                                  help="Path to definition database")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         return True

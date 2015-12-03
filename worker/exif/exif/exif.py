@@ -21,7 +21,6 @@ Processes a payload using ExifTool
 """
 
 import os
-import sys
 import argparse
 
 from subprocess import check_output
@@ -45,7 +44,7 @@ class ExifScan(StoqWorkerPlugin):
                                  dest='exiftool',
                                  help="Path to exiftool script")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
 
         super().activate(options=options)
 

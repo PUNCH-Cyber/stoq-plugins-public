@@ -20,7 +20,6 @@ Interact with VTMIS public and private API
 
 """
 
-import sys
 import argparse
 
 from stoq.args import StoqArgs
@@ -82,7 +81,8 @@ class VtmisScan(StoqWorkerPlugin):
                                  action='store_true',
                                  help="Check for alerts via the API")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         if self.list_resources:

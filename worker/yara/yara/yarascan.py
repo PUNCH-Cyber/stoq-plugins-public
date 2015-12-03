@@ -21,7 +21,6 @@ Process a payload using yara
 """
 
 import os
-import sys
 import yara
 import time
 import argparse
@@ -49,7 +48,8 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
                                  dest='yararules',
                                  help="Path to yara rules file")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         # Thread the watchdog observer so we can reload yara rules on the fly.
@@ -123,7 +123,7 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
                 # If this is the first time we are loading the rules,
                 # we are going to exit here.
                 if not hasattr(self, 'rules'):
-                    sys.exit(-1)
+                    exit(-1)
                 # Otherwise, we are just going to keep going with our
                 # already compiled rules.
                 pass

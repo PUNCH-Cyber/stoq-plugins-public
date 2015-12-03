@@ -20,7 +20,6 @@ Scan content with ClamAV
 
 """
 
-import sys
 import time
 import argparse
 import pyclamd
@@ -41,7 +40,7 @@ class ClamAvScan(StoqWorkerPlugin):
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
         super().activate(options=options)
 
         # Make sure our options are the proper type

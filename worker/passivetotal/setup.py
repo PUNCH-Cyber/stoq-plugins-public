@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="passivetotal",
-    version="0.5",
+    version="0.5.1",
     author="Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",

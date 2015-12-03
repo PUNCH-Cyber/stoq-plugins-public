@@ -20,7 +20,6 @@ Interact with ThreatCrowd API
 
 """
 
-import sys
 import argparse
 
 from stoq.args import StoqArgs
@@ -48,7 +47,8 @@ class ThreatCrowdScan(StoqWorkerPlugin):
                                  default=False,
                                  help="Endpoint to query: domain, email, ip, or antivirus")
 
-        options = parser.parse_args(sys.argv[2:])
+        options = parser.parse_args(self.stoq.argv[2:])
+
         super().activate(options=options)
 
         return True

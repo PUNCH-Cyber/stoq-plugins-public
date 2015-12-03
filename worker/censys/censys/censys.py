@@ -37,7 +37,6 @@ Data:
 
 """
 
-import sys
 import argparse
 
 from stoq.args import StoqArgs
@@ -71,7 +70,8 @@ class CensysScan(StoqWorkerPlugin):
                                  dest='field',
                                  default=False,
                                  help="Field(s) for query in dot notation (i.e., location.country_code)")
-        options = parser.parse_args(sys.argv[2:])
+
+        options = parser.parse_args(self.stoq.argv[2:])
 
         super().activate(options=options)
 
