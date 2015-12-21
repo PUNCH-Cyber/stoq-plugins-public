@@ -29,3 +29,6 @@ saveresults = False
 # Default fireeye images to utilize
 images_list = winxpsp2, winxpsp3, win7xp1, win7x64sp1
 root = /opt/fireeye
+verify_ssl=True
+api_version="1.1.0"
+keep_name=False

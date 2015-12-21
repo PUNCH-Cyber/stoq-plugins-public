@@ -26,9 +26,10 @@ two methods:
 import os
 import argparse
 import FireEyeMAS
-
+import xmltodict
 from stoq.args import StoqArgs
 from stoq.plugins import StoqWorkerPlugin
+import fireEyeJson
 
 
 class FireeyeScan(StoqWorkerPlugin):
@@ -54,9 +55,8 @@ class FireeyeScan(StoqWorkerPlugin):
                                  help="Fireeye images that should be used. May"
                                       " be used more than once.")
         worker_opts.add_argument("-n", "--name",
-                                 dest="name",
+                                 dest="keep_name",
                                  type=bool,
-                                 default=False,
                                  required=False,
                                  help="preserve the original name of the file"
                                       " in the stoq framework. If set to false"
@@ -84,18 +84,16 @@ class FireeyeScan(StoqWorkerPlugin):
                               help="Password to use to log into the "
                                    "MAS API")
         api_opts.add_argument("-s", "--ssl",
-                              dest="ssl",
+                              dest="verify_ssl",
                               type=bool,
-                              default=True,
                               require=False,
                               help="Verify SSL. Some MAS units use a "
                                    "self-signed certificate, which fails "
                                    "SSL validation. Use this option to "
                                    "turn off SSL validation.")
         api_opts.add_argument("-v", "--version",
-                              dest="version",
+                              dest="api_version",
                               required=False,
-                              default="1.1.0",
                               choices=["1.0.0", "1.1.0"],
                               help="API Version to use. This is only "
                                    " used when using the API. Supported"
@@ -134,21 +132,50 @@ class FireeyeScan(StoqWorkerPlugin):
 
     def send_file_to_api(self, images, payload, filename):
         if payload:
-            if self.version == "100":
+            if self.api_version == "100":
                 server = FireEyeMAS.FireEyeServerv100(self.server,
                                                       self.username,
                                                       self.password,
-                                                      verifySSL=self.ssl)
-            elif self.version == "110":
+                                                      verifySSL=self.verify_ssl)
+            elif self.api_version == "110":
                 server = FireEyeMAS.FireEyeServerv110(self.server,
                                                       self.username,
                                                       self.password,
-                                                      verifySSL=self.ssl)
+                                                      verifySSL=self.verify_ssl)
             # API returns an ID here that corresponds to the alertID
             # to query. Not sure how to pass that back.
-            server.submitFile(payload,
+            response = server.submitFile(payload,
                               filename,
                               profiles=images)
+            if response.status_code == 200:
+                response_json = response.json()
+                submissionID = response_json[0]['ID']
+                done = False
+                response = {}
+                while not done:
+                    status = server.getSubmissionStatus(submissionID)
+                    numLoops = 0
+                    # hardcoding 15 minutes. Make this a parameter? There's
+                    # already a lot of parameters.
+                    maxWaitTime = 20
+                    if status == "Done":
+                        done = True
+                        response = server.getSubmission(submissionID).jsonObj
+                        response = FireEyeJSON.fixFireEyeJSON(response)
+                    else:
+                        numLoops += 1
+                        if numLoops > maxWaitTime:
+                            # in this case, we exceeded the wait time for 
+                            # fireeye's analysis. Just return an empty
+                            # result.
+                            done = True
+                        time.sleep(60)
+                return response
+            else:
+                return {}
+
+        else:
+            return {}
 
     def scan(self, payload, **kwargs):
         """
@@ -165,7 +192,7 @@ class FireeyeScan(StoqWorkerPlugin):
             images = kwargs['images']
         else:
             images = self.images_list
-        if self.name:
+        if not self.keep_name:
             filename = self.stoq.get_uuid()
         else:
             if kwargs['path']:
@@ -173,8 +200,9 @@ class FireeyeScan(StoqWorkerPlugin):
             else:
                 filename = "testfile"
         if self.method == "API":
-            self.send_file_to_api(images, payload, filename)
+            result = self.send_file_to_api(images, payload, filename)
+            return result
         elif self.method == "Files":
             self.write_file_to_disk(images, payload, filename)
-
+            return {}
 

@@ -38,7 +38,7 @@ import requests
 import datetime
 import IPy
 from lxml.etree import iterparse
-import cStringIO
+from io import StringIO
 import json
 import lxml.etree
 
@@ -457,7 +457,7 @@ class FireEyeServer(object):
 
     @checkLoggedIn
     def getSubmission(self, submissionID):
-        url = self._buildURL("submissions/results/%s" % submissionID)
+        url = self._buildURL("submissions/results/%s?info_level=extended" % submissionID)
         response = self._doGetRequest(url)
         data = self._parseResponse(response)
         responseObj = self.__makeReponseObj(jsondata=data)
