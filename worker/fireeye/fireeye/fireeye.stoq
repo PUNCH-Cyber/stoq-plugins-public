@@ -23,14 +23,40 @@ Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Submit a file to a Fireeye MAS/AX via filesystem or API
 
 [options]
-hashpayload = False
-saveresults = False
-images_list = winxp-sp2, winxp-sp3, win7-sp1, win7x64-sp1
-root = /opt/fireeye
+
+# Should the payload be hashed? Set to False if using the Files method
+hashpayload = True
+
+# Should results be saved? Set to False if using the Files method
+saveresults = True
+
+# Images that are supported
+images_list = winxp-sp3, win7-sp1, win7x64-sp1
+
+# Should we verify the SSL certificate. True or False
 verify_ssl = True
-api_version=1.1.0
-keep_name=False
-method=API
-address=localhost
-username=api_user
-password=password
+
+# Define the API version. Valid options: 1.0.0 or 1.1.0
+api_version = 1.1.0
+
+# Should the filename be retained?
+keep_name = False
+
+# Method we should use for file submissions. Valid options are API or Files
+method = API
+
+# IP or Domain for the API.
+address = localhost
+
+# API Username and Password
+username = api_user
+password = password
+
+# If user 'method = Files', what is the root path the submissions will be saved
+# to. The 'images_list' identified will be appended to the below path. For
+# examples, if 'root = /opt/fireeye' and the image selected for analysis is
+# 'win7-sp1', submissions will be saved to '/opt/fireeye/win7-sp1/input'
+root = /opt/fireeye
+
+# Maximum time to wait for a sample to complete in minutes
+max_time = 20

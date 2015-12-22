@@ -24,13 +24,16 @@ two methods:
 """
 
 import os
-import argparse
-from io import BytesIO
-from plugins.worker.fireeye import FireEyeMAS
-from plugins.worker.fireeye import FireEyeJSON
 import time
+import argparse
+
+from io import BytesIO
+
 from stoq.args import StoqArgs
 from stoq.plugins import StoqWorkerPlugin
+
+from plugins.worker.fireeye import FireEyeMAS
+from plugins.worker.fireeye import FireEyeJSON
 
 
 
@@ -45,6 +48,7 @@ class FireeyeScan(StoqWorkerPlugin):
 
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
+
         worker_opts = parser.add_argument_group("Plugin Options")
         worker_opts.add_argument("-m", "--method",
                                  dest="method",
@@ -64,12 +68,14 @@ class FireeyeScan(StoqWorkerPlugin):
                                       " in the stoq framework. If set to false"
                                       " stoq will automatically generate a "
                                       " UUID for the name")
+
         fileshare_opts = worker_opts.add_argument_group("Fileshare",
                                                         "Fileshare options")
         fileshare_opts.add_argument("-r", "--root",
                                     dest='root',
                                     required=False,
                                     help="Root path Fireeye shares are located")
+
         api_opts = worker_opts.add_argument_group("API", "API options")
         api_opts.add_argument("-a", "--address",
                               dest="address",
@@ -101,12 +107,7 @@ class FireeyeScan(StoqWorkerPlugin):
                                    " versions are 1.0.0 and 1.1.0 (default)")
 
         options = parser.parse_args(self.stoq.argv[2:])
-        
-        print("made it past the arguments")
-
         super().activate(options=options)
-        
-        print("activated. Returning True")
 
         return True
 
@@ -143,34 +144,32 @@ class FireeyeScan(StoqWorkerPlugin):
                                                       self.username,
                                                       self.password,
                                                       verifySSL=self.verify_ssl)
+
             # API returns an ID here that corresponds to the alertID
             # to query. Not sure how to pass that back.
-            print("sending file. Images is: %s" % images)
             response = {}
             for image in images:
-                print("sending file to image: %s" % image)
+                self.stoq.log.info("Sending file to Fireeye image: {}".format(image))
                 submissionResponse = server.submitFile(fileHandle,
                                                        filename,
                                                        profiles=[image])
-                print("submitted file, getting submissionID")
                 if submissionResponse.status_code == 200:
                     response_json = submissionResponse.json()
-                    print("response json is: %s " % response_json)
                     submissionID = response_json[0]['ID']
                     response[image] = {}
                     response[image]['SubmissionID'] = submissionID
                     response[image]['done'] = False
                     response[image]['numTries'] = 0
+
             imagesToGet = [(image, response[image]['SubmissionID']) for image in response]
-            # hardcoding 20 minutes. Make this a parameter? There's
-            # already a lot of parameters.
-            maxWaitTime = 20            
+
+            maxWaitTime = int(self.max_time)
+
             while imagesToGet:
                 for image, submissionID in imagesToGet:
-                    print("getting status for %s ID: %s" % (image, submissionID))
                     status = server.getSubmissionStatus(submissionID)
                     if status == "Done":
-                        print("image %s is done" % image)
+                        self.stoq.log.info("Fireeye image {} is done".format(image))
                         response[image]['done'] = True
                         result = server.getSubmission(submissionID).jsonObj
                         result = FireEyeJSON.fixFireEyeJSON(result)
@@ -182,6 +181,7 @@ class FireeyeScan(StoqWorkerPlugin):
                             # fireeye's analysis. Just return an empty
                             # result.
                             response[image]['done'] = True
+
                 imagesToGet = [(image, response[image]["SubmissionID"]) for image in response 
                                 if ((response[image]['done'] is not True) and 
                                     (response[image]['numTries'] < maxWaitTime))] 
@@ -203,7 +203,6 @@ class FireeyeScan(StoqWorkerPlugin):
                                 the directory names on disk
 
         """
-        print("starting scan.")
         super().scan()
 
 
@@ -211,7 +210,7 @@ class FireeyeScan(StoqWorkerPlugin):
             images = kwargs['images']
         else:
             images = self.images_list
-        print("have images")
+
         if not self.keep_name:
             filename = self.stoq.get_uuid
         else:
@@ -219,11 +218,11 @@ class FireeyeScan(StoqWorkerPlugin):
                 filename = kwargs['path'].split(os.path.sep)[-1]
             else:
                 filename = "testfile"
-        print("have filename")
+
         if self.method == "API":
             result = self.send_file_to_api(images, payload, filename)
             return result
         elif self.method == "Files":
             self.write_file_to_disk(images, payload, filename)
-            return {}
+            return None
 
