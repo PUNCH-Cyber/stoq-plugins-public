@@ -25,10 +25,12 @@ Description = Saves a file into a directory fireeye monitors via CIFS for analys
 [options]
 hashpayload = False
 saveresults = False
-
-# Default fireeye images to utilize
-images_list = winxpsp2, winxpsp3, win7xp1, win7x64sp1
+images_list = winxp-sp2, winxp-sp3, win7-sp1, win7x64-sp1
 root = /opt/fireeye
-verify_ssl=True
-api_version="1.1.0"
+verify_ssl = True
+api_version=1.1.0
 keep_name=False
+method=API
+address=localhost
+username=api_user
+password=password

@@ -88,8 +88,9 @@ valid_report_durations = ["pastWeek",
                           "pastThreeMonths",
                           "rangeReport"]
 
-valid_profiles = ['win7-sp1',
+valid_profiles = ['winxp-sp2',
                   'winxp-sp3',
+                  'win7-sp1',
                   'win7x64-sp1']
 
 valid_content_types = ["application/json",
