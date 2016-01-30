@@ -61,9 +61,14 @@ class SuricataDirmonSource(StoqSourcePlugin, FileSystemEventHandler):
             meta_key = meta_key.lower()
             meta_key = meta_key.replace(" ", "_")
 
-            meta_value = meta_line[1].strip()
+            try:
+                meta_value = meta_line[1].strip().decode()
+            except UnicodeDecodeError:
+                meta_value = meta_line[1].strip()
 
             meta[meta_key] = meta_value
+
+        meta['src'] = 'suricata'
 
         self.stoq.worker.multiprocess_put(path=event.src_path, archive='file', **meta)
 
