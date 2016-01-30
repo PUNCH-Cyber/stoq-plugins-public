@@ -61,6 +61,8 @@ class SuricataDirmonSource(StoqSourcePlugin, FileSystemEventHandler):
             meta_key = meta_key.lower()
             meta_key = meta_key.replace(" ", "_")
 
+            # Attempt to decode the value of the key, if we can't due to the
+            # encoding, we will leave it as bytes().
             try:
                 meta_value = meta_line[1].strip().decode()
             except UnicodeDecodeError:
