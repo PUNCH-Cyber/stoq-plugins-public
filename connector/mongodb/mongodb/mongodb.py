@@ -219,10 +219,9 @@ class MongoConnector(StoqConnectorPlugin):
                                                    {'$push':
                                                     {'results': result}})
 
-                # Python oddity. If we do not remove this here, even though we
-                # are not returning value and using it, it still overwrites the
-                # original results value. If anyone knows how to avoid this,
-                # please let me know and save me some sanity.
+                # There is no sense in copy()'ing the payload dict, just to
+                # remove the _id. Let's just pop() since we only require it for
+                # the mongodb primary key.
                 payload.pop('_id')
 
                 # Success..let's break out of our loop.
