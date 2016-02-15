@@ -65,37 +65,41 @@ class ExcelReader(StoqReaderPlugin):
                 headers = []
                 for column in range(1, worksheet.max_column):
                     cell = worksheet.cell(row=header_row, column=column).value
-                    if cell is not None:
+                    if cell:
                         cell = cell.lower().replace(" ", "_")
                         headers.append(cell)
 
             # Iterate over each row and grab all of the values
             rows = []
+
             for row in worksheet.rows:
-                # If we have a header row, we will create a dict with each
-                # column header as the key, and the cell content as the value.
-                # Otherwise, we will just create a list of each value in the
-                # row.
-                if header_row:
-                    content = {}
-                else:
-                    content = []
+
+                content = {}
+
                 for cell in row:
                     try:
                         if header_row:
-                            # Skip over this row since it is the header
+                            # This excel file has a header row, so let's
+                            # create a dict with the header as the key,
+                            # and cell as the value.
                             if cell.row <= header_row:
                                 break
                             content[headers[cell.col_idx+1]] = cell.value
                         else:
-                            content.append(cell.value)
+                            # Process the excel file without a header row.
+                            # The key value will be that of the column
+                            # (A, B...ZZ )
+                            content[cell.column] = cell.value
                     except:
                         pass
+
                 # Make sure we have content to save, otherwise just move along
                 if bool(content):
-                    rows.append(content)
+                    # Ensure that each value in the row is not None
+                    if not all(cell is None for cell in content.values()):
+                        rows.append(content)
             if bool(rows):
                 results[worksheet.title] = rows 
 
-            return results
+        return results
 
