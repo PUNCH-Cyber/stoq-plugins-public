@@ -34,13 +34,14 @@
 #
 #####################
 
+import IPy
+import json
 import requests
 import datetime
-import IPy
-from lxml.etree import iterparse
-from io import StringIO
-import json
 import lxml.etree
+
+from io import StringIO
+from lxml.etree import iterparse
 
 
 def checkLoggedIn(method):
@@ -59,7 +60,7 @@ def testType(name, obj, targetType):
 
 def testIP(name, ip):
     try:
-        _ = IPy.IP(ip)
+        IPy.IP(ip)
     except:
         raise Exception("%s was not a valid IP" % name)
 
@@ -443,7 +444,7 @@ class FireEyeServer(object):
         else:
             url = self._buildURL("MPS/%s/%s" % (report_type, duration))
         response = self._doGetRequest(url, stream=True)
-        outputFile = cStringIO.StringIO()
+        outputFile = StringIO()
         for block in response.iter_content(1024):
             if not block:
                 break
