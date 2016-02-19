@@ -84,7 +84,7 @@ class ExcelReader(StoqReaderPlugin):
                             # and cell as the value.
                             if cell.row <= header_row:
                                 break
-                            content[headers[cell.col_idx+1]] = cell.value
+                            content[headers[cell.col_idx-1]] = cell.value
                         else:
                             # Process the excel file without a header row.
                             # The key value will be that of the column
