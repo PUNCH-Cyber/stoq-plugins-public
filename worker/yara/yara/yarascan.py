@@ -110,23 +110,18 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
         yara.CALLBACK_CONTINUE
 
     def _load_yara_rules(self):
-        # Load and compile the yara rules
-        with open(self.yararules) as rules:
-            try:
-                self.stoq.log.debug("Loading yara rules.")
-                # We don't want to name our rules globally just yet, in case
-                # loading fails.
-                compiled_rules = yara.compile(file=rules)
-                self.rules = compiled_rules
-            except:
-                self.stoq.log.error("Error in yara rules. Compile failed.")
-                # If this is the first time we are loading the rules,
-                # we are going to exit here.
-                if not hasattr(self, 'rules'):
-                    exit(-1)
-                # Otherwise, we are just going to keep going with our
-                # already compiled rules.
-                pass
+        try:
+            self.stoq.log.debug("Loading yara rules.")
+            # We don't want to name our rules globally just yet, in case
+            # loading fails.
+            compiled_rules = yara.compile(self.yararules)
+            self.rules = compiled_rules
+        except:
+            self.stoq.log.error("Error in yara rules. Compile failed.")
+            # If this is the first time we are loading the rules,
+            # we are going to exit here.
+            if not hasattr(self, 'rules'):
+                exit(-1)
 
     def _monitor_yara_rules(self):
         # Get the full absolute path of the yara rules directory
