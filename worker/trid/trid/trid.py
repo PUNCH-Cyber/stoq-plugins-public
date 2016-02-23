@@ -64,6 +64,7 @@ class TridScan(StoqWorkerPlugin):
         """
 
         results = []
+        start_pos = 6
 
         path = self.stoq.write(path=self.stoq.temp_dir,
                                payload=payload,
@@ -79,19 +80,24 @@ class TridScan(StoqWorkerPlugin):
 
         # If there are results, iterate over them and build our blob
         if len(trid_results) > 0:
-            if trid_results[7].startswith("Warning".encode()):
-                start_pos = 10
-            else:
-                start_pos = 7
+            try:
+                if trid_results[7].startswith("Warning".encode()):
+                    start_pos = 10
+            except IndexError:
+                pass
 
             for line in trid_results[start_pos:]:
                 line = line.decode().split()
+                r = {}
                 if len(line) > 1:
-                    r = {}
                     r['likely'] = line[0]
                     r['extension'] = line[1]
                     r['type'] = ' '.join(line[2:])
-                    results.append(r)
+                else:
+                    r['likely'] = "Unk"
+                    r['extension'] = "Unk"
+                    r['type'] = "Unk"
+                results.append(r)
 
         # Time to cleanup if we wrote a temp file to disk
         try:
