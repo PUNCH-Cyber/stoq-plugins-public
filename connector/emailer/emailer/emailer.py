@@ -65,7 +65,7 @@ class EmailConnector(StoqConnectorPlugin):
 
         msg = MIMEMultipart('alternative')
         msg['From'] = sender
-        msg['To'] = ",".join("recipients")
+        msg['To'] = ",".join(recipients)
         msg['Subject'] = "[stoQ] {} result".format(self.parentname)
 
         body = self.stoq.dumps(payload, compactly=False)
