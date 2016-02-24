@@ -68,7 +68,11 @@ class EmailConnector(StoqConnectorPlugin):
         msg['To'] = ",".join(recipients)
         msg['Subject'] = "[stoQ] {} result".format(self.parentname)
 
-        body = self.stoq.dumps(payload, compactly=False)
+        if type(payload) is dict:
+            body = self.stoq.dumps(payload, compactly=False)
+        else:
+            body = payload
+
         text_part = MIMEText(body, 'plain')
 
         msg.attach(text_part)

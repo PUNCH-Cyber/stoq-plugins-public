@@ -18,13 +18,13 @@ Module = emailer
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1
+Version = 0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Send results to recipients via e-mail
 
 [options]
 username = user@gmail.com
 password = apasswordthatisgood
-server = smtp.google.com:25
+server = smtp.gmail.com:587
 sender = user@gmail.com
 recipients_list = stoquser@gmail.com
