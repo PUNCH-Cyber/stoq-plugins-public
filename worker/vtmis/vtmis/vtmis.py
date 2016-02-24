@@ -80,6 +80,12 @@ class VtmisScan(StoqWorkerPlugin):
                                  default=False,
                                  action='store_true',
                                  help="Check for alerts via the API")
+        worker_opts.add_argument("-d", "--download",
+                                 dest='download_samples',
+                                 default=False,
+                                 action='store_true',
+                                 help="Download samples in alerts")
+
 
         options = parser.parse_args(self.stoq.argv[2:])
 
@@ -197,7 +203,7 @@ class VtmisScan(StoqWorkerPlugin):
             if alert['sha1'] not in processed_hashes:
                 # Check to see if we need to download the file, if so, do it.
                 if self.download_samples:
-                    self.download(hash=alert['sha1'])
+                    self.call_api('file_download', query=alert['sha1'])
 
                 # Keep track of the hashes we've processed so we don't handle
                 # dupes
@@ -231,7 +237,7 @@ class VtmisScan(StoqWorkerPlugin):
             self.stoq.log.info("Archiving payload to {}".format(self.archive_connector))
             return self.connectors[self.archive_connector].save(payload, archive=True)
         else:
-            self.stoq.log.error("No archive connector or payload defined. Unable to ave payload")
+            self.stoq.log.error("No archive connector or payload defined. Unable to save payload.")
 
         return None
 
