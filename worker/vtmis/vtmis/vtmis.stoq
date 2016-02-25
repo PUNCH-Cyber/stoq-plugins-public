@@ -18,7 +18,7 @@ Module = vtmis
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9.1
+Version = 0.9.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Interact with VTMIS public and private API
 
