@@ -18,17 +18,14 @@ Module = passivetotal
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.5.1
+Version = 0.8
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Query PassiveTotal API for a domain or IP address
+Description = Interact with PassiveTotal API
 
 [options]
 hashpayload = False
 saveresults = True
 
-# Root URL for passivetotal API
-url = https://www.passivetotal.org/api/v1
-
-# API Key
+username = 
 apikey = 
 
