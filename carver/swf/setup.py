@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="ole",
-    version="0.9",
+    name="swf",
+    version="0.9.1",
     author="Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
