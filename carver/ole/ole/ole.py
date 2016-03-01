@@ -67,13 +67,14 @@ class OLECarver(StoqCarverPlugin):
                     # Looks like our first stream identified, let's make sure
                     # the results are in a list
                     if not results:
-                        results = list()
+                        results = []
 
                     # Save the results as a set() within a list
                     meta = {'stream': streams.index(stream),
                             'name': stream[0],
                             'size': len(stream_buffer)}
                     results.append((meta, stream_buffer))
+
                     self.stoq.log.info("Carved OLE stream {}[{}] ({} bytes)".format(meta['name'],
                                                                                     meta['stream'],
                                                                                     meta['size']))
