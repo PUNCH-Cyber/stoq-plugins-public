@@ -23,6 +23,7 @@ Carve OLE Package Streams within Microsoft Office Documents
 """
 
 import struct
+
 from binascii import unhexlify, hexlify
 
 from stoq.plugins import StoqCarverPlugin
@@ -50,11 +51,11 @@ class OLEPackageStreamCarver(StoqCarverPlugin):
 
         """
 
-        #try:
-        payload = hexlify(payload[4:]).decode()
-        return self._parse_stream(payload)
-        # except:
-            # return None
+        try:
+            payload = hexlify(payload[4:]).decode()
+            return self._parse_stream(payload)
+        except:
+            return None
 
     def _processvalue(self, value):
         try:
