@@ -105,7 +105,7 @@ class SWFCarver(StoqCarverPlugin):
 
             # Grab next 4 bytes so we can unpack to calculate the uncompressed
             # size of the payload. 
-            decompressed_size = struct.unpack("<i", payload.read(4))[0]
+            decompressed_size = struct.unpack("<i", payload.read(4))[0] - 8
 
             # Let's go back to the offset byte, jumping beyond the SWF header
             payload.seek(offset+3)
@@ -119,17 +119,20 @@ class SWFCarver(StoqCarverPlugin):
             try:
                 if magic == "ZWS":
                     payload.seek(12)
-                    content = pylzma.decompress(payload.read(decompressed_size-8))
+                    content = pylzma.decompress(payload.read(decompressed_size))
                 elif magic == "CWS":
-                    content = zlib.decompress(payload.read(decompressed_size-8))
+                    content = zlib.decompress(payload.read(decompressed_size))
                 elif magic == 'FWS':
                     # Not compressed, but let's return the payload based on the
                     # size defined in the header
-                    content = payload.read(decompressed_size-8)
+                    content = payload.read(decompressed_size)
                 else:
                     return None
             except:
                 return None
+
+            if len(content) != decompressed_size:
+                raise(InvalidSWFSize)
 
             swf = composite_header + content
 
@@ -143,8 +146,11 @@ class SWFCarver(StoqCarverPlugin):
             return (meta, swf)
 
         except:
-            self.stoq.log.warn("Unable to decompress SWF payload")
+            self.stoq.log.warn("Unable to decompress SWF payload at offset {}".format(offset))
             return None
 
 
+class InvalidSWFSize(Exception):
+    """ Invalid size of carved SWF content """
+    pass
 
