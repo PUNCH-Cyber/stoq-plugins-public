@@ -28,7 +28,7 @@ from binascii import unhexlify, hexlify
 from stoq.plugins import StoqCarverPlugin
 
 
-class OLECarver(StoqCarverPlugin):
+class OLEPackageStreamCarver(StoqCarverPlugin):
 
     def __init__(self):
         super().__init__()
