@@ -138,7 +138,7 @@ class SWFCarver(StoqCarverPlugin):
 
             meta = {'offset': offset,
                     'swf_version': swf_version,
-                    'size': decompressed_size 
+                    'size': decompressed_size + 8
                     }
 
             self.stoq.log.info("Carved SWF at offset {} ({} bytes)".format(meta['offset'],
