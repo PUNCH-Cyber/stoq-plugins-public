@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-2016 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 Overview
 ========
 
-Carve OLE Package Streams within Microsoft Office Documents
+Carve OLE Package Streams
 
 .. note:: This plugin is based on psparser.py by Sean Wilson of PhishMe
 
@@ -24,7 +24,8 @@ Carve OLE Package Streams within Microsoft Office Documents
 
 import struct
 
-from binascii import unhexlify, hexlify
+from io import BytesIO
+from binascii import hexlify
 
 from stoq.plugins import StoqCarverPlugin
 
@@ -43,7 +44,7 @@ class OLEPackageStreamCarver(StoqCarverPlugin):
         """
         Carve OLE streams
 
-        :param str payload: Hex encoded str of the OLE Package Stream
+        :param bytes payload: OLE Package Stream
         :param **kwargs kwargs: Additional attributes (unused)
 
         :returns: Carved OLE Package Streams
@@ -52,77 +53,60 @@ class OLEPackageStreamCarver(StoqCarverPlugin):
         """
 
         try:
-            payload = hexlify(payload[4:]).decode()
-            return self._parse_stream(payload)
+            payload = BytesIO(payload)
+            return self.parse_stream(payload)
         except:
-            return None
+           return None
 
-    def _processvalue(self, value):
-        try:
-            return unhexlify(value).decode()
-        except AttributeError:
-            return value
-        except TypeError:
-            return value
+    def split_null(self, payload):
+        pos = payload.tell()
+        # Grab everything between the last byte and the next null byte
+        data = payload.read().split(b'\x00')[0]
 
-    def _getvarstring(self, payload, position):
-        return_string = ''
-        curpos = position
-        endpos = 0
-        while True:
-            if payload[curpos:curpos+2] == '00':
-                endpos = curpos+2
-                break
-            return_string += payload[curpos:curpos+2]
-            curpos += 2
-        return_string = self._processvalue(return_string)
-        return return_string, endpos
+        # Skip over the null byte
+        offset = len(data) + pos + 1
 
-    def _parse_stream(self, payload):
+        return data.decode(), offset
+
+    def parse_stream(self, payload):
         meta = {}
 
-        curpos = 0
+        payload.seek(4)
 
-        meta['Header'] = payload[curpos:curpos+4]
-        curpos += 4
+        meta['Header'] = hexlify(payload.read(2)).decode()
 
-        meta['Label'], curpos = self._getvarstring(payload, curpos)
+        meta['Label'], offset = self.split_null(payload)
+        payload.seek(offset)
 
-        meta['OriginalPath'], curpos = self._getvarstring(payload, curpos)
+        meta['OriginalPath'], offset = self.split_null(payload)
+        payload.seek(offset)
 
-        meta['FormatId'] = payload[curpos:curpos+8]
-        curpos += 8
+        meta['FormatId'] = hexlify(payload.read(4)).decode()
 
-        meta['DefaultExtractPathLength'] = struct.unpack('<i', bytearray.fromhex(payload[curpos:curpos+8]))[0]
-        curpos += 8
+        meta['DefaultExtractPathLength'] = struct.unpack('<i', payload.read(4))[0]
 
-        meta['DefaultExtractPath'], curpos = self._getvarstring(payload, curpos)
+        meta['DefaultExtractPath'], offset = self.split_null(payload)
+        payload.seek(offset)
 
-        meta['size'] = struct.unpack('<i', bytearray.fromhex(payload[curpos:curpos+8]))[0]
-        curpos += 8
+        meta['size'] = struct.unpack('<i', payload.read(4))[0]
 
-        stream_buffer = unhexlify(payload[curpos:curpos + (meta['size'] * 2)])
-        curpos += (meta['size'] * 2)
+        stream_buffer = payload.read(meta['size'])
 
-        meta['DefaultExtractPathWLength'] = struct.unpack('<i', bytearray.fromhex(payload[curpos:curpos+8]))[0]
-        curpos += 8
+        meta['DefaultExtractPathWLength'] = struct.unpack('<i', payload.read(4))[0]
 
-        meta['DefaultExtractPathW'] = payload[curpos:curpos + (meta['DefaultExtractPathWLength'] * 4)]
-        curpos += (meta['DefaultExtractPathWLength'] * 4)
+        meta['DefaultExtractPathW'] = hexlify(payload.read(meta['DefaultExtractPathWLength'] * 2)).decode()
 
-        meta['LabelWLength'] = struct.unpack('<i', bytearray.fromhex(payload[curpos:curpos+8]))[0]
-        curpos += 8
+        meta['LabelWLength'] = struct.unpack('<i', payload.read(4))[0]
 
-        meta['LabelW'] = payload[curpos:curpos+(meta['LabelWLength'] * 4)]
-        curpos += (meta['LabelWLength'] * 4)
+        meta['LabelW'] = hexlify(payload.read(meta['LabelWLength'] * 2)).decode()
 
-        meta['OrgFileWLength'] = struct.unpack('<i', bytearray.fromhex(payload[curpos:curpos+8]))[0]
-        curpos += 8
+        meta['OrgFileWLength'] = struct.unpack('<i', payload.read(4))[0]
 
-        meta['OrgFileW'] = payload[curpos:curpos+(meta['OrgFileWLength'] * 4)]
-        curpos += (meta['OrgFileWLength'] * 4)
+        meta['OrgFileW'] = hexlify(payload.read(meta['OrgFileWLength'] * 2)).decode()
 
         self.stoq.log.info("Carved OLE Package Stream {} ({} bytes)".format(meta['DefaultExtractPath'],
                                                                             meta['size']))
  
         return [(meta, stream_buffer)]
+
+
