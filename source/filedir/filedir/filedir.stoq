@@ -24,4 +24,5 @@ Description = Ingest a file or directory for processing
 
 [options]
 # Does this plugin support multiprocessing?
+recursive = False
 multiprocess = True
