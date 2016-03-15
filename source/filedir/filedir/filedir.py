@@ -49,9 +49,9 @@ class FileDirSource(StoqSourcePlugin):
             self.stoq.log.debug("Handling files in {}".format(self.stoq.worker.path))
 
             if self.recursive:
-                for dir, subdirs, files in walk(self.stoq.worker.path):
+                for root_path, subdirs, files in walk(self.stoq.worker.path):
                     for entry in files:
-                        path = os.path.join(dir, entry)
+                        path = os.path.join(root_path, entry)
                         self.stoq.worker.multiprocess_put(path=path, archive='file')
             else:
                 for entry in scandir(self.stoq.worker.path):
