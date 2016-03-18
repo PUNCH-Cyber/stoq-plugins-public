@@ -89,7 +89,7 @@ class XorSearchScan(StoqWorkerPlugin):
                 r = {}
                 # We are going to skip over hits that are not xor'd
                 if result[2] != '00':
-                    r['xor'] = result[2]
+                    r['key'] = result[2]
                     r['pos'] = result[4].replace(':', '')
                     r['str'] = hit[1]
                     results.append(r)
