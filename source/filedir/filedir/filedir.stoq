@@ -18,10 +18,11 @@ Module = filedir
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9
+Version = 1.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Ingest a file or directory for processing
 
 [options]
 # Does this plugin support multiprocessing?
 multiprocess = True
+recursive = False

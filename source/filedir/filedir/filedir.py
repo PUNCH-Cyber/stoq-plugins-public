@@ -15,12 +15,17 @@
 """
 Overview
 ========
-
 Ingest a file or directory for processing
-
 """
 
 import os
+
+try:
+    # Use the built-in version of scandir/walk (3.5+), otherwise
+    from os import scandir, walk
+except ImportError:
+    # use the scandir module version
+    from scandir import scandir, walk
 
 from stoq.plugins import StoqSourcePlugin
 
@@ -37,17 +42,23 @@ class FileDirSource(StoqSourcePlugin):
     def ingest(self):
         """
         Ingest a file or directory into the framework
-
         """
 
         # Scan an entire directory
         if os.path.isdir(self.stoq.worker.path):
             self.stoq.log.debug("Handling files in {}".format(self.stoq.worker.path))
-            directory_listing = os.listdir(self.stoq.worker.path)
-            for filename in directory_listing:
-                path = os.path.join(self.stoq.worker.path, filename)
-                if os.path.isfile(path):
-                    self.stoq.worker.multiprocess_put(path=path, archive='file')
+
+            if self.recursive:
+                for root_path, subdirs, files in walk(self.stoq.worker.path):
+                    for entry in files:
+                        path = os.path.join(root_path, entry)
+                        self.stoq.worker.multiprocess_put(path=path, archive='file')
+            else:
+                for entry in scandir(self.stoq.worker.path):
+                    if not entry.name.startswith('.') and entry.is_file():
+                        path = os.path.join(self.stoq.worker.path, entry.name)
+                        self.stoq.worker.multiprocess_put(path=path, archive='file')
+
         # Only scanning a single file
         elif os.path.isfile(self.stoq.worker.path):
             self.stoq.log.debug("Handling file {}".format(self.stoq.worker.path))
@@ -58,3 +69,4 @@ class FileDirSource(StoqSourcePlugin):
                                 self.stoq.worker.path))
 
         return True
+
