@@ -66,8 +66,7 @@ class XorSearchScan(StoqWorkerPlugin):
 
         """
 
-        results = {}
-        hits = []
+        results = []
 
         path = self.stoq.write(path=self.stoq.temp_dir,
                                payload=payload,
@@ -93,9 +92,7 @@ class XorSearchScan(StoqWorkerPlugin):
                     r['xor'] = result[2]
                     r['pos'] = result[4].replace(':', '')
                     r['str'] = hit[1]
-                    hits.append(r)
-
-        results['hits'] = hits
+                    results.append(r)
 
         # Time to cleanup if we wrote a temp file to disk
         try:
@@ -106,4 +103,8 @@ class XorSearchScan(StoqWorkerPlugin):
 
         super().scan()
 
-        return results
+        # Return our results
+        if results:
+            return results
+        else:
+            return None
