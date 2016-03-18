@@ -79,7 +79,7 @@ class ClamAvScan(StoqWorkerPlugin):
 
         try:
            hit  = self.clamd.scan_stream(payload)
-           results['sig'] = hit[1]
+           results['sig'] = hit['stream'][1]
         except IOError as err:
             self.stoq.log.warn("Unable to scan payload: {}".format(err))
         except ValueError as err:
