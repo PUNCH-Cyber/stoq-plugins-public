@@ -17,8 +17,8 @@ Name = filedir
 Module = filedir
 
 [Documentation]
-Author = Marcus LaFerrera
-Version = 1.0
+Author = Marcus LaFerrera, Adam Trask
+Version = 0.9.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Ingest a file or directory for processing
 
