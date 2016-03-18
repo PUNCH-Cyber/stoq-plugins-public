@@ -75,16 +75,22 @@ class ClamAvScan(StoqWorkerPlugin):
 
         super().scan()
 
-        results = None
+        results = {}
 
         try:
-            results = self.clamd.scan_stream(payload)
+           hit  = self.clamd.scan_stream(payload)
+           results['sig'] = hit[1]
         except IOError as err:
             self.stoq.log.warn("Unable to scan payload: {}".format(err))
         except ValueError as err:
             self.stoq.log.warn("Payload buffer too large: {}".format(err))
+        except TypeError:
+            pass
 
-        return results 
+        if results:
+            return results 
+        else:
+            return None
 
     def _ping(self):
         """
