@@ -127,6 +127,9 @@ class IOCRegexReader(StoqReaderPlugin):
         if isinstance(payload, list):
             payload = " ".join(payload)
 
+        if not isinstance(payload, str):
+            payload = str(payload)
+
         if ioctype == 'all':
             for ioc in self.compiled_re:
                 if self.compiled_re[ioc]:
