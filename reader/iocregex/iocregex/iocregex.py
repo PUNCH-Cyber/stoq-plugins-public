@@ -146,6 +146,8 @@ class IOCRegexReader(StoqReaderPlugin):
         if 'ipv6' in results:
             results['ipv6'] = [address for address in results['ipv6']
                                if self.__validate_ipv6(address)]
+            if not results['ipv6']:
+                results.pop('ipv6')
 
         # If we want to normalize our results, let's do that now
         if normalize:
