@@ -87,7 +87,7 @@ class IOCRegexReader(StoqReaderPlugin):
         self.ioctypes['sha1'] = r"\b[A-F0-9]{40}\b"
         self.ioctypes['sha256'] = r"\b[A-F0-9]{64}\b"
         self.ioctypes['sha512'] = r"\b[A-F0-9]{128}\b"
-        self.ioctypes['ipv4'] = r"(?<!\S)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)%s){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?!\S)" % self.helpers['dot']
+        self.ioctypes['ipv4'] = r"(?<!\s)\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)%s){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?!\s)" % self.helpers['dot']
         self.ioctypes['ipv6'] = r"(?:(?:(?:\b|::)(?:(?:[\dA-F]{1,4}(?::|::)){1,7})(?:[\dA-F]{1,4}))(?:(?:(?:\.\d{1,3})?){3})(?:::|\b))|(?:[\dA-F]{1,4}::)|(?:::[\dA-F]{1,4}(?:(?:(?:\.\d{1,3})?){3}))"
         self.ioctypes['mac_address'] = r"\b(?i)(?:[0-9A-F]{2}[:-]){5}(?:[0-9A-F]{2})\b"
         self.ioctypes['email'] = "{0}{1}{2}".format(r"\b[A-Z0-9\.\_\%\+\-]+",
