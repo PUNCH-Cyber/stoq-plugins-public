@@ -24,6 +24,9 @@ import re
 import os
 import socket
 
+from urllib.parse import urlsplit
+from ipaddress import ip_address, ip_network
+
 from stoq.plugins import StoqReaderPlugin
 
 
@@ -87,23 +90,27 @@ class IOCRegexReader(StoqReaderPlugin):
         self.ioctypes['sha1'] = r"\b[A-F0-9]{40}\b"
         self.ioctypes['sha256'] = r"\b[A-F0-9]{64}\b"
         self.ioctypes['sha512'] = r"\b[A-F0-9]{128}\b"
-        self.ioctypes['ipv4'] = r"(?<!\s)\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)%s){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?!\s)" % self.helpers['dot']
+        self.ioctypes['ipv4'] = r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)%s){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" % self.helpers['dot']
         self.ioctypes['ipv6'] = r"(?:(?:(?:\b|::)(?:(?:[\dA-F]{1,4}(?::|::)){1,7})(?:[\dA-F]{1,4}))(?:(?:(?:\.\d{1,3})?){3})(?:::|\b))|(?:[\dA-F]{1,4}::)|(?:::[\dA-F]{1,4}(?:(?:(?:\.\d{1,3})?){3}))"
         self.ioctypes['mac_address'] = r"\b(?i)(?:[0-9A-F]{2}[:-]){5}(?:[0-9A-F]{2})\b"
         self.ioctypes['email'] = "{0}{1}{2}".format(r"\b[A-Z0-9\.\_\%\+\-]+",
                                                      self.helpers['at'],
                                                      self.helpers['fqdn'])
         self.ioctypes['domain'] = self.helpers['fqdn']
-        self.ioctypes['uri'] = "(?:{0}|{1}){2}{3}".format(self.helpers['http'],
+        self.ioctypes['url'] = "(?:{0}|{1}){2}{3}".format(self.helpers['http'],
                                                            self.helpers['https'],
                                                            self.helpers['fqdn'],
                                                            r"(?:[\:\/][A-Z0-9\/\:\+\%\.\_\-\=\~\&\\#\?]*){0,1}")
 
         # Compile regexes for faster repeat usage
         self.compiled_re = {}
+        self.whitelist_patterns = {}
         for ioc in self.ioctypes:
+            self.whitelist_patterns[ioc] = set()
             self.compiled_re[ioc] = re.compile(self.ioctypes[ioc],
                                                     re.IGNORECASE)
+
+        self.__load_whitelist()
 
     def read(self, payload, normalize=True, ioctype='all', **kwargs):
         """
@@ -163,18 +170,19 @@ class IOCRegexReader(StoqReaderPlugin):
         """
 
         normalized_results = {}
-        for datatype in parsed_results:
-            normalized_results[datatype] = []
-            for data in parsed_results[datatype]:
+        for indicator_type in parsed_results:
+            normalized_results[indicator_type] = set()
+            for indicator in parsed_results[indicator_type]:
                 for normalizer in self.normalizers:
-                    self.stoq.log.debug("Data being normalized: %s" % data)
-                    data = re.sub(self.helpers[normalizer],
-                                  self.normalizers[normalizer],
-                                  data,
-                                  flags=re.IGNORECASE)
-                    self.stoq.log.debug("Normalized result %s" % data)
-                normalized_results[datatype].append(data)
-            normalized_results[datatype] = list(set(normalized_results[datatype]))
+                    self.stoq.log.debug("Indicator being normalized: %s" % indicator)
+                    indicator = re.sub(self.helpers[normalizer],
+                                       self.normalizers[normalizer],
+                                       indicator,
+                                       flags=re.IGNORECASE)
+                    self.stoq.log.debug("Normalized result %s" % indicator)
+                if self.__check_whitelist(indicator, indicator_type):
+                    normalized_results[indicator_type].add(indicator)
+            normalized_results[indicator_type] = list(normalized_results[indicator_type])
 
         return normalized_results
 
@@ -189,3 +197,72 @@ class IOCRegexReader(StoqReaderPlugin):
         except socket.error:
             return False
 
+    def __load_whitelist(self):
+        if not os.path.isfile(self.whitelist_file):
+            self.stoq.log.warn("Invalid whitelist file. No whitelists have "
+                               "been loaded: {}".format(self.whitelist_file))
+            return False
+
+        with open(self.whitelist_file) as content:
+            for line in content.readlines():
+                if line.startswith("#") or len(line) < 3:
+                    continue
+
+                indicator_type, pattern = line.split(':', 1)
+                try:
+                    self.whitelist_patterns[indicator_type].add(pattern.strip())
+                except KeyError:
+                    self.stoq.log.error("Unknown indicator type: {}".format(indicator_type))
+
+
+    def __check_whitelist(self, indicator, indicator_type):
+        # Define the default netmask for the ip version
+        netmasks = {'ipv4': '32',
+                    'ipv6': '128'}
+
+        try:
+            for pattern in self.whitelist_patterns[indicator_type]:
+                # Extracted IOC is an IPv4/6 address
+                if indicator_type in ['ipv4', 'ipv6']:
+                    pattern_has_netmask= False
+                    indicator_has_netmask= False
+
+                    if len(pattern.split('/')) > 1: pattern_has_netmask = True
+                    if len(indicator.split('/')) > 1: indicator_has_netmask = True
+
+                    if pattern_has_netmask:
+                        pattern_ip = ip_network("{}".format(pattern))
+                    else:
+                        pattern_ip = ip_network("{}/{}".format(pattern, netmasks[indicator_type]))
+
+                    if indicator_has_netmask:
+                        indicator_ip = ip_network(indicator)
+                    else:
+                        indicator_ip = ip_address(indicator)
+
+                    if indicator_ip in pattern_ip:
+                        return False
+
+                elif indicator_type == 'domain':
+                    indicator_domain = ".{}".format(indicator)
+                    if indicator_domain.endswith(pattern):
+                        return False
+
+                elif indicator_type == 'url':
+                   indicator_domain = ".{0.netloc}".format(urlsplit(indicator)) 
+                   if indicator_domain.endswith(pattern):
+                       return False
+
+                elif indicator_type in ['mac_address', 'email', 'md5',
+                                        'sha1', 'sha256', 'sha512']:
+                    if indicator == pattern:
+                        return False
+
+        except KeyError:
+            self.stoq.log.error("Unknown indicator type: {}".format(indicator_type))
+            return False
+        except Exception as err:
+            self.stoq.log.error("Unable to handle indicator/pattern: {}".format(str(err)))
+            return False
+
+        return True
