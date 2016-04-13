@@ -43,6 +43,7 @@ class VtmisScan(StoqWorkerPlugin):
         self.api_calls = {'file_report': {'key': 'resource', 'allinfo': True, 'method': 'get', 'private': False},
                           'file_behaviour': {'key': 'hash', 'allinfo': True, 'method': 'get', 'private': True},
                           'file_network-traffic': {'key': 'hash', 'allinfo': False, 'method': 'get', 'private': True},
+                          'file_feed': {'key': 'package', 'allinfo': False, 'method': 'get', 'private': True},
                           'file_download': {'key': 'hash', 'allinfo': False, 'method': 'get', 'private': True},
                           'file_scan': {'key': False, 'allinfo': False, 'method': 'post', 'private': False},
                           'file_rescan': {'key': 'resource', 'allinfo': False, 'method': 'post', 'private': False},
@@ -50,6 +51,7 @@ class VtmisScan(StoqWorkerPlugin):
                           'file_clusters': {'key': 'date', 'allinfo': False, 'method': 'get', 'private': True},
                           'url_report': {'key': 'resource', 'allinfo': True, 'method': 'get', 'private': False},
                           'url_scan': {'key': 'url', 'allinfo': False, 'method': 'post', 'private': False},
+                          'url_feed': {'key': 'package', 'allinfo': False, 'method': 'get', 'private': True},
                           'ip-address_report': {'key': 'ip', 'allinfo': False, 'method': 'get', 'private': False},
                           'domain_report': {'key': 'domain', 'allinfo': False, 'method': 'get', 'private': False},
                           'comments_get': {'key': 'resource', 'allinfo': False, 'method': 'get', 'private': True}
@@ -116,23 +118,14 @@ class VtmisScan(StoqWorkerPlugin):
         super().scan()
 
         results = None
-        resource = None
-        query = None
 
-        if 'resource' in kwargs:
-            resource = kwargs['resource']
-        elif self.api_resource:
-            resource = self.api_resource
+        resource = kwargs.get('resource', self.api_resource)
+        query = kwargs.get('query', self.query_value)
 
-        if 'query' in kwargs:
-            query = kwargs['query']
-        elif self.query_value:
-            query = self.query_value
-        elif 'sha1' in kwargs:
-            # Default to file_report if a resource type was not defined
+        if not query:
             if not resource:
                 resource = "file_report"
-            query = kwargs['sha1']
+            query = kwargs.get('sha1', None)
 
         if resource == "alerts" or self.do_alerts:
             results = self.alerts()
@@ -176,8 +169,11 @@ class VtmisScan(StoqWorkerPlugin):
             else:
                 response = self.stoq.post_file(url, params=params)
 
-        if resource == "file_download":
+        if resource == 'file_download':
             return self.save_download(response)
+        elif resource.endswith("_feed"):
+            self.process_feed(response, resource, query)
+            return True
 
         return self.stoq.loads(response)
 
@@ -232,12 +228,31 @@ class VtmisScan(StoqWorkerPlugin):
         for delete_id in delete_ids:
             self.stoq.post_file(url=url, data=str(delete_id))
 
-    def save_download(self, payload):
+    def save_download(self, payload, filename=None, path=None, archive=True):
         if payload and self.archive_connector:
-            self.stoq.log.info("Archiving payload to {}".format(self.archive_connector))
-            return self.connectors[self.archive_connector].save(payload, archive=True)
+            return self.connectors[self.archive_connector].save(payload,
+                                                                archive=archive,
+                                                                binary=True,
+                                                                path=path,
+                                                                filename=filename)
         else:
             self.stoq.log.error("No archive connector or payload defined. Unable to save payload.")
 
         return None
+
+    def process_feed(self, payload, resource, query):
+        index = "vtmis_{}".format(resource)
+        filename = "{}-{}.bz2".format(resource, query)
+        self.save_download(payload, filename=filename, path=self.feed_path, archive=False)
+
+        self.load_extractor("decompress")
+        tar_files = self.extractors['decompress'].extract(payload)
+        for tar_file in tar_files:
+            raw_content = self.extractors['decompress'].extract(tar_file[1])
+
+            for content in raw_content:
+                lines = content[1].decode().split("\n")
+                for line in lines:
+                    line = self.stoq.loads(line)
+                    self.connectors[self.output_connector].save(line, index=index)
 
