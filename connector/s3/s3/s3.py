@@ -45,15 +45,15 @@ class S3Connector(StoqConnectorPlugin):
         :param **kwargs s3bucket: Bucket name to be used
         :param **kwargs sha1: SHA1 hash to be used as a filename
         :param **kwargs filename: Filename of file to retrieve
+        :param **kwargs index: Bucket to save content to
 
         :returns: Content of file retrieved
         :rtype: bytes or None
 
         """
-        if 's3bucket' in kwargs:
-            self.connect(bucket_name=kwargs['s3bucket'])
-        else:
-            self.connect()
+
+        s3bucket = kwargs.get('index', self.bucket_name)
+        self.connect(bucket_name=s3bucket)
 
         valid_keys = ['filename', 'sha1']
         for key in valid_keys:
@@ -74,30 +74,22 @@ class S3Connector(StoqConnectorPlugin):
 
         """
 
-        if 's3bucket' in kwargs:
-            self.connect(bucket_name=kwargs['s3bucket'])
-        else:
-            self.connect()
+        s3bucket = kwargs.get('index', self.bucket_name)
+        self.connect(bucket_name=s3bucket)
 
-        if 'sha1' in kwargs:
-            filename = kwargs['sha1']
-        else:
-            filename = get_sha1(payload)
+        filename = kwargs.get('sha1', get_sha1(payload))
 
         key = boto.s3.key.Key(self.bucket, filename)
 
         try:
             key.set_contents_from_string(payload) 
-        except:
-            self.stoq.log.error("Unable to save file to S3")
+        except Exception as err:
+            self.stoq.log.error("Unable to save file to S3: {}".format(str(err)))
             return None
 
         return filename
 
     def connect(self, bucket_name=None):
-        if not bucket_name:
-            bucket_name = self.bucket_name
-
         # If we have a valid bucket, and the name matches the one
         # we want to use, let's just return
         if self.bucket and bucket_name == self.bucket.name:
