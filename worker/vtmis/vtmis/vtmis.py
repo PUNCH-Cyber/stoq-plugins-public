@@ -22,6 +22,9 @@ Interact with VTMIS public and private API
 
 import argparse
 
+from datetime import timedelta
+from datetime import datetime
+
 from stoq.args import StoqArgs
 from stoq.plugins import StoqWorkerPlugin
 
@@ -129,6 +132,10 @@ class VtmisScan(StoqWorkerPlugin):
 
         if resource == "alerts" or self.do_alerts:
             results = self.alerts()
+        elif resource.endswith("_feed"):
+            results = []
+            for date in self.generate_dates(query):
+                results.append(self.call_api(resource, date, payload))
         else:
             results = self.call_api(resource, query, payload)
 
@@ -240,7 +247,31 @@ class VtmisScan(StoqWorkerPlugin):
 
         return None
 
+    def generate_dates(self, query):
+        """
+        Generate dates that are valid for VTMIS feeds.
+
+        """
+        current_time = datetime.now()
+        if query.endswith("h"):
+            max_time = int(query[:-1]) + 1
+            for i in range(1, max_time):
+                delta = current_time - timedelta(hours=i)
+                yield delta.strftime("%Y%m%dT%H")
+        elif query.endswith("m"):
+            # VT recommends pulling no sooner than 5 minutes to allow for
+            # processing on their side. Let's take that into consideration
+            # when the user makes a call and automatically add 5 minutes.
+            max_time = int(query[:-1]) + 6
+            for i in range(5, max_time):
+                delta = current_time - timedelta(minutes=i)
+                yield delta.strftime("%Y%m%dT%H%M")
+        else:
+            yield query
+
     def process_feed(self, payload, resource, query):
+        self.saveresults = False
+
         index = "vtmis_{}".format(resource)
         filename = "{}-{}.bz2".format(resource, query)
         self.save_download(payload, filename=filename, path=self.feed_path, archive=False)
