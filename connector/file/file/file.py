@@ -62,24 +62,28 @@ class FileConnector(StoqConnectorPlugin):
         :param str payload: Content to be saved
         :param bool archive: Is this a file that is being archived?
         :param **kwargs sha1: SHA1 hash to use as a filename
+        :param **kwargs filename: Filename to save the file as
+        :param **kwargs path: Path where the file will be saved to
 
         """
 
+
         if archive:
-            if 'sha1' in kwargs:
-                sha1 = kwargs['sha1']
-            else:
-                sha1 = get_sha1(payload)
-
-            path = self.stoq.hashpath(sha1)
-            self.stoq.write(payload, path=path, filename=sha1, binary=True)
-
-            self.stoq.log.info("Saving file to disk: {}/{}".format(path, sha1))
+            filename = kwargs.get('sha1', get_sha1(payload))
+            path = self.stoq.hashpath(filename)
+            binary = kwargs.get('binary', True)
 
         else:
-            path = os.path.join(self.stoq.results_dir, self.parentname)
-            self.stoq.write(path=path, payload=self.stoq.dumps(payload))
+            path = kwargs.get('path', os.path.join(self.stoq.results_dir, self.parentname))
+            filename = kwargs.get('filename', None)
+            binary = kwargs.get('binary', False)
 
-            self.stoq.log.info("Saving file to disk: {}".format(path))
+        if not binary:
+                payload = self.stoq.dumps(payload)
+
+        self.stoq.write(path=path, filename=filename,
+                        payload=payload, binary=binary)
+
+        self.stoq.log.info("Saving file to disk: {}/{}".format(path, filename))
 
         return True
