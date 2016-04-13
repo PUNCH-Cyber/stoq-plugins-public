@@ -89,7 +89,5 @@ class BroIntelConnector(StoqConnectorPlugin):
 
                         self.stoq.write(intel_output, path=path, filename=filename, append=True)
 
-        self.stoq.log.info("Saving file to disk: {}".format(fullpath))
-
         return True
 

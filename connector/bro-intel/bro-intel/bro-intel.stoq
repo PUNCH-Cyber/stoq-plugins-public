@@ -18,7 +18,7 @@ Module = bro-intel
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.2
+Version = 0.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Save output from iocextract worker plugin formatted for Bro Intel Framework
 
