@@ -84,6 +84,4 @@ class FileConnector(StoqConnectorPlugin):
         self.stoq.write(path=path, filename=filename,
                         payload=payload, binary=binary)
 
-        self.stoq.log.info("Saving file to disk: {}/{}".format(path, filename))
-
         return True
