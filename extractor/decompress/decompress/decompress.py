@@ -59,10 +59,11 @@ archive_magic = {
     'application/x-tar': 'tar',
     'application/x-zip-compressed': '7z',
     'application/zip': '7z',
+    'application/x-bzip2': '7z'
 }
 
 archive_cmds = {
-    '7z': '/usr/bin/7z e -o%OUTDIR% -y -p%PASSWORD% %INFILE%',
+    '7z': '/usr/bin/7z x -o%OUTDIR% -y -p%PASSWORD% %INFILE%',
     'gzip': '/bin/gunzip %INFILE%',
     'tar': '/bin/tar xf %INFILE% -C %OUTDIR%',
     'unace': '/usr/bin/unace x -p%PASSWORD% -y %INFILE% %OUTDIR%'
