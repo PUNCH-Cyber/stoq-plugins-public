@@ -127,7 +127,7 @@ class DecompressExtractor(StoqExtractorPlugin):
 
         # Build our temporary directory and file structure
         tmp_archive_dir = tempfile.mkdtemp(dir=self.stoq.temp_dir)
-        extract_dir = os.path.join(tmp_archive_dir, "out")
+        extract_dir = tmp_archive_dir
         archive_file = os.path.join(tmp_archive_dir, filename)
 
         with open(archive_file, "wb") as f:
@@ -160,7 +160,7 @@ class DecompressExtractor(StoqExtractorPlugin):
             # Attempt to list contents of extract_dir, if files exist,
             # then let's break out of the loop and continue on
             # as it would mean the file extracted successfully
-            if os.listdir(extract_dir):
+            if p.returncode == 0:
                 break
 
         # Looks like we are ready, let's step through each file
