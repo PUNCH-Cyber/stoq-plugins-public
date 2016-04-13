@@ -172,12 +172,19 @@ class MongoConnector(StoqConnectorPlugin):
         :param **kwargs sha1: SHA1 hash of payload. Used with saving results
                               as well as payloads to GridFS. Automatically
                               generated if not value is provided.
+        :param **kwargs index: Index name to save content to
         :param **kwargs *: Any additional attributes that should be added
                            to the GridFS object on insert
 
         """
 
         self.archive = archive
+
+        # Define the index name, if available. 
+        index = kwargs.get('index', None)
+
+        if not hasattr(self, 'collection'):
+            self.connect(index)
 
         # Let's attempt to save our data to mongo at most 3 times. The very
         # first time, this will always fail because we haven't made a
@@ -229,7 +236,7 @@ class MongoConnector(StoqConnectorPlugin):
             except:
                 # We probably don't have a valid MongoDB connection. Time to
                 # make one.
-                self.connect()
+                self.connect(index)
 
         super().save()
 

@@ -60,7 +60,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         Save results to elasticsearch
 
         :param bytes payload: Content to be inserted into elasticsearch
-        :param **kwargs kwargs: Additional attributes (unused)
+        :param **kwargs index: Index name to save content to
 
         :returns: Results of the elasticsearch insert
 
@@ -78,9 +78,12 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         # are saved.
         payload = self.stoq.dumps(payload)
 
+        # Define the index name, if available. Will default to the plugin name
+        index = kwargs.get('index', self.parentname)
+
         # Insert our data and return our results from the ES server
-        return self.es.index(index=self.parentname,
-                             doc_type=self.parentname,
+        return self.es.index(index=index,
+                             doc_type=index,
                              body=payload)
 
     def connect(self):

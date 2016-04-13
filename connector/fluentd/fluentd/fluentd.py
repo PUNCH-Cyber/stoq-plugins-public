@@ -39,13 +39,16 @@ class FluentdConnector(StoqConnectorPlugin):
         Save results to fluentd logger
 
         :param bytes payload: Content to be sent to fluentd
-        :param **kwargs kwargs: Additional attributes (unused)
+        :param **kwargs index: Index name to save content to
 
         """
 
+        # Define the index name, if available. Will default to the plugin name
+        index = kwargs.get('index', self.parentname)
+
         for save_attempt in range(3):
             try:
-                self.sender.emit(self.parentname, payload)
+                self.sender.emit(index, payload)
             except AttributeError:
                 self.connect()
 

@@ -40,12 +40,12 @@ class QueueConnector(StoqConnectorPlugin):
         Send results to a queuing system, such as RabbitMQ
 
         :param bytes payload: Message to be sent to RabbitMQ
-        :param **kwargs queue: Queue name to publish message into
+        :param **kwargs index: Queue name to publish message into
 
         """
 
-        if 'queue' in kwargs:
-            routing_key = kwargs['queue']
+        if 'index' in kwargs:
+            routing_key = kwargs['index']
         else:
             routing_key = "{}-{}".format(self.parentname, "results") 
 
