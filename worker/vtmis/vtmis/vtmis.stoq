@@ -42,3 +42,6 @@ download_samples = False
 
 # What is the root directory for feed downloads?
 feed_path = /usr/local/stoq/feeds/vtmis
+
+# Maxiumum numbers of threads to use when handling feeds
+max_threads = 20

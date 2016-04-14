@@ -22,6 +22,9 @@ Interact with VTMIS public and private API
 
 import argparse
 
+from queue import Queue
+from threading import Thread
+
 from datetime import timedelta
 from datetime import datetime
 
@@ -270,10 +273,19 @@ class VtmisScan(StoqWorkerPlugin):
             yield query
 
     def process_feed(self, payload, resource, query):
-        self.saveresults = False
 
+        self.saveresults = False
         index = "vtmis_{}".format(resource)
         filename = "{}-{}.bz2".format(resource, query)
+
+        queue = Queue()
+        max_threads = int(self.max_threads)
+
+        for i in range(max_threads):
+            proc = Thread(target=self._save_feed, args=(queue, index))
+            proc.setDaemon(True)
+            proc.start()
+
         self.save_download(payload, filename=filename, path=self.feed_path, archive=False)
 
         self.load_extractor("decompress")
@@ -285,5 +297,13 @@ class VtmisScan(StoqWorkerPlugin):
                 lines = content[1].decode().split("\n")
                 for line in lines:
                     line = self.stoq.loads(line)
-                    self.connectors[self.output_connector].save(line, index=index)
+                    queue.put(line)
+
+        queue.join()
+
+    def _save_feed(self, queue, index):
+        while True:
+            result = queue.get()
+            self.connectors[self.output_connector].save(result, index=index)
+            queue.task_done()
 
