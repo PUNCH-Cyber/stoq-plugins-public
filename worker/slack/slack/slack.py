@@ -388,7 +388,7 @@ class SlackWorker(StoqWorkerPlugin):
 
         if type(msg) is dict:
             # The content is a dict, let's prettify it
-            msg = str(self.stoq.dumps(msg, compactly=False))
+            msg = str(self.stoq.dumps(msg))
 
         # Ensure our max message size is 4000 bytes, then sleep for 1 second to
         # prevent being banned

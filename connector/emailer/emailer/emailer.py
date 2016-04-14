@@ -69,7 +69,7 @@ class EmailConnector(StoqConnectorPlugin):
         msg['Subject'] = "[stoQ] {} result".format(self.parentname)
 
         if type(payload) is dict:
-            body = self.stoq.dumps(payload, compactly=False)
+            body = self.stoq.dumps(payload)
         else:
             body = payload
 

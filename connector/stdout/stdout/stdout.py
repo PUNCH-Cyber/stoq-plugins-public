@@ -41,6 +41,6 @@ class StdoutConnector(StoqConnectorPlugin):
 
         """
         if type(payload) == dict:
-            print(self.stoq.dumps(payload, compactly=False))
+            print(self.stoq.dumps(payload))
         else:
             print(payload)
