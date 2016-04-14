@@ -90,9 +90,23 @@ class VtmisScan(StoqWorkerPlugin):
                                  help="Check for alerts via the API")
         worker_opts.add_argument("-d", "--download",
                                  dest='download_samples',
-                                 default=False,
+                                 default=self.download_samples,
                                  action='store_true',
-                                 help="Download samples in alerts")
+                                 help="Download samples from alerts and file feed")
+        worker_opts.add_argument("-c", "--feed-connector",
+                                 dest='feed_connector',
+                                 help="Connector to utilize to save original JSON feed content")
+        worker_opts.add_argument("-f", "--save-feed",
+                                 dest='feed_save',
+                                 default=self.feed_save,
+                                 action='store_true',
+                                 help="Connector to utilize to save original JSON feed content")
+        worker_opts.add_argument("-p", "--feed-path",
+                                 dest='feed_path',
+                                 help="Root path where the original JSON feed content is saved using file connector")
+        worker_opts.add_argument("-m", "--max-threads",
+                                 dest='max_threads',
+                                 help="Max number of threads when processing feeds")
 
 
         options = parser.parse_args(self.stoq.argv[2:])
@@ -238,15 +252,22 @@ class VtmisScan(StoqWorkerPlugin):
         for delete_id in delete_ids:
             self.stoq.post_file(url=url, data=str(delete_id))
 
-    def save_download(self, payload, filename=None, path=None, archive=True):
-        if payload and self.archive_connector:
+    def save_download(self, payload, filename=None, path=None, archive=True, feed=False):
+        if payload and self.archive_connector and not feed:
             return self.connectors[self.archive_connector].save(payload,
                                                                 archive=archive,
                                                                 binary=True,
                                                                 path=path,
                                                                 filename=filename)
+        elif payload and self.feed_connector and feed:
+            self.load_connector(self.feed_connector)
+            return self.connectors[self.feed_connector].save(payload,
+                                                             archive=archive,
+                                                             binary=True,
+                                                             path=path,
+                                                             filename=filename)
         else:
-            self.stoq.log.error("No archive connector or payload defined. Unable to save payload.")
+            self.stoq.log.error("No connector or payload defined. Unable to save payload.")
 
         return None
 
@@ -257,7 +278,7 @@ class VtmisScan(StoqWorkerPlugin):
         """
         current_time = datetime.now()
         if query.endswith("h"):
-            max_time = int(query[:-1])
+            max_time = int(query[:-1]) + 1
             for i in range(1, max_time):
                 delta = current_time - timedelta(hours=i)
                 yield delta.strftime("%Y%m%dT%H")
@@ -265,7 +286,7 @@ class VtmisScan(StoqWorkerPlugin):
             # VT recommends pulling no sooner than 5 minutes to allow for
             # processing on their side. Let's take that into consideration
             # when the user makes a call and automatically add 5 minutes.
-            max_time = int(query[:-1]) + 1
+            max_time = int(query[:-1]) + 5
             for i in range(5, max_time):
                 delta = current_time - timedelta(minutes=i)
                 yield delta.strftime("%Y%m%dT%H%M")
@@ -274,19 +295,27 @@ class VtmisScan(StoqWorkerPlugin):
 
     def process_feed(self, payload, resource, query):
 
+        # Set saveresults to False as we don't return anything of use
+        # when handling feeds. All of the results are saved outside of the
+        # normal workflow.
         self.saveresults = False
+
+        # Generate the filename
         index = "vtmis_{}".format(resource)
-        filename = "{}-{}.bz2".format(resource, query)
+        filename = "{}-{}.tar.bz2".format(resource, query)
 
         queue = Queue()
         max_threads = int(self.max_threads)
 
         for i in range(max_threads):
-            proc = Thread(target=self._save_feed, args=(queue, index))
+            proc = Thread(target=self._save_feed, args=(queue, index, resource))
             proc.setDaemon(True)
             proc.start()
 
-        self.save_download(payload, filename=filename, path=self.feed_path, archive=False)
+        # Do we want to save the raw JSON feed that is initially downloaded?
+        if self.feed_save:
+            self.save_download(payload, filename=filename, feed=True,
+                               path=self.feed_path, archive=False)
 
         self.load_extractor("decompress")
         tar_files = self.extractors['decompress'].extract(payload)
@@ -301,9 +330,16 @@ class VtmisScan(StoqWorkerPlugin):
 
         queue.join()
 
-    def _save_feed(self, queue, index):
+    def _save_feed(self, queue, index, resource):
         while True:
             result = queue.get()
+
+            # Check to see if we should download each sample file
+            if self.download_samples and resource == 'file_feed':
+                file_link = result['link']
+                file_payload = self.stoq.get_file(file_link)
+                self.save_download(file_payload, archive=True)
+
             self.connectors[self.output_connector].save(result, index=index)
             queue.task_done()
 

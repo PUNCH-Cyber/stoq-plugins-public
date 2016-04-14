@@ -18,7 +18,7 @@ Module = vtmis
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9.5
+Version = 0.9.7
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Interact with VTMIS public and private API
 
@@ -37,11 +37,17 @@ delete_alerts_uri = /hunting/delete-notifications/programmatic/?key=
 # VTMIS API Key for VTMIS worker
 apikey =
 
-# Should alert samples be downloaded?
+# Should samples be downloaded from alerts and file feed?
 download_samples = False
 
-# What is the root directory for feed downloads?
+# Should the compressed JSON feed downloads be saved?
+feed_save = True
+
+# Default connector to utilize for JSON feeds
+feed_connector = file
+
+# What is the root directory for compressed JSON feed downloads?
 feed_path = /usr/local/stoq/feeds/vtmis
 
-# Maxiumum numbers of threads to use when handling feeds
+# Maxiumum numbers of threads to use when processing feeds
 max_threads = 20
