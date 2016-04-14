@@ -257,7 +257,7 @@ class VtmisScan(StoqWorkerPlugin):
         """
         current_time = datetime.now()
         if query.endswith("h"):
-            max_time = int(query[:-1]) + 1
+            max_time = int(query[:-1])
             for i in range(1, max_time):
                 delta = current_time - timedelta(hours=i)
                 yield delta.strftime("%Y%m%dT%H")
@@ -265,7 +265,7 @@ class VtmisScan(StoqWorkerPlugin):
             # VT recommends pulling no sooner than 5 minutes to allow for
             # processing on their side. Let's take that into consideration
             # when the user makes a call and automatically add 5 minutes.
-            max_time = int(query[:-1]) + 6
+            max_time = int(query[:-1]) + 1
             for i in range(5, max_time):
                 delta = current_time - timedelta(minutes=i)
                 yield delta.strftime("%Y%m%dT%H%M")
