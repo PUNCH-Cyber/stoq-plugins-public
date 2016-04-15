@@ -324,6 +324,7 @@ class VtmisScan(StoqWorkerPlugin):
 
             for content in raw_content:
                 lines = content[1].decode().split("\n")
+                self.stoq.log.info("Processing {} items from {}".format(len(lines), query))
                 for line in lines:
                     line = self.stoq.loads(line)
                     queue.put(line)
@@ -332,14 +333,19 @@ class VtmisScan(StoqWorkerPlugin):
 
     def _save_feed(self, queue, index, resource):
         while True:
-            result = queue.get()
+            try:
+                result = queue.get()
 
-            # Check to see if we should download each sample file
-            if self.download_samples and resource == 'file_feed':
-                file_link = result['link']
-                file_payload = self.stoq.get_file(file_link)
-                self.save_download(file_payload, archive=True)
+                # Check to see if we should download each sample file
+                if self.download_samples and resource == 'file_feed':
+                    file_link = result['link']
+                    file_payload = self.stoq.get_file(file_link)
+                    self.save_download(file_payload, archive=True)
 
-            self.connectors[self.output_connector].save(result, index=index)
+                self.connectors[self.output_connector].save(result, index=index)
+            except Exception as err:
+                self.stoq.log.error("Unable to process VTMIS feed: {}".format(str(err)))
+                queue.put(result)
+
             queue.task_done()
 
