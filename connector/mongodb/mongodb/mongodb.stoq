@@ -18,7 +18,7 @@ Module = mongodb
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9.1
+Version = 0.9.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Sends and retrieves content from MongoDB
 
@@ -36,8 +36,3 @@ Description = Sends and retrieves content from MongoDB
 
 conn = mongodb://localhost:27017/
 
-# Collections that the API is permitted to access
-api_collections_list = yara, exif, trid, peinfo, gridfs
-
-# API Keys
-api_keys_list = md5, sha1, sha256, sha512

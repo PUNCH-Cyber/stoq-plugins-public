@@ -86,82 +86,6 @@ class MongoConnector(StoqConnectorPlugin):
         # No results, carry on.
         return None
 
-    def api_query(self, query):
-        """
-        Handle queries from the API
-
-        :param dict query: API request containing the mongodb query
-
-        :returns: dict containing results or None
-        :rtype: dict or None
-
-        Example API Query looking for yara results for a specific MD5 hash:
-
-        { "collections": ["yara"],
-          "parameters": {"md5": "0eb8242cb22e19ba1ca0d5b9affc7af0"},
-          "apikey": "API_KEY" }
-
-        """
-
-        for query_attempt in range(3):
-            try:
-                query_results = []
-                search_results = []
-                results = {}
-
-                # Define the collections to search and the parameters
-                collections = query['collections']
-                parameters = query['parameters']
-
-                # Iterate over each collection and search
-                for collection in collections:
-                    # Make sure the collection we are searching is permitted
-                    if collection in self.api_collections_list:
-                        searchterm = {}
-
-                        # Iterate over the keys and validate they are permitted
-                        for parameter, value in parameters.items():
-                            if parameter in self.api_keys_list:
-                                searchterm[parameter] = value
-
-                        if collection == "gridfs":
-                            # Ensure we connect to GridFS
-                            self.archive = True
-
-                            self.__connect_gridfs(collection_name="fs.files")
-
-                        else:
-                            # Make sure this is set to False so we don't
-                            # connect to GridFS
-                            self.archive = False
-
-                            # Define the mongo collection based on the name of
-                            # the collection identified in the request
-                            self.__connect_mongodb(collection_name=collection)
-
-                        # Do our search
-                        query_results = self.collection.find(searchterm)
-
-                        # Iterate over the search results and store them in a
-                        # list
-                        for query_result in query_results:
-                            # Let's remove the _id key as it should never be
-                            # needed by the end user
-                            query_result.pop("_id", None)
-                            search_results.append(query_result)
-
-                # Construct the response
-                results['results'] = search_results
-                results['count'] = len(search_results)
-                results['parameters'] = parameters
-                results['collections'] = collections
-                return results
-
-            except:
-                self.connect()
-
-        return None
-
     def save(self, payload, archive=False, **kwargs):
         """
         Save results to mongodb
@@ -186,9 +110,7 @@ class MongoConnector(StoqConnectorPlugin):
         if not hasattr(self, 'collection'):
             self.connect(index)
 
-        # Let's attempt to save our data to mongo at most 3 times. The very
-        # first time, this will always fail because we haven't made a
-        # connection to mongodb or gridfs yet.
+        # Let's attempt to save our data to mongo at most 3 times.
         for save_attempt in range(3):
             try:
                 if self.archive:
@@ -207,29 +129,7 @@ class MongoConnector(StoqConnectorPlugin):
                         # continue on.
                         break
                 else:
-                    # Check to see if we have a sha1 in the payload to be
-                    # saved. If not, let's hash the payload with sha1.
-                    try:
-                        payload['_id'] = kwargs['sha1']
-                    except KeyError:
-                        payload['_id'] = get_sha1(payload)
-
-                    try:
-                        # Attempt to insert
-                        self.collection.insert(payload)
-                    except DuplicateKeyError:
-                        # Looks like our insert failed due to a Duplicate key.
-                        # Let's go ahead and update the results key with our
-                        # new results rather than create a new record.
-                        for result in payload['results']:
-                            self.collection.update({'_id': payload['_id']},
-                                                   {'$push':
-                                                    {'results': result}})
-
-                # There is no sense in copy()'ing the payload dict, just to
-                # remove the _id. Let's just pop() since we only require it for
-                # the mongodb primary key.
-                payload.pop('_id')
+                    self.collection.insert(payload)
 
                 # Success..let's break out of our loop.
                 break
