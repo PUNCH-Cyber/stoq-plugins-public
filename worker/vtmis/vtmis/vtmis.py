@@ -199,7 +199,10 @@ class VtmisScan(StoqWorkerPlugin):
             self.process_feed(response, resource, query)
             return True
 
-        return self.stoq.loads(response)
+        try:
+            return self.stoq.loads(response)
+        except:
+            return None
 
     def alerts(self):
         processed_hashes = []
