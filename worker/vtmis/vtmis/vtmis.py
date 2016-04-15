@@ -53,7 +53,7 @@ class VtmisScan(StoqWorkerPlugin):
                           'file_download': {'key': 'hash', 'allinfo': False, 'method': 'get', 'private': True},
                           'file_scan': {'key': False, 'allinfo': False, 'method': 'post', 'private': False},
                           'file_rescan': {'key': 'resource', 'allinfo': False, 'method': 'post', 'private': False},
-                          'file_search': {'key': 'search', 'allinfo': False, 'method': 'get', 'private': True},
+                          'file_search': {'key': 'query', 'allinfo': False, 'method': 'get', 'private': True},
                           'file_clusters': {'key': 'date', 'allinfo': False, 'method': 'get', 'private': True},
                           'url_report': {'key': 'resource', 'allinfo': True, 'method': 'get', 'private': False},
                           'url_scan': {'key': 'url', 'allinfo': False, 'method': 'post', 'private': False},
