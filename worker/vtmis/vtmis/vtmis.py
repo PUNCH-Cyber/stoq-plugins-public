@@ -254,22 +254,20 @@ class VtmisScan(StoqWorkerPlugin):
 
     def save_download(self, payload, filename=None, path=None, archive=True, feed=False):
         if payload and self.archive_connector and not feed:
-            return self.connectors[self.archive_connector].save(payload,
-                                                                archive=archive,
-                                                                binary=True,
-                                                                path=path,
-                                                                filename=filename)
+            self.connectors[self.archive_connector].save(payload,
+                                                         archive=archive,
+                                                         binary=True,
+                                                         path=path,
+                                                         filename=filename)
         elif payload and self.feed_connector and feed:
             self.load_connector(self.feed_connector)
-            return self.connectors[self.feed_connector].save(payload,
-                                                             archive=archive,
-                                                             binary=True,
-                                                             path=path,
-                                                             filename=filename)
+            self.connectors[self.feed_connector].save(payload,
+                                                      archive=archive,
+                                                      binary=True,
+                                                      path=path,
+                                                      filename=filename)
         else:
             self.stoq.log.error("No connector or payload defined. Unable to save payload.")
-
-        return None
 
     def generate_dates(self, query):
         """
@@ -319,12 +317,14 @@ class VtmisScan(StoqWorkerPlugin):
 
         self.load_extractor("decompress")
         tar_files = self.extractors['decompress'].extract(payload)
+
         for tar_file in tar_files:
             raw_content = self.extractors['decompress'].extract(tar_file[1])
 
             for content in raw_content:
                 lines = content[1].decode().split("\n")
-                self.stoq.log.info("Processing {} items from {}".format(len(lines), query))
+                compressed_filename = content[0]['filename']
+                self.stoq.log.info("Processing {} items from {}".format(len(lines), compressed_filename))
                 for line in lines:
                     line = self.stoq.loads(line)
                     queue.put(line)
