@@ -83,7 +83,8 @@ class PastebinScan(StoqWorkerPlugin):
             if epoch < paste_date:
                 paste_dates.append(paste_date)
                 try:
-                    paste['content'] = self.stoq.get_file(paste['scrape_url'])
+                    content = self.stoq.get_file(paste['scrape_url'])
+                    paste['content'] = self.stoq.force_unicode(content)
                 except:
                     paste['content'] = "ERR"
 
