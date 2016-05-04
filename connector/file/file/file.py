@@ -67,7 +67,6 @@ class FileConnector(StoqConnectorPlugin):
 
         """
 
-
         if archive:
             filename = kwargs.get('sha1', get_sha1(payload))
             path = self.stoq.hashpath(filename)
@@ -85,7 +84,7 @@ class FileConnector(StoqConnectorPlugin):
         if not binary:
                 payload = self.stoq.dumps(payload)
 
-        self.stoq.write(path=path, filename=filename,
-                        payload=payload, binary=binary)
+        fullpath = self.stoq.write(path=path, filename=filename,
+                                   payload=payload, binary=binary)
 
-        return True
+        return fullpath

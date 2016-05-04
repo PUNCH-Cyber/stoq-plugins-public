@@ -18,6 +18,6 @@ Module = file
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9.3
+Version = 0.9.4
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Retrieves and saves content to local disk
