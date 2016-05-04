@@ -55,8 +55,10 @@ class PublisherWorker(StoqWorkerPlugin):
 
         super().activate(options=options)
 
-        # Activate the appropriate plugin so we can publish messages, if needed.
-        self.publish_connector = self.stoq.load_plugin(self.publisher, 'source')
+        # Activate the appropriate plugin so we can publish messages,
+        # if needed.
+        self.publish_connector = self.stoq.load_plugin(self.publisher,
+                                                       'source')
 
         return True
 
@@ -76,18 +78,20 @@ class PublisherWorker(StoqWorkerPlugin):
 
         super().scan()
 
-        self.stoq.log.info("Ingesting: %s" % kwargs['path'])
+        self.stoq.log.info("Ingesting: %s" % kwargs['uuid'])
 
         # For every file we ingest we are going to assign a unique
         # id so we can link everything across the scope of the ingest.
         # This will be assigned to submissions within archive files as well
         # in order to simplify correlating files post-ingest.
-        kwargs['uuid'] = self.stoq.get_uuid
+        if 'uuid' not in kwargs:
+            kwargs['uuid'] = self.stoq.get_uuid
 
-        if payload:
+        if payload and 'sha1' not in kwargs:
             kwargs['sha1'] = get_sha1(payload)
 
-        kwargs['path'] = os.path.abspath(kwargs['path'])
+        if 'path' in kwargs:
+            kwargs['path'] = os.path.abspath(kwargs['path'])
 
         if self.user_comments:
             kwargs['user_comments'] = self.user_comments
@@ -96,6 +100,9 @@ class PublisherWorker(StoqWorkerPlugin):
             self.submission_list = kwargs['submission_list']
             kwargs.pop('submission_list')
 
+        # Using self.stoq.worker.archive_connector in case this plugin is
+        # called from another plugin. This will ensure that the correct
+        # archive connector is defined when the message is published.
         if self.stoq.worker.archive_connector:
             kwargs['archive'] = self.archive_connector
         else:
