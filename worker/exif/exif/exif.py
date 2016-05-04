@@ -23,7 +23,7 @@ Processes a payload using ExifTool
 import os
 import argparse
 
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 
 from stoq.args import StoqArgs
 from stoq.plugins import StoqWorkerPlugin
@@ -75,6 +75,12 @@ class ExifScan(StoqWorkerPlugin):
             cmd = [self.exiftool, "-j", path]
             exifdata = self.stoq.loads(check_output(cmd))
             exifdata = exifdata[0]
+        except CalledProcessError as err:
+            try:
+                exifdata = self.stoq.loads(err.output)
+                exifdata = exifdata[0]
+            except:
+                exifdata = None
         except:
             exifdata = None
 
@@ -83,8 +89,8 @@ class ExifScan(StoqWorkerPlugin):
             if os.path.isfile(path):
                 os.remove(path)
         except:
-            self.stoq.log.warn("Unable to delete temp \
-                                file {0}".format(path)) 
+            self.stoq.log.warn("Unable to delete temp "
+                               "file {0}".format(path))
 
         super().scan()
 
