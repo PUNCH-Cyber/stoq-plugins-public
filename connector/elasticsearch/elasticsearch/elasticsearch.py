@@ -22,6 +22,7 @@ Saves content to an ElasticSearch index
 import time
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
+import threading
 
 from stoq.plugins import StoqConnectorPlugin
 
@@ -30,13 +31,22 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
     def __init__(self):
         super().__init__()
+        self.buffer_lock = threading.Lock()
+        self.buffer = []
 
     def activate(self, stoq):
         self.stoq = stoq
         super().activate()
         if self.bulk:
             self.last_commit_time = time.time()
-            self.buffer = []
+            self.scheduler = threading.Thread(target=self.periodicallyCallCommit, args=(self), daemon=True)
+            self.scheduler.start()
+
+    def deactivate(self):
+        # send one last commit as we shut down, just in case.
+        if self.bulk:
+            self._commit()
+        super().deactivate()
 
     def query(self, index, query):
         """
@@ -58,21 +68,30 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         return self.es.search(index, q=query)
 
-    def heartbeat(self, force=False):
-        super().heartbeat(force)
+    def periodically_call_commit(self):
+        while True:
+            time.sleep(1)
+            self._checkCommit()
+
+    def _commit(self):
+        self.buffer_lock.acquire()
+        bulk(client = self.es, actions = self.buffer)
+        self.buffer = []
+        self.buffer_lock.release()
+
+    def _check_commit(self):
         if not self.bulk:
             return
         else:
             now = time.time()
-            needToCommit = (now - self.last_commit_time) > self.bulk_interval or \
-                            len(self.buffer) > self.bulk_size or \
-                            force
-            if needToCommit:
-                bulk(client = self.es, actions = self.buffer)
-                self.buffer = []
+            self.buffer_lock.acquire()
+            buf_len = len(self.buffer)
+            self.buffer_lock.release()
+            if (now - self.last_commit_time) > self.bulk_interval or buf_len > self.bulk_size:
+                self._commit()
+                self.last_commit_time = now
 
-
-    # Primative elasticsearch connector.
+    # Primitive elasticsearch connector.
     def save(self, payload, **kwargs):
         """
         Save results to elasticsearch
@@ -91,8 +110,6 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         except:
             self.connect()
 
-
-
         # Define the index name, if available. Will default to the plugin name
         index = kwargs.get('index', self.parentname)
 
@@ -102,14 +119,16 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         # Insert our data and return our results from the ES server
         if not self.bulk:
             return self.es.index(index=index,
-                             doc_type=index,
-                             body=self.stoq.dumps(payload))
+                                 doc_type=index,
+                                 body=self.stoq.dumps(payload))
         else:
             action = {"_op_type": "index",
                       "_index": index,
                       "_type": index}
             payload.update(action)
+            self.buffer_lock.acquire()
             self.buffer.append(self.stoq.dumps(payload))
+            self.buffer_lock.release()
             return "queued: {}".format(len(self.buffer))
 
     def connect(self):
