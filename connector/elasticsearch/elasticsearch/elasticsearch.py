@@ -58,13 +58,16 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         return self.es.search(index, q=query)
 
-    def heartbeat(self):
-        super().heartbeat()
+    def heartbeat(self, force=False):
+        super().heartbeat(force)
         if not self.bulk:
             return
         else:
             now = time.time()
-            if (now - self.last_commit_time) > self.bulk_interval or len(self.buffer) > self.bulk_size:
+            needToCommit = (now - self.last_commit_time) > self.bulk_interval or \
+                            len(self.buffer) > self.bulk_size or \
+                            force
+            if needToCommit:
                 bulk(client = self.es, actions = self.buffer)
                 self.buffer = []
 

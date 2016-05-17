@@ -45,11 +45,10 @@ conn = 127.0.0.1:9200
 
 # should the plugin insert events as they come in, or bulk them together?
 # Warning: bulk submission of events can cause message loss if the
-# connector is terminated before the commit happens
+# connector is terminated before the commit happens.
 
 bulk = False
 
 bulk_interval = 10
-
 
 bulk_size = 500
