@@ -88,25 +88,25 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         except:
             self.connect()
 
-        # Make sure we convert the dict() into a valid json string,
-        # otherwise some issues will arise when values containsing bytes
-        # are saved.
-        payload = self.stoq.dumps(payload)
+
 
         # Define the index name, if available. Will default to the plugin name
         index = kwargs.get('index', self.parentname)
 
+        # Make sure we convert the dict() into a valid json string,
+        # otherwise some issues will arise when values containing bytes
+        # are saved.
         # Insert our data and return our results from the ES server
         if not self.bulk:
             return self.es.index(index=index,
                              doc_type=index,
-                             body=payload)
+                             body=self.stoq.dumps(payload))
         else:
             action = {"_op_type": "index",
                       "_index": index,
                       "_type": index}
-            payload.extend(action)
-            self.buffer.append(payload)
+            payload.update(action)
+            self.buffer.append(self.stoq.dumps(payload))
             return "queued: {}".format(len(self.buffer))
 
     def connect(self):
