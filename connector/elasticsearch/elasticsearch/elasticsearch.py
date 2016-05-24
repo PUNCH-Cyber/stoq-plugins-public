@@ -33,8 +33,6 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         super().__init__()
         self.buffer_lock = threading.Lock()
         self.buffer = []
-        if self.bulk:
-            self.wants_heartbeat = True
 
 
     def activate(self, stoq):
@@ -42,6 +40,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         super().activate()
         if self.bulk:
             self.last_commit_time = time.time()
+            self.wants_heartbeat = True
 
             # No ES connection, let's make one.
         self.connect()
