@@ -34,15 +34,14 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         self.buffer_lock = threading.Lock()
         self.buffer = []
 
-
     def activate(self, stoq):
         self.stoq = stoq
         super().activate()
+        self.bulk_size = int(self.bulk_size)
+        self.bulk_interval = int(self.bulk_interval)
         if self.bulk:
             self.last_commit_time = time.time()
-            self.wants_heartbeat = True
-
-            # No ES connection, let's make one.
+        # No ES connection, let's make one.
         self.connect()
 
     def deactivate(self):
@@ -67,12 +66,13 @@ class ElasticSearchConnector(StoqConnectorPlugin):
     def heartbeat(self):
         while True:
             time.sleep(1)
-            self._checkCommit()
+            self._check_commit()
 
     def _commit(self):
         self.buffer_lock.acquire()
         bulk(client=self.es, actions=self.buffer)
-        self.buffer = []
+        while self.buffer.len() > 0:
+            self.buffer.pop()
         self.buffer_lock.release()
 
     def _check_commit(self):
@@ -119,6 +119,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
             self.buffer.append(self.stoq.dumps(payload))
             buf_len = len(self.buffer)
             self.buffer_lock.release()
+            self._check_commit()
             return "queued: {}".format(buf_len)
 
     def connect(self):
