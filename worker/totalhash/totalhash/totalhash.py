@@ -102,8 +102,8 @@ class TotalHashScan(StoqWorkerPlugin):
         try:
             response = self.stoq.get_file(url, verify=False)
         except HTTPError:
-            return {'result': 0 }
-            
+            return {'result': 0}
+
         results = xmltodict.parse(response)
 
         try:
