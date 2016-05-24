@@ -47,7 +47,6 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
     def deactivate(self):
         # send one last commit as we shut down, just in case.
-        self.heartbeat_thread.terminate()
         if self.bulk:
             self._commit()
         super().deactivate()
