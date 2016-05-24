@@ -18,7 +18,7 @@ Module = totalhash
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.7.1
+Version = 0.7.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Query TotalHash API for analysis results
 
