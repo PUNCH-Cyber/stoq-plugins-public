@@ -21,10 +21,10 @@ Process a payload using yara
 """
 
 import os
-import yara
 import time
 import argparse
 import threading
+import yara
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -36,6 +36,8 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
 
     def __init__(self):
         super().__init__()
+        self.rule_lock = threading.Lock()
+        self.wants_heartbeat = True
 
     def activate(self, stoq):
 
@@ -51,12 +53,6 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
         options = parser.parse_args(self.stoq.argv[2:])
 
         super().activate(options=options)
-
-        # Thread the watchdog observer so we can reload yara rules on the fly.
-        rule_thread = threading.Thread(target=self._monitor_yara_rules,
-                                       args=())
-        rule_thread.daemon = True
-        rule_thread.start()
 
         # Make sure we compile our rules when activated.
         self._load_yara_rules()
@@ -79,9 +75,10 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
         self.results = []
 
         # Scan the payload with a timeout using yara
+        self.rule_lock.acquire()
         self.rules.match(data=payload, timeout=60,
                          callback=self._scan_callback)
-
+        self.rule_lock.release()
         super().scan()
 
         # Return our results
@@ -114,8 +111,10 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
             self.stoq.log.debug("Loading yara rules.")
             # We don't want to name our rules globally just yet, in case
             # loading fails.
+            self.rule_lock.acquire()
             compiled_rules = yara.compile(self.yararules)
             self.rules = compiled_rules
+            self.rule_lock.release()
         except:
             self.stoq.log.error("Error in yara rules. Compile failed.")
             # If this is the first time we are loading the rules,
@@ -123,7 +122,7 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
             if not hasattr(self, 'rules'):
                 exit(-1)
 
-    def _monitor_yara_rules(self):
+    def heartbeat(self):
         # Get the full absolute path of the yara rules directory
         yara_rules_base = os.path.dirname(os.path.abspath(self.yararules))
 

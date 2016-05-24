@@ -33,6 +33,8 @@ class ClamAvScan(StoqWorkerPlugin):
 
     def __init__(self):
         super().__init__()
+        self.clamd_lock = threading.Lock()
+        self.wants_heartbeat = True
 
     def activate(self, stoq):
         self.stoq = stoq
@@ -50,16 +52,14 @@ class ClamAvScan(StoqWorkerPlugin):
 
         self._connect()
 
-        # Start the ping threads so we can make sure we always have
-        # a valid connection
-        threads = threading.Thread(target=self._ping, args=())
-        threads.daemon = True
-        threads.start()
-
         if not self.clamd:
             return False
 
         return True
+
+
+    def deactivate(self):
+        self.heartbeat_thread.terminate()
 
     def scan(self, payload, **kwargs):
         """
@@ -77,36 +77,45 @@ class ClamAvScan(StoqWorkerPlugin):
 
         results = {}
 
+        self.clamd_lock.acquire()
         try:
-           hit  = self.clamd.scan_stream(payload)
-           results['sig'] = hit['stream'][1]
+            hit = self.clamd.scan_stream(payload)
+            results['sig'] = hit['stream'][1]
         except IOError as err:
             self.stoq.log.warn("Unable to scan payload: {}".format(err))
         except ValueError as err:
             self.stoq.log.warn("Payload buffer too large: {}".format(err))
         except TypeError:
             pass
+        finally:
+            self.clamd_lock.release()
 
         if results:
-            return results 
+            return results
         else:
             return None
 
-    def _ping(self):
+    def heartbeat(self):
         """
         Periodically ping the clam server to keep alive
 
         """
 
         while True:
+            success = False
+            self.clamd_lock.acquire()
             try:
                 self.clamd.ping()
+                success = True
             except AttributeError:
-                self._connect()
+                success = False
             except pyclamd.ConnectionError:
                 self.stoq.log.warn("Unable to connect to ClamAV. Attempting to connect.")
+                success = False
+            finally:
+                self.clamd_lock.release()
+            if not success:
                 self._connect()
-
             time.sleep(self.interval)
 
     def _connect(self):
@@ -114,6 +123,7 @@ class ClamAvScan(StoqWorkerPlugin):
         Connect to clam server
 
         """
+        self.clamd_lock.acquire()
         if self.daemon == 'network':
             self.clamd = pyclamd.ClamdNetworkSocket(host=self.host,
                                                     port=self.port,
@@ -121,4 +131,5 @@ class ClamAvScan(StoqWorkerPlugin):
         else:
             self.clamd = pyclamd.ClamdUnixSocket(filename=self.socket,
                                                  timeout=self.timeout)
+        self.clamd_lock.release()
 

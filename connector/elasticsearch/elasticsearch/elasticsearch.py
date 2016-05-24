@@ -20,9 +20,9 @@ Saves content to an ElasticSearch index
 
 """
 import time
+import threading
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-import threading
 
 from stoq.plugins import StoqConnectorPlugin
 
@@ -33,24 +33,29 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         super().__init__()
         self.buffer_lock = threading.Lock()
         self.buffer = []
+        if self.bulk:
+            self.wants_heartbeat = True
+
 
     def activate(self, stoq):
         self.stoq = stoq
         super().activate()
         if self.bulk:
             self.last_commit_time = time.time()
-            self.scheduler = threading.Thread(target=self.periodicallyCallCommit, args=(self), daemon=True)
-            self.scheduler.start()
+
+            # No ES connection, let's make one.
+        self.connect()
 
     def deactivate(self):
         # send one last commit as we shut down, just in case.
+        self.heartbeat_thread.terminate()
         if self.bulk:
             self._commit()
         super().deactivate()
 
     def query(self, index, query):
         """
-        Query elasticsearch 
+        Query elasticsearch
 
         :param bytes index: Index to search
         :param bytes query: Item to search for in the defined index
@@ -59,23 +64,16 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         """
 
-        # No ES connection, let's make one.
-        try:
-            if not self.es:
-                self.connect()
-        except:
-            self.connect()
-
         return self.es.search(index, q=query)
 
-    def periodically_call_commit(self):
+    def heartbeat(self):
         while True:
             time.sleep(1)
             self._checkCommit()
 
     def _commit(self):
         self.buffer_lock.acquire()
-        bulk(client = self.es, actions = self.buffer)
+        bulk(client=self.es, actions=self.buffer)
         self.buffer = []
         self.buffer_lock.release()
 
@@ -103,13 +101,6 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         """
 
-        # No ES connection, let's make one.
-        try:
-            if not self.es:
-                self.connect()
-        except:
-            self.connect()
-
         # Define the index name, if available. Will default to the plugin name
         index = kwargs.get('index', self.parentname)
 
@@ -128,13 +119,13 @@ class ElasticSearchConnector(StoqConnectorPlugin):
             payload.update(action)
             self.buffer_lock.acquire()
             self.buffer.append(self.stoq.dumps(payload))
+            buf_len = len(self.buffer)
             self.buffer_lock.release()
-            return "queued: {}".format(len(self.buffer))
+            return "queued: {}".format(buf_len)
 
     def connect(self):
         """
         Connect to an elasticsearch instance
 
         """
-
         self.es = Elasticsearch(self.conn)
