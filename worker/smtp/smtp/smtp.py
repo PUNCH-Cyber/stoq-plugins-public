@@ -39,7 +39,7 @@ class SmtpScan(StoqWorkerPlugin):
             self.load_reader('iocregex')
             self.extract_iocs = True
         except AttributeError:
-            self.stoq.log.warn("IOC Regex reader plugin is not install. "
+            self.stoq.log.warn("IOC Regex reader plugin is not installed. "
                                " IOC's will not be extracted")
             self.extract_iocs = False
 

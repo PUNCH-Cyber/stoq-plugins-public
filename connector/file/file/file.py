@@ -82,7 +82,7 @@ class FileConnector(StoqConnectorPlugin):
             binary = kwargs.get('binary', False)
 
         if not binary:
-                payload = self.stoq.dumps(payload)
+            payload = self.stoq.dumps(payload)
 
         fullpath = self.stoq.write(path=path, filename=filename,
                                    payload=payload, binary=binary)
