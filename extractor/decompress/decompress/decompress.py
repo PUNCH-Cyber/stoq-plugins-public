@@ -41,6 +41,7 @@ extract content appropriately.
 
 import os
 import re
+import shlex
 import shutil
 import tempfile
 from subprocess import Popen, PIPE, TimeoutExpired
@@ -134,18 +135,12 @@ class DecompressExtractor(StoqExtractorPlugin):
             f.write(payload)
 
         for password in archive_passwords:
-            # Check to make sure there are no special characters in the
-            # password to prevent any potential security issues.
-            if not re.search(r"[\\|&;<>()$'`\"`'*?#~=%]", password):
-                # Check to see what kind of archive we have and build the
-                # command as appropriate
-                cmd = archiver.replace('%INFILE%', archive_file)
-                cmd = cmd.replace('%OUTDIR%', extract_dir)
-                cmd = cmd.replace('%PASSWORD%', password)
-                cmd = cmd.split(" ")
-            else:
-                self.stoq.log.warn("Password contains invalid character")
-                continue
+            # Check to see what kind of archive we have and build the
+            # command as appropriate
+            cmd = archiver.replace('%INFILE%', archive_file)
+            cmd = cmd.replace('%OUTDIR%', extract_dir)
+            cmd = cmd.replace('%PASSWORD%', shlex.quote(password))
+            cmd = cmd.split(" ")
 
             # Start the process
             p = Popen(cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True)
