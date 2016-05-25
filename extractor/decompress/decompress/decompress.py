@@ -136,7 +136,7 @@ class DecompressExtractor(StoqExtractorPlugin):
         for password in archive_passwords:
             # Check to see what kind of archive we have and build the
             # command as appropriate
-            cmd = archiver.replace('%INFILE%', archive_file)
+            cmd = archiver.replace('%INFILE%', shlex.quote(archive_file))
             cmd = cmd.replace('%OUTDIR%', extract_dir)
             cmd = cmd.replace('%PASSWORD%', shlex.quote(password))
             cmd = cmd.split(" ")
