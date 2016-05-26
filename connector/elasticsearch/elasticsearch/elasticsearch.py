@@ -112,12 +112,11 @@ class ElasticSearchConnector(StoqConnectorPlugin):
                                  doc_type=index,
                                  body=self.stoq.dumps(payload))
         else:
-            action = {"_op_type": "index",
-                      "_index": index,
-                      "_type": index}
-            payload.update(action)
+            action = {"_index": index,
+                      "_type": index,
+                      "_source": self.stoq.dumps(payload, True)}
             self.buffer_lock.acquire()
-            self.buffer.append(self.stoq.dumps(payload))
+            self.buffer.append(action)
             buf_len = len(self.buffer)
             self.buffer_lock.release()
             return "queued: {}".format(buf_len)
