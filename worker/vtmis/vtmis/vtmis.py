@@ -179,7 +179,7 @@ class VtmisScan(StoqWorkerPlugin):
 
         # Some API calls provide additional context, if using the private API
         if api['allinfo']:
-            params[api['allinfo']] = 1
+            params['allinfo'] = 1
 
         # Determine whether this API call requires a POST or GET, and whether
         # whether we are uploading a file or not.
@@ -351,4 +351,3 @@ class VtmisScan(StoqWorkerPlugin):
                 queue.put(result)
 
             queue.task_done()
-

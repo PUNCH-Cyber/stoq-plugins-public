@@ -1,0 +1,42 @@
+[Core]
+Name = smtp
+Module = smtp
+
+[Documentation]
+Author = Marcus LaFerrera, Adam Trask
+Version = 0.9.2
+Website = https://github.com/PUNCH-Cyber/stoq
+Description = SMTP Parser Worker
+
+[options]
+hashpayload = True
+saveresults = True
+
+# Should a queuing plugin be used? True or False
+# publisher worker plugin is required to be installed
+use_queue = False
+
+# Default workers that all attachments will be scanned with
+workers_list = yara, exif, trid, peinfo
+
+# What is the default attachment connector plugin to use?
+attachment_connector = file
+
+# Should bloom filters be used to track specified SMTP headers?
+# If True, the SMTP plugin may only be run once at a time
+use_bloom = True
+
+# Where is the bloom filters file located?
+bloom_directory = plugins/worker/smtp/email_filters
+
+# Expected maximum values in bloom filter
+bloom_size = 50000000
+
+# Desired False Positive rate
+bloom_fp_rate = 0.001
+
+# How often should the bloomfilter be written to disk?
+bloom_update = 60
+
+# SMTP header to extract a value from and insert into bloom filter
+bloomfield_list = from

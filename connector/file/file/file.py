@@ -61,6 +61,7 @@ class FileConnector(StoqConnectorPlugin):
 
         :param str payload: Content to be saved
         :param bool archive: Is this a file that is being archived?
+        :param **kwargs index: Directory name to save content to
         :param **kwargs sha1: SHA1 hash to use as a filename
         :param **kwargs filename: Filename to save the file as
         :param **kwargs path: Path where the file will be saved to
@@ -73,16 +74,16 @@ class FileConnector(StoqConnectorPlugin):
             binary = kwargs.get('binary', True)
 
         else:
-            path = kwargs.get('path', os.path.join(self.stoq.results_dir,
-                                                   self.parentname))
-            if 'index' in kwargs:
-                path = os.path.join(path, kwargs['index'])
+            path = kwargs.get('path', self.stoq.results_dir)
+            name = kwargs.get('index', self.parentname)
+
+            path = os.path.join(path, name)
 
             filename = kwargs.get('filename', None)
             binary = kwargs.get('binary', False)
 
         if not binary:
-                payload = self.stoq.dumps(payload)
+            payload = self.stoq.dumps(payload)
 
         fullpath = self.stoq.write(path=path, filename=filename,
                                    payload=payload, binary=binary)

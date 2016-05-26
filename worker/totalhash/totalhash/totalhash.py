@@ -25,6 +25,8 @@ import hashlib
 import argparse
 import xmltodict
 
+from requests.exceptions import HTTPError
+
 from stoq.args import StoqArgs
 from stoq.plugins import StoqWorkerPlugin
 
@@ -88,7 +90,8 @@ class TotalHashScan(StoqWorkerPlugin):
             results = self.query(query_type, query)
 
         super().scan()
-        return results 
+
+        return results
 
     def query(self, query_type, value):
         sig = self.generate_signature(value)
@@ -96,7 +99,11 @@ class TotalHashScan(StoqWorkerPlugin):
         url = "{}/{}/{}&id={}&sign={}".format(self.url, query_type, value,
                                               self.username, sig)
 
-        response = self.stoq.get_file(url, verify=False)
+        try:
+            response = self.stoq.get_file(url, verify=False)
+        except HTTPError:
+            return {'result': 0}
+
         results = xmltodict.parse(response)
 
         try:
@@ -107,4 +114,3 @@ class TotalHashScan(StoqWorkerPlugin):
 
     def generate_signature(self, value):
         return hmac.new(self.apikey.encode(), value.encode(), hashlib.sha256).hexdigest()
-
