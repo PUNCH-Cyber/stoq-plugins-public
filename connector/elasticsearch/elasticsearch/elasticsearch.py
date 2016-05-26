@@ -41,6 +41,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         self.bulk_interval = int(self.bulk_interval)
         if self.bulk:
             self.last_commit_time = time.time()
+            self.wants_heartbeat = True
         # No ES connection, let's make one.
         self.connect()
 
@@ -71,7 +72,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
     def _commit(self):
         self.buffer_lock.acquire()
         bulk(client=self.es, actions=self.buffer)
-        while self.buffer.len() > 0:
+        while len(self.buffer) > 0:
             self.buffer.pop()
         self.buffer_lock.release()
 
@@ -119,7 +120,6 @@ class ElasticSearchConnector(StoqConnectorPlugin):
             self.buffer.append(self.stoq.dumps(payload))
             buf_len = len(self.buffer)
             self.buffer_lock.release()
-            self._check_commit()
             return "queued: {}".format(buf_len)
 
     def connect(self):
