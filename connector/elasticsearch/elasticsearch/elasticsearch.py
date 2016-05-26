@@ -21,7 +21,9 @@ Saves content to an ElasticSearch index
 """
 import time
 import threading
+import traceback
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import TransportError
 from elasticsearch.helpers import bulk
 
 from stoq.plugins import StoqConnectorPlugin
@@ -71,10 +73,16 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
     def _commit(self):
         self.buffer_lock.acquire()
-        bulk(client=self.es, actions=self.buffer)
-        while len(self.buffer) > 0:
-            self.buffer.pop()
-        self.buffer_lock.release()
+        try:
+            bulk(client=self.es, actions=self.buffer)
+            while len(self.buffer) > 0:
+                self.buffer.pop()
+        except TransportError:
+            tb = traceback.format_exc()
+            self.stoq.log.error("Error committing to Elasticsearch: {}".format(tb))
+            self.stoq.log.error("Failed commits: {}".format(str(self.buffer)))
+        finally:
+            self.buffer_lock.release()
 
     def _check_commit(self):
         if not self.bulk:
@@ -114,7 +122,8 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         else:
             action = {"_index": index,
                       "_type": index,
-                      "_source": self.stoq.dumps(payload, True)}
+                      "_source": self.stoq.dumps(payload,
+                                                 compactly=True)}
             self.buffer_lock.acquire()
             self.buffer.append(action)
             buf_len = len(self.buffer)
