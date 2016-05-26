@@ -19,8 +19,12 @@ Overview
 Saves content to an ElasticSearch index
 
 """
-
+import time
+import threading
+import traceback
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import TransportError
+from elasticsearch.helpers import bulk
 
 from stoq.plugins import StoqConnectorPlugin
 
@@ -29,14 +33,29 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
     def __init__(self):
         super().__init__()
+        self.buffer_lock = threading.Lock()
+        self.buffer = []
 
     def activate(self, stoq):
         self.stoq = stoq
         super().activate()
+        self.bulk_size = int(self.bulk_size)
+        self.bulk_interval = int(self.bulk_interval)
+        if self.bulk:
+            self.last_commit_time = time.time()
+            self.wants_heartbeat = True
+        # No ES connection, let's make one.
+        self.connect()
+
+    def deactivate(self):
+        # send one last commit as we shut down, just in case.
+        if self.bulk:
+            self._commit()
+        super().deactivate()
 
     def query(self, index, query):
         """
-        Query elasticsearch 
+        Query elasticsearch
 
         :param bytes index: Index to search
         :param bytes query: Item to search for in the defined index
@@ -45,16 +64,39 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         """
 
-        # No ES connection, let's make one.
-        try:
-            if not self.es:
-                self.connect()
-        except:
-            self.connect()
-
         return self.es.search(index, q=query)
 
-    # Primative elasticsearch connector.
+    def heartbeat(self):
+        while True:
+            time.sleep(1)
+            self._check_commit()
+
+    def _commit(self):
+        self.buffer_lock.acquire()
+        try:
+            bulk(client=self.es, actions=self.buffer)
+            while len(self.buffer) > 0:
+                self.buffer.pop()
+        except TransportError:
+            tb = traceback.format_exc()
+            self.stoq.log.error("Error committing to Elasticsearch: {}".format(tb))
+            self.stoq.log.error("Failed commits: {}".format(str(self.buffer)))
+        finally:
+            self.buffer_lock.release()
+
+    def _check_commit(self):
+        if not self.bulk:
+            return
+        else:
+            now = time.time()
+            self.buffer_lock.acquire()
+            buf_len = len(self.buffer)
+            self.buffer_lock.release()
+            if (now - self.last_commit_time) > self.bulk_interval or buf_len > self.bulk_size:
+                self._commit()
+                self.last_commit_time = now
+
+    # Primitive elasticsearch connector.
     def save(self, payload, **kwargs):
         """
         Save results to elasticsearch
@@ -66,30 +108,31 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         """
 
-        # No ES connection, let's make one.
-        try:
-            if not self.es:
-                self.connect()
-        except:
-            self.connect()
-
-        # Make sure we convert the dict() into a valid json string,
-        # otherwise some issues will arise when values containsing bytes
-        # are saved.
-        payload = self.stoq.dumps(payload)
-
         # Define the index name, if available. Will default to the plugin name
         index = kwargs.get('index', self.parentname)
 
+        # Make sure we convert the dict() into a valid json string,
+        # otherwise some issues will arise when values containing bytes
+        # are saved.
         # Insert our data and return our results from the ES server
-        return self.es.index(index=index,
-                             doc_type=index,
-                             body=payload)
+        if not self.bulk:
+            return self.es.index(index=index,
+                                 doc_type=index,
+                                 body=self.stoq.dumps(payload))
+        else:
+            action = {"_index": index,
+                      "_type": index,
+                      "_source": self.stoq.dumps(payload,
+                                                 compactly=True)}
+            self.buffer_lock.acquire()
+            self.buffer.append(action)
+            buf_len = len(self.buffer)
+            self.buffer_lock.release()
+            return "queued: {}".format(buf_len)
 
     def connect(self):
         """
         Connect to an elasticsearch instance
 
         """
-
         self.es = Elasticsearch(self.conn)

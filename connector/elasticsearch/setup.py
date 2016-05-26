@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name="elasticsearch",
-    version="0.3",
-    author="Marcus LaFerrera (@mlaferrera)",
+    version="0.4",
+    author="Marcus LaFerrera (@mlaferrera) Aaron Gee-Clough (@gclef_)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
     description="Saves content to an ElasticSearch index",

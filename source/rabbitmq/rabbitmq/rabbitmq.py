@@ -79,7 +79,7 @@ class RabbitMQSource(StoqSourcePlugin):
             kwargs = self.stoq.loads(amqp_message_data)
 
             # Send the message to the worker
-            self.stoq.worker.start(**kwargs)
+            self.stoq.worker.multiprocess_put(**kwargs)
 
         except Exception as e:
             # Something went wrong, let's publish to the error queue.  and
