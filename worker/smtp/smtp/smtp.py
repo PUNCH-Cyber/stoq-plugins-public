@@ -197,6 +197,9 @@ class SmtpScan(StoqWorkerPlugin):
         extracted_urls = None
         extracted_ips = None
 
+        # Grab the uuid of so we can pass it off to the attachment
+        uuid = kwargs.get('uuid', None)
+
         payload = self.stoq.force_unicode(payload)
         email_sessions = self.carve_email(payload)
 
@@ -221,14 +224,6 @@ class SmtpScan(StoqWorkerPlugin):
                     message_json[curr_header] += "\n{}".format(message.get_decoded_header(k))
                 else:
                     message_json[curr_header] = message.get_decoded_header(k)
-
-            # Create a unique ID for this e-mail
-            message_json['uuid'] = self.stoq.get_uuid
-
-            # Make sure we track the parent uuid also since there is a chance
-            # we are parsing multiple e-mails in a single payload. This is
-            # especially true when using vortex-ids sessions as the source.
-            message_json['puuid'] = kwargs.get('uuid', None)
 
             # str of concatenated ip_headers
             concat_ips = ""
@@ -327,7 +322,7 @@ class SmtpScan(StoqWorkerPlugin):
                 if not skip_attachment:
                     attachment_json = self.handle_attachments(payload=mailpart.get_payload(),
                                                               filename=filename,
-                                                              puuid=message_json['uuid'])
+                                                              puuid=uuid)
                     if attachment_json:
                         attachment_json['desc'] = mailpart.part.get('Content-Description')
                         attachment_json['type'] = mailpart.type
