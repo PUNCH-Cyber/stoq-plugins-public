@@ -93,7 +93,7 @@ class VtmisScan(StoqWorkerPlugin):
                                  default=self.download_samples,
                                  action='store_true',
                                  help="Download samples from alerts and file feed")
-        worker_opts.add_argument("--download_path",
+        worker_opts.add_argument("--download-path",
                                  dest='download_path',
                                  default=False,
                                  help="Directory to save download samples, if supported")
