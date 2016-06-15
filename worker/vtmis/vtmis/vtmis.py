@@ -93,6 +93,10 @@ class VtmisScan(StoqWorkerPlugin):
                                  default=self.download_samples,
                                  action='store_true',
                                  help="Download samples from alerts and file feed")
+        worker_opts.add_argument("--download_path",
+                                 dest='download_path',
+                                 default=False,
+                                 help="Directory to save download samples, if supported")
         worker_opts.add_argument("-c", "--feed-connector",
                                  dest='feed_connector',
                                  help="Connector to utilize to save original JSON feed content")
@@ -100,10 +104,10 @@ class VtmisScan(StoqWorkerPlugin):
                                  dest='feed_save',
                                  default=self.feed_save,
                                  action='store_true',
-                                 help="Connector to utilize to save original JSON feed content")
+                                 help="Save original JSON feed content")
         worker_opts.add_argument("-p", "--feed-path",
                                  dest='feed_path',
-                                 help="Root path where the original JSON feed content is saved using file connector")
+                                 help="Directory where the feed content is saved, if supported")
         worker_opts.add_argument("-m", "--max-threads",
                                  dest='max_threads',
                                  help="Max number of threads when processing feeds")
@@ -255,8 +259,15 @@ class VtmisScan(StoqWorkerPlugin):
         for delete_id in delete_ids:
             self.stoq.post_file(url=url, data=str(delete_id))
 
-    def save_download(self, payload, filename=None, path=None, archive=True, feed=False):
+    def save_download(self, payload, filename=None, feed=False):
         if payload and self.archive_connector and not feed:
+            if self.download_path:
+                path = self.download_path
+                archive = False
+            else:
+                path = None
+                archive = True
+
             self.connectors[self.archive_connector].save(payload,
                                                          archive=archive,
                                                          binary=True,
@@ -265,9 +276,9 @@ class VtmisScan(StoqWorkerPlugin):
         elif payload and self.feed_connector and feed:
             self.load_connector(self.feed_connector)
             self.connectors[self.feed_connector].save(payload,
-                                                      archive=archive,
+                                                      archive=False,
                                                       binary=True,
-                                                      path=path,
+                                                      path=self.feed_path,
                                                       filename=filename)
         else:
             self.stoq.log.error("No connector or payload defined. Unable to save payload.")
@@ -315,8 +326,7 @@ class VtmisScan(StoqWorkerPlugin):
 
         # Do we want to save the raw JSON feed that is initially downloaded?
         if self.feed_save:
-            self.save_download(payload, filename=filename, feed=True,
-                               path=self.feed_path, archive=False)
+            self.save_download(payload, filename=filename, feed=True)
 
         self.load_extractor("decompress")
         tar_files = self.extractors['decompress'].extract(payload)
