@@ -353,7 +353,7 @@ class VtmisScan(StoqWorkerPlugin):
                 if self.download_samples and resource == 'file_feed':
                     file_link = result['link']
                     file_payload = self.stoq.get_file(file_link)
-                    self.save_download(file_payload, archive=True)
+                    self.save_download(file_payload)
 
                 self.connectors[self.output_connector].save(result, index=index)
             except Exception as err:
