@@ -65,6 +65,7 @@ class FlossScan(StoqWorkerPlugin):
         decodestr_header = 'FLOSS decoded strings'
 
         header_pattern = re.compile('FLOSS (extracted|decoded) (\d+) (stackstrings|strings)')
+        execution_pattern = re.compile('Finished execution after (.*)')
 
         # Check for FLOSS executable
         if not os.path.isfile(self.floss_path):
@@ -90,7 +91,7 @@ class FlossScan(StoqWorkerPlugin):
             program_arguments.append('--no-static-strings')
 
         if not self.decode_strings:
-            program_arguments.append('--no-decoded-strings'
+            program_arguments.append('--no-decoded-strings')
 
         if not self.stack_strings:
             program_arguments.append('--no-stack-strings')
@@ -114,12 +115,19 @@ class FlossScan(StoqWorkerPlugin):
                     # Check for FLOSS header pattern match
                     entry_match = re.match(header_pattern, entry)
 
+                    # Check for finished execution match
+                    execution_time = re.match(execution_pattern, entry)
+
                     if entry_match:
                         current_header = entry_match.group(0).replace('{} '.format(entry_match.group(2)), '')
                         continue
+                    
+                    if execution_time:
+                        floss_results['FLOSS Execution Time'] = execution_time.group(1)
+                        continue
 
                     if entry and current_header:
-                        floss_results[current_header].append(entry)
+                        floss_results[current_header].append(entry.strip())
 
         # Placeholder for FLOSS errors
         if floss_errors:
