@@ -18,11 +18,11 @@ Module = peinfo
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9.1
+Version = 0.9.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Gather relevant information about an executable using pefile
 
 [options]
 hashpayload = True
 saveresults = True
-peidrules = plugins/worker/peinfo/userdb.txt 
+peidrules = plugins/worker/peinfo/userdb.txt
