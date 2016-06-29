@@ -16,8 +16,12 @@
 Name = file
 Module = file
 
+[options]
+# Specify whether JSON output should be compact or not
+compactly = False
+
 [Documentation]
-Author = Marcus LaFerrera
-Version = 0.9.6
+Author = Marcus LaFerrera & Adam Trask
+Version = 0.9.7
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Retrieves and saves content to local disk
