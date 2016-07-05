@@ -13,15 +13,20 @@
 #   limitations under the License.
 
 [Core]
-Name = file
-Module = file
-
-[options]
-# Specify whether JSON output should be compact or not
-compactly = False
+Name = floss
+Module = floss
 
 [Documentation]
-Author = Marcus LaFerrera & Adam Trask
-Version = 0.9.7
+Author = Adam Trask
+Version = 0.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Retrieves and saves content to local disk
+Description = Process a file with Fireeye Flare-FLOSS
+
+[options]
+hashpayload = True
+saveresults = True
+floss_path = plugins/worker/floss/floss
+string_length = 4
+static_strings = True
+decode_strings = True
+stack_strings = True
