@@ -1,2 +1,2 @@
-git+https://github.com/plusvic/yara-python.git
+yara-python
 watchdog
