@@ -29,5 +29,5 @@ saveresults = True
 # Base URL for DomainIQ API
 api_url = https://www.domainiq.com/api
 
-# VTMIS API Key for VTMIS worker
+# DomainIQ API Key
 apikey =
