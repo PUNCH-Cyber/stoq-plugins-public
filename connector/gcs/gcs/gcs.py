@@ -45,10 +45,9 @@ class GcsConnector(StoqConnectorPlugin):
         """
         Retrieve a file from GCS
 
-        :param **kwargs bucket: Bucket name to be used
+        :param **kwargs index: Bucket to save content to
         :param **kwargs sha1: SHA1 hash to be used as a filename
         :param **kwargs filename: Filename of file to retrieve
-        :param **kwargs index: Bucket to save content to
 
         :returns: Content of file retrieved
         :rtype: bytes or None
