@@ -71,7 +71,7 @@ class GcsConnector(StoqConnectorPlugin):
                 while not done:
                     status, done = downloader.next_chunk()
 
-                return content.read()
+                return content.getvalue()
 
         return None
 
