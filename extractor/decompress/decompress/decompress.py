@@ -59,7 +59,8 @@ archive_magic = {
     'application/x-tar': 'tar',
     'application/x-zip-compressed': '7z',
     'application/zip': '7z',
-    'application/x-bzip2': '7z'
+    'application/x-bzip2': '7z',
+    'application/octet-stream': '7z'
 }
 
 archive_cmds = {
@@ -192,4 +193,3 @@ class DecompressExtractor(StoqExtractorPlugin):
             shutil.rmtree(tmp_archive_dir)
 
         return results
-
