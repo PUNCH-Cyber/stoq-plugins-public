@@ -164,7 +164,8 @@ class DecompressExtractor(StoqExtractorPlugin):
                 # We are going to skip this file if the filename is the same as
                 # our original file
                 if f != filename:
-                    path = os.path.join(extract_dir, f)
+                    base_path = os.path.join(extract_dir, root)
+                    path = os.path.join(base_path, f)
                     extracted_filename = os.path.basename(path)
 
                     # Open the file so we can return the content
