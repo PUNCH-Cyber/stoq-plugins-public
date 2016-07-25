@@ -291,7 +291,10 @@ class SmtpScan(StoqWorkerPlugin):
                 skip_attachment = False
 
                 if mailpart.type == "text/plain":
-                    message_json['body'] += self.stoq.force_unicode(mailpart.get_payload())
+                    try:
+                        message_json['body'] += self.stoq.force_unicode(mailpart.get_payload())
+                    except:
+                        pass
                     skip_attachment = True
                 else:
 
