@@ -63,6 +63,8 @@ class RabbitMQSource(StoqSourcePlugin):
                             password=self.password,
                             virtual_host=self.virtual_host) as conn:
 
+                conn.connect()
+
                 consumer = Consumer(conn, queue,
                                     callbacks=[self.queue_callback])
                 consumer.qos(prefetch_count=int(self.prefetch))
@@ -109,6 +111,8 @@ class RabbitMQSource(StoqSourcePlugin):
                                             userid=self.user,
                                             password=self.password,
                                             virtual_host=self.virtual_host)
+        self.amqp_publish_conn.connect()
+
         return self.amqp_publish_conn
 
     def publish_release(self):
