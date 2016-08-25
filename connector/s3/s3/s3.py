@@ -20,7 +20,7 @@ Sends and retrieves content from Amazon S3 buckets
 
 """
 
-import boto
+import boto3
 
 from stoq.scan import get_sha1
 from stoq.plugins import StoqConnectorPlugin
@@ -79,10 +79,10 @@ class S3Connector(StoqConnectorPlugin):
 
         filename = kwargs.get('sha1', get_sha1(payload))
 
-        key = boto.s3.key.Key(self.bucket, filename)
+        key = boto3.s3.key.Key(self.bucket, filename)
 
         try:
-            key.set_contents_from_string(payload) 
+            key.set_contents_from_string(payload)
         except Exception as err:
             self.stoq.log.error("Unable to save file to S3: {}".format(str(err)))
             return None
@@ -96,6 +96,5 @@ class S3Connector(StoqConnectorPlugin):
             return
 
         # Looks like we need to connect to the bucket
-        conn = boto.connect_s3(self.access_key, self.secret_key)
+        conn = boto3.connect_s3(self.access_key, self.secret_key)
         self.bucket = conn.create_bucket(bucket_name)
-

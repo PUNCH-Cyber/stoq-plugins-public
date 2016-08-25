@@ -18,11 +18,11 @@ Module = s3
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.2
+Version = 0.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Sends and retrieves content from Amazon S3 buckets
 
 [options]
-access_key = 
-secret_key = 
+access_key =
+secret_key =
 bucket_name = stoq-archive

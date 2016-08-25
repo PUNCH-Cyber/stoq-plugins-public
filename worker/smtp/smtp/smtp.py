@@ -225,23 +225,6 @@ class SmtpScan(StoqWorkerPlugin):
                 else:
                     message_json[curr_header] = message.get_decoded_header(k)
 
-            # str of concatenated ip_headers
-            concat_ips = ""
-
-            # Define which headers we want to extract IP addresses from
-            ip_headers = ['src_ip',
-                          'dest_ip',
-                          'received',
-                          'x-orig-ip',
-                          'x-originating-ip',
-                          'x-remote-ip',
-                          'x-sender-ip']
-
-            # concat all of our headers into one string for easy searching
-            for ip_header in ip_headers:
-                if ip_header in message_json:
-                    concat_ips += message_json[ip_header]
-
             # Extract the e-mail body, to include HTML if available
             if message.text_part is not None:
                 message_json['body'] = self.stoq.force_unicode(
@@ -262,6 +245,23 @@ class SmtpScan(StoqWorkerPlugin):
 
             # Extract and normalize any IP addresses in headers
             if self.extract_iocs:
+                # str of concatenated ip_headers
+                concat_ips = ""
+
+                # Define which headers we want to extract IP addresses from
+                ip_headers = ['src_ip',
+                              'dest_ip',
+                              'received',
+                              'x-orig-ip',
+                              'x-originating-ip',
+                              'x-remote-ip',
+                              'x-sender-ip']
+
+                # concat all of our headers into one string for easy searching
+                for ip_header in ip_headers:
+                    if ip_header in message_json:
+                        concat_ips += message_json[ip_header]
+
                 extracted_ips = self.readers['iocregex'].read(concat_ips,
                                                               datatype_flag='ipv4')
 
