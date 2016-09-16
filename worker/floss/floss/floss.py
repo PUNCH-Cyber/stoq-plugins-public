@@ -22,7 +22,6 @@ Process a file with flare-floss (https://github.com/fireeye/flare-floss)
 
 import os
 import re
-import time
 import argparse
 
 from stoq.args import StoqArgs
@@ -104,6 +103,7 @@ class FlossScan(StoqWorkerPlugin):
             floss_raw_output, floss_errors = floss_process.communicate(timeout=45)
         except TimeoutExpired:
             floss_process.kill()
+            floss_errors = "Timed out after 45 seconds"
         else:
             current_header = ''
 
@@ -121,7 +121,7 @@ class FlossScan(StoqWorkerPlugin):
                     if entry_match:
                         current_header = entry_match.group(0).replace('{} '.format(entry_match.group(2)), '')
                         continue
-                    
+
                     if execution_time:
                         floss_results['FLOSS Execution Time'] = execution_time.group(1)
                         continue
