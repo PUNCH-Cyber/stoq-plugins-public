@@ -13,12 +13,12 @@
 #   limitations under the License.
 
 ##
-# Whitelisted indicators 
+# Whitelisted indicators
 # Format: indicator_type:pattern
 # Valid Indicator Types:
 #   - ipv4 - Can be an IP address or CIDR notation
 #   - ipv6 - Can be an IP address or CIDR notation
-#   - domain - Matches a domain that ends with the pattern. Must be preceeded by a '.'
+#   - domain - Matches a domain/url that ends with the pattern. Must be preceeded by a '.'
 #   - email - Exact matches only
 #   - url - Matches the domain only. Pattern is identical to domain
 #   - md5 - Exact matches only
@@ -66,38 +66,3 @@ domain:.securelist.com
 domain:.oracle.com
 domain:.fireeye.com
 domain:.verisign.com
-
-# URLs
-url:.google.com
-url:.gstatic.com
-url:.trendmicro.com
-url:.msn.com
-url:.live.com
-url:.microsoft.com
-url:.yahoo.com
-url:.mil
-url:.gov
-url:.amazon.com
-url:.apple.com
-url:.mitre.org
-url:.symantec.com
-url:.ebay.com
-url:.google-analytics.com
-url:.adobe.com
-url:.ssl-images-amazon.com
-url:.skype.com
-url:.ebaystatic.com
-url:.mcafee.com
-url:.trendmicro.com
-url:.ahnlab.com
-url:.foxnews.com
-url:.secure.logmein.com
-url:.blackhat.com
-url:.thehackersnews.com
-url:.threatpost.com
-url:.tripwire.com
-url:.securelist.com
-url:.oracle.com
-url:.fireeye.com
-url:.verisign.com
-

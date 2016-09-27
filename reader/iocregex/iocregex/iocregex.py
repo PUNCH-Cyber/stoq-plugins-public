@@ -44,7 +44,7 @@ class IOCRegexReader(StoqReaderPlugin):
 
         super().activate()
 
-        # Our TLD file is not defined in the config file, let's set 
+        # Our TLD file is not defined in the config file, let's set
         # a default
         if not hasattr(self, 'iana_tld_file'):
             self.iana_tld_file = os.path.join(self.stoq.base_dir, "plugins/reader/iocregex/tlds-alpha-by-domain.txt")
@@ -214,21 +214,32 @@ class IOCRegexReader(StoqReaderPlugin):
                 except KeyError:
                     self.stoq.log.error("Unknown indicator type: {}".format(indicator_type))
 
-
     def __check_whitelist(self, indicator, indicator_type):
+
+        # Set to False so we can use only domain: in the whitelist_file
+        is_url = False
+
         # Define the default netmask for the ip version
         netmasks = {'ipv4': '32',
                     'ipv6': '128'}
 
         try:
+
+            if indicator_type == 'url':
+                indicator_type = 'domain'
+                is_url = True
+
             for pattern in self.whitelist_patterns[indicator_type]:
                 # Extracted IOC is an IPv4/6 address
                 if indicator_type in ['ipv4', 'ipv6']:
-                    pattern_has_netmask= False
-                    indicator_has_netmask= False
+                    pattern_has_netmask = False
+                    indicator_has_netmask = False
 
-                    if len(pattern.split('/')) > 1: pattern_has_netmask = True
-                    if len(indicator.split('/')) > 1: indicator_has_netmask = True
+                    if len(pattern.split('/')) > 1:
+                        pattern_has_netmask = True
+
+                    if len(indicator.split('/')) > 1:
+                        indicator_has_netmask = True
 
                     if pattern_has_netmask:
                         pattern_ip = ip_network("{}".format(pattern))
@@ -244,14 +255,13 @@ class IOCRegexReader(StoqReaderPlugin):
                         return False
 
                 elif indicator_type == 'domain':
-                    indicator_domain = ".{}".format(indicator)
+                    if is_url:
+                        indicator_domain = ".{0.netloc}".format(urlsplit(indicator))
+                    else:
+                        indicator_domain = ".{}".format(indicator)
+
                     if indicator_domain.endswith(pattern):
                         return False
-
-                elif indicator_type == 'url':
-                   indicator_domain = ".{0.netloc}".format(urlsplit(indicator)) 
-                   if indicator_domain.endswith(pattern):
-                       return False
 
                 elif indicator_type in ['mac_address', 'email', 'md5',
                                         'sha1', 'sha256', 'sha512']:
