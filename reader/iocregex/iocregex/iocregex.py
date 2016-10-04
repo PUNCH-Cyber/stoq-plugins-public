@@ -44,8 +44,7 @@ class IOCRegexReader(StoqReaderPlugin):
 
         super().activate()
 
-        # Our TLD file is not defined in the config file, let's set
-        # a default
+        # Our TLD file is not defined in the config file, let's set a default
         if not hasattr(self, 'iana_tld_file'):
             self.iana_tld_file = os.path.join(self.stoq.base_dir, "plugins/reader/iocregex/tlds-alpha-by-domain.txt")
 
@@ -94,13 +93,13 @@ class IOCRegexReader(StoqReaderPlugin):
         self.ioctypes['ipv6'] = r"(?:(?:(?:\b|::)(?:(?:[\dA-F]{1,4}(?::|::)){1,7})(?:[\dA-F]{1,4}))(?:(?:(?:\.\d{1,3})?){3})(?:::|\b))|(?:[\dA-F]{1,4}::)|(?:::[\dA-F]{1,4}(?:(?:(?:\.\d{1,3})?){3}))"
         self.ioctypes['mac_address'] = r"\b(?i)(?:[0-9A-F]{2}[:-]){5}(?:[0-9A-F]{2})\b"
         self.ioctypes['email'] = "{0}{1}{2}".format(r"\b[A-Z0-9\.\_\%\+\-]+",
-                                                     self.helpers['at'],
-                                                     self.helpers['fqdn'])
+                                                    self.helpers['at'],
+                                                    self.helpers['fqdn'])
         self.ioctypes['domain'] = self.helpers['fqdn']
         self.ioctypes['url'] = "(?:{0}|{1}){2}{3}".format(self.helpers['http'],
-                                                           self.helpers['https'],
-                                                           self.helpers['fqdn'],
-                                                           r"(?:[\:\/][A-Z0-9\/\:\+\%\.\_\-\=\~\&\\#\?]*){0,1}")
+                                                          self.helpers['https'],
+                                                          self.helpers['fqdn'],
+                                                          r"(?:[\:\/][A-Z0-9\/\:\+\%\.\_\-\=\~\&\\#\?]*){0,1}")
 
         # Compile regexes for faster repeat usage
         self.compiled_re = {}
@@ -108,7 +107,7 @@ class IOCRegexReader(StoqReaderPlugin):
         for ioc in self.ioctypes:
             self.whitelist_patterns[ioc] = set()
             self.compiled_re[ioc] = re.compile(self.ioctypes[ioc],
-                                                    re.IGNORECASE)
+                                               re.IGNORECASE)
 
         self.__load_whitelist()
 
@@ -198,21 +197,21 @@ class IOCRegexReader(StoqReaderPlugin):
             return False
 
     def __load_whitelist(self):
-        if not os.path.isfile(self.whitelist_file):
-            self.stoq.log.warn("Invalid whitelist file. No whitelists have "
-                               "been loaded: {}".format(self.whitelist_file))
-            return False
+        for whitelist_file in self.whitelist_file_list:
+            if not os.path.isfile(whitelist_file):
+                self.stoq.log.warn("Invalid whitelist file...skipping {}".format(whitelist_file))
+                continue
 
-        with open(self.whitelist_file) as content:
-            for line in content.readlines():
-                if line.startswith("#") or len(line) < 3:
-                    continue
+            with open(whitelist_file) as content:
+                for line in content.readlines():
+                    if line.startswith("#") or len(line) < 3:
+                        continue
 
-                indicator_type, pattern = line.split(':', 1)
-                try:
-                    self.whitelist_patterns[indicator_type].add(pattern.strip())
-                except KeyError:
-                    self.stoq.log.error("Unknown indicator type: {}".format(indicator_type))
+                    indicator_type, pattern = line.split(':', 1)
+                    try:
+                        self.whitelist_patterns[indicator_type].add(pattern.strip())
+                    except KeyError:
+                        self.stoq.log.error("Unknown indicator type: {}".format(indicator_type))
 
     def __check_whitelist(self, indicator, indicator_type):
 
