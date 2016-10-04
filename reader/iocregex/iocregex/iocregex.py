@@ -41,7 +41,8 @@ class IOCRegexReader(StoqReaderPlugin):
 
     def activate(self, stoq):
         self.stoq = stoq
-
+        self.whitelist_file_list = []
+        
         super().activate()
 
         # Our TLD file is not defined in the config file, let's set a default
