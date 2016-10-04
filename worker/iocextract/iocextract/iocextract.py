@@ -42,6 +42,10 @@ class IOCExtract(StoqWorkerPlugin):
                                  dest='password',
                                  default=False,
                                  help="Password for encrypted file")
+        worker_opts.add_argument("-t", "--force-tika",
+                                 dest='force_tika',
+                                 action='store_false',
+                                 help="Force the use of tika for all files")
 
         options = parser.parse_args(self.stoq.argv[2:])
 
@@ -70,7 +74,7 @@ class IOCExtract(StoqWorkerPlugin):
         # This is sloppy logic for now, but we can improve later. We are going
         # to check for a PDF header, if it is there, let's use our pdftext
         # plugin.
-        if payload[0:5] == b'%PDF-':
+        if payload[0:5] == b'%PDF-' and not self.force_tika:
             self.load_reader('pdftext')
             results = self.readers['pdftext'].read(payload)
         else:
@@ -79,7 +83,8 @@ class IOCExtract(StoqWorkerPlugin):
                 # Send the content of our payload to the tika server
                 results = self.readers['tika'].read(payload)
             except:
-                pass
+                self.stoq.log.warn("Extraction with Tika failed. Reverting to ASCII strings.")
+                results = self.stoq.force_unicode(payload)
 
         if results:
             # Extract and return any indicators from the extracted text

@@ -18,7 +18,7 @@ Module = iocextract
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9.1
+Version = 0.10
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Utilizes reader/iocregex plugin to extract indicators of compromise from documents
 
