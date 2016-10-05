@@ -64,7 +64,10 @@ class FileDirSource(StoqSourcePlugin):
             self.log.debug("Handling file {}".format(self.stoq.worker.path))
             self.stoq.worker.multiprocess_put(path=self.stoq.worker.path,
                                               archive='file')
+        # If the source is a url, specify that
+        elif self.stoq.worker.path.startswith(('http://', 'https://', 'ftp://')):
+            self.stoq.worker.multiprocess_put(url=self.stoq.worker.path, archive='file')
         else:
-            self.log.error("File/Path does not exist: {}".format(self.stoq.worker.path))
+            self.log.error("Unable to retrieve file: {}".format(self.stoq.worker.path))
 
         return True
