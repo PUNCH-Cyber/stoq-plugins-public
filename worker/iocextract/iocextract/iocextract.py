@@ -44,7 +44,7 @@ class IOCExtract(StoqWorkerPlugin):
                                  help="Password for encrypted file")
         worker_opts.add_argument("-t", "--force-tika",
                                  dest='force_tika',
-                                 action='store_false',
+                                 action='store_true',
                                  help="Force the use of tika for all files")
 
         options = parser.parse_args(self.stoq.argv[2:])
