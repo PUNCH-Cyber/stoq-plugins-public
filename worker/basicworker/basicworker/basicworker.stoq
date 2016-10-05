@@ -18,7 +18,7 @@ Module = basicworker
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1.1
+Version = 0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = stoQ framework example of a basic worker plugin
 
@@ -27,5 +27,6 @@ Description = stoQ framework example of a basic worker plugin
 [options]
 # Should we generate hashes for the payload provided to this worker?
 hashpayload = True
+
 # Should the results of the plugin be saved?
 saveresults = True

@@ -78,7 +78,7 @@ class PublisherWorker(StoqWorkerPlugin):
 
         super().scan()
 
-        self.stoq.log.info("Ingesting: %s" % kwargs['uuid'])
+        self.log.info("Ingesting: %s" % kwargs['uuid'])
 
         # For every file we ingest we are going to assign a unique
         # id so we can link everything across the scope of the ingest.

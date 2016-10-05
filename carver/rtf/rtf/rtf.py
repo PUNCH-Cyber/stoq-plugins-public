@@ -95,7 +95,6 @@ class RTFCarver(StoqCarverPlugin):
             meta = {"offset": start, "size": content_size}
             results.append((meta, content))
 
-            self.stoq.log.info("Carved binary stream in RTF at offset {} ({} bytes)".format(start, content_size))
+            self.log.info("Carved binary stream in RTF at offset {} ({} bytes)".format(start, content_size))
 
         return results
-

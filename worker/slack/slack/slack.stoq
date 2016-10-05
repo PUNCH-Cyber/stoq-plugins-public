@@ -18,7 +18,7 @@ Module = slack
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9.2
+Version = 0.10
 Website = https://github.com/PUNCH-Cyber/stoq
 Description = Interact with stoQ Plugins using Slack as an interface
 
@@ -36,7 +36,7 @@ command_character = !
 conversation_connector = elasticsearch
 
 # Slack Bot API Token
-token = 
+token =
 
 # The bots username
 username = CyberDisciple

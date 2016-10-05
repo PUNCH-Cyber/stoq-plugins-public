@@ -39,8 +39,7 @@ class SmtpScan(StoqWorkerPlugin):
             self.load_reader('iocregex')
             self.extract_iocs = True
         except AttributeError:
-            self.stoq.log.warn("IOC Regex reader plugin is not installed. "
-                               " IOC's will not be extracted")
+            self.log.warn("iocregex reader plugin is not installed. IOC's will not be extracted")
             self.extract_iocs = False
 
         if self.use_bloom:
@@ -174,9 +173,10 @@ class SmtpScan(StoqWorkerPlugin):
 
             if self.publisher:
                 if not self.attachment_connector:
-                    self.stoq.log.error("No archive connector defined. "
-                                        "An archive connector must be "
-                                        "before queing may be used.")
+                    self.log.error("No archive connector defined. An archive"
+                                   " connector must be defined before queueing"
+                                   " may be used.")
+
                 publish_json = attachment_json.copy()
                 publish_json['submission_list'] = self.workers_list
                 self.publisher.scan(payload=None, **publish_json)

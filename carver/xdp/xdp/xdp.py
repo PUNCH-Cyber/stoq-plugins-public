@@ -41,7 +41,7 @@ class XDPCarver(StoqCarverPlugin):
         try:
             self.base64 = self.stoq.load_plugin("b64", "decoder")
         except:
-            self.stoq.log.error("Unable to load decoder:b64 plugin.")
+            self.log.error("Unable to load decoder:b64 plugin.")
             pass
 
     def carve(self, payload, **kwargs):
@@ -96,9 +96,8 @@ class XDPCarver(StoqCarverPlugin):
 
                 # Gather the metadata and content
                 meta = {"size": len(content), "element_name": name}
-                self.stoq.log.info("Carved XDP {} ({} bytes)".format(meta['element_name'],
-                                                                     meta['size']))
+                self.log.info("Carved XDP {} ({} bytes)".format(meta['element_name'],
+                                                                meta['size']))
                 results.append((meta, content))
 
         return results
-

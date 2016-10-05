@@ -18,7 +18,7 @@ Module = threatcrowd
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1.1
+Version = 0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Interact with ThreatCrowd API
 
@@ -26,5 +26,5 @@ Description = Interact with ThreatCrowd API
 hashpayload = False
 saveresults = True
 
-# API 
+# API
 url = http://www.threatcrowd.org/searchApi/v2

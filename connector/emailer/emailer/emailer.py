@@ -60,7 +60,7 @@ class EmailConnector(StoqConnectorPlugin):
             recipients = self.recipients_list
 
         if not recipients:
-            self.stoq.log.error("No recipient defined!")
+            self.log.error("No recipient defined!")
             return None
 
         msg = MIMEMultipart('alternative')

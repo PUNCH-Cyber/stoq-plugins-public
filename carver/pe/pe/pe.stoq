@@ -18,7 +18,7 @@ Module = pe
 
 [Documentation]
 Author = Jeff Ito, Marcus LaFerrera
-Version = 0.9
+Version = 0.10
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Carve portable executable files from a data stream
 

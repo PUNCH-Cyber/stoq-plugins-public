@@ -84,7 +84,7 @@ class S3Connector(StoqConnectorPlugin):
         try:
             key.set_contents_from_string(payload)
         except Exception as err:
-            self.stoq.log.error("Unable to save file to S3: {}".format(str(err)))
+            self.log.error("Unable to save file to S3: {}".format(str(err)))
             return None
 
         return filename

@@ -112,7 +112,7 @@ class DomainIQScan(StoqWorkerPlugin):
         if resource in self.api_calls:
             service = self.api_calls[resource]
         else:
-            self.stoq.log.warn("Invalid API resource:{}".format(resource))
+            self.log.warn("Invalid API resource:{}".format(resource))
             return None
 
         # Start building the parameters of our API call

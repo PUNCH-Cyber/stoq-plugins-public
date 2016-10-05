@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="xdp",
-    version="0.9",
+    version="0.10",
     author="Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
@@ -10,4 +10,3 @@ setup(
     packages=find_packages(),
     include_package_data=True,
 )
-

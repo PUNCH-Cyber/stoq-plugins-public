@@ -49,12 +49,11 @@ class DirmonSource(StoqSourcePlugin, FileSystemEventHandler):
         observer = Observer()
         observer.schedule(self, self.stoq.worker.path, recursive=False)
         observer.start()
-        self.stoq.log.info("Monitoring {} for new files...".format(
-                           self.stoq.worker.path))
+        self.log.info("Monitoring {} for new files...".format(
+                      self.stoq.worker.path))
         try:
             while True:
                 sleep(2)
         except KeyboardInterrupt:
             observer.stop()
         observer.join()
-

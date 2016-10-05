@@ -71,7 +71,7 @@ class TridScan(StoqWorkerPlugin):
                                binary=True)
 
         if not os.path.isfile(self.bin):
-            self.stoq.log.error("TrID does not exist at {}!".format(self.bin))
+            self.log.error("TrID does not exist at {}!".format(self.bin))
             return None
 
         # Build our command and then execute it
@@ -112,4 +112,3 @@ class TridScan(StoqWorkerPlugin):
             return results
         else:
             return None
-

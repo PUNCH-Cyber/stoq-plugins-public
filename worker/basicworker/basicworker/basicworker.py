@@ -89,9 +89,11 @@ class BasicWorker(StoqWorkerPlugin):
         # Make sure we call our super() class
         super().scan()
 
+        # Valid logging levels are debug, info, warn, error, critical
+        self.log.info("Analyzing a payload using the basicworker plugin")
+
         # Must return a dict
         kwargs['msg'] = "BasicWorker testing"
         kwargs['err'] = "Need more to do!"
+
         return kwargs
-
-

@@ -18,6 +18,6 @@ Module = rot47
 
 [Documentation]
 Author = Adam Trask
-Version = 0.1
+Version = 0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Decode ROT47 encoded content

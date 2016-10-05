@@ -74,18 +74,17 @@ class ThreatCrowdScan(StoqWorkerPlugin):
             endpoint = kwargs['endpoint'].lower()
             query = kwargs['query']
         else:
-            self.stoq.log.warn("Invalid API parameters: {}".format(kwargs))
+            self.log.warn("Invalid API parameters: {}".format(kwargs))
             return None
 
         results = self.api_call(endpoint, query)
 
         super().scan()
 
-        return results 
+        return results
 
     def api_call(self, endpoint, query):
         url = "{}/{}/report/".format(self.url, endpoint)
         params = {endpoint: query}
         response = self.stoq.get_file(url, params=params)
         return self.stoq.loads(response)
-

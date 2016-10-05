@@ -18,7 +18,7 @@ Module = passivetotal
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.8
+Version = 0.9
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Interact with PassiveTotal API
 
@@ -26,6 +26,5 @@ Description = Interact with PassiveTotal API
 hashpayload = False
 saveresults = True
 
-username = 
-apikey = 
-
+username =
+apikey =

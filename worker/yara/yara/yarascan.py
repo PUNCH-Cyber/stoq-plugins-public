@@ -89,7 +89,7 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
 
     # If the rules file is modified, we are going to reload the rules.
     def on_modified(self, event):
-        self.stoq.log.debug("Yara rule {0} modified".format(event.src_path))
+        self.log.debug("Yara rule {0} modified".format(event.src_path))
         self._load_yara_rules()
 
     def _scan_callback(self, data):
@@ -108,7 +108,7 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
 
     def _load_yara_rules(self):
         try:
-            self.stoq.log.debug("Loading yara rules.")
+            self.log.debug("Loading yara rules.")
             # We don't want to name our rules globally just yet, in case
             # loading fails.
             self.rule_lock.acquire()
@@ -116,7 +116,7 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
             self.rules = compiled_rules
             self.rule_lock.release()
         except:
-            self.stoq.log.error("Error in yara rules. Compile failed.")
+            self.log.critical("Error in yara rules. Compile failed.")
             # If this is the first time we are loading the rules,
             # we are going to exit here.
             if not hasattr(self, 'rules'):
@@ -136,4 +136,3 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
         except KeyboardInterrupt:
             observer.stop()
         observer.join()
-

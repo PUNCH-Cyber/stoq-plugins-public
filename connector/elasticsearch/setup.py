@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="elasticsearch",
-    version="0.4",
+    version="0.5",
     author="Marcus LaFerrera (@mlaferrera) Aaron Gee-Clough (@gclef_)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",

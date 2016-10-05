@@ -112,7 +112,7 @@ class PassiveTotalWorker(StoqWorkerPlugin):
                          choices=['search', 'history'],
                          default=False,
                          help="Perform a plain search or get history")
-        ssl.add_argument('--compact', 
+        ssl.add_argument('--compact',
                          dest='compact',
                          action="store_true",
                          default=False,
@@ -139,9 +139,9 @@ class PassiveTotalWorker(StoqWorkerPlugin):
                             action="store_true",
                             default=False,
                             help="Get metadata associated with a query")
-        action.add_argument('--tags', 
+        action.add_argument('--tags',
                             dest='tags',
-                            type=str, 
+                            type=str,
                             default=False,
                             help="Tag values to use in conjunction with an action")
         action.add_argument('--add-tags',
@@ -154,7 +154,7 @@ class PassiveTotalWorker(StoqWorkerPlugin):
                             action="store_true",
                             default=False,
                             help="Remove tag values")
-        action.add_argument('--set-tags', 
+        action.add_argument('--set-tags',
                             dest='set_tags',
                             action="store_true",
                             default=False,
@@ -207,8 +207,8 @@ class PassiveTotalWorker(StoqWorkerPlugin):
         results = None
 
         if not self.query or kwargs.get('query'):
-           self.stoq.log.error("No query provided")
-           return
+            self.log.error("No query provided")
+            return
 
         kwargs.setdefault('query', self.query)
         kwargs.setdefault('resource', self.query_resource)
@@ -254,7 +254,7 @@ class PassiveTotalWorker(StoqWorkerPlugin):
 
             results = self.get_attribute(**kwargs)
         else:
-            self.stoq.log.warn("No call provided. Unable to continue.")
+            self.log.warn("No call provided. Unable to continue.")
 
         super().scan()
 
@@ -287,7 +287,6 @@ class PassiveTotalWorker(StoqWorkerPlugin):
         else:
             return client.get_host_attribute_components(**params)
 
-
     def get_whois(self, **kwargs):
         client = WhoisRequest(self.username, self.apikey)
 
@@ -314,13 +313,13 @@ class PassiveTotalWorker(StoqWorkerPlugin):
         elif params.get('type') == 'search' and params.get('field'):
             return client.search_ssl_certificate_by_field(**params)
         else:
-            self.stoq.log.error("No SSL field provided.")
+            self.log.error("No SSL field provided.")
             return None
 
     def get_action(self, **kwargs):
         client = ActionsClient(self.username, self.apikey)
 
-        keys = ['query', 'tags', 'classification', 'monitor', 'sinkhole', 
+        keys = ['query', 'tags', 'classification', 'monitor', 'sinkhole',
                 'dynamic_dns', 'ever_compromised', 'metadata']
 
         params = self._cleanup_params(keys, **kwargs)
@@ -337,7 +336,7 @@ class PassiveTotalWorker(StoqWorkerPlugin):
             elif kwargs.get('set_tags'):
                 res = client.set_tags(**params)
             else:
-                self.stoq.log.error("No tags provided.")
+                self.log.error("No tags provided.")
 
         if params.get('classification'):
             res = client.set_classification_status(**params)
@@ -362,4 +361,3 @@ class PassiveTotalWorker(StoqWorkerPlugin):
             res = client.get_metadata(**params)
 
         return res
-

@@ -18,7 +18,7 @@ Module = elasticsearch
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.4
+Version = 0.5
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Saves content to an ElasticSearch index
 

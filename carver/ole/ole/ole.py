@@ -75,11 +75,10 @@ class OLECarver(StoqCarverPlugin):
                             'size': len(stream_buffer)}
                     results.append((meta, stream_buffer))
 
-                    self.stoq.log.info("Carved OLE stream {}[{}] ({} bytes)".format(meta['name'],
-                                                                                    meta['stream'],
-                                                                                    meta['size']))
+                    self.log.info("Carved OLE stream {}[{}] ({} bytes)".format(meta['name'],
+                                                                               meta['stream'],
+                                                                               meta['size']))
             except:
                 pass
 
         return results
-

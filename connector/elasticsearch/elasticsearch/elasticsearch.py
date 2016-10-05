@@ -79,8 +79,8 @@ class ElasticSearchConnector(StoqConnectorPlugin):
                 self.buffer.pop()
         except TransportError:
             tb = traceback.format_exc()
-            self.stoq.log.error("Error committing to Elasticsearch: {}".format(tb))
-            self.stoq.log.error("Failed commits: {}".format(str(self.buffer)))
+            self.log.error("Error committing to Elasticsearch: {}".format(tb))
+            self.log.error("Failed commits: {}".format(str(self.buffer)))
         finally:
             self.buffer_lock.release()
 

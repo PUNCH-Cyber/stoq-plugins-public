@@ -78,8 +78,8 @@ class PECarver(StoqCarverPlugin):
             meta = {'offset': start, 'size': len(binary)}
             results.append((meta, pe.trim()))
 
-            self.stoq.log.info("Carved executable at offset {} ({} bytes)".format(meta['offset'],
-                                                                                  meta['size']))
+            self.log.info("Carved executable at offset {} ({} bytes)".format(meta['offset'],
+                                                                             meta['size']))
 
             # Start all over
             payload.seek(0)

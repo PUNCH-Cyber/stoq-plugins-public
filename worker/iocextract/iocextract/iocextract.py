@@ -83,7 +83,7 @@ class IOCExtract(StoqWorkerPlugin):
                 # Send the content of our payload to the tika server
                 results = self.readers['tika'].read(payload)
             except:
-                self.stoq.log.warn("Extraction with Tika failed. Reverting to ASCII strings.")
+                self.log.warn("Extraction with Tika failed. Reverting to ASCII strings.")
                 results = self.stoq.force_unicode(payload)
 
         if results:

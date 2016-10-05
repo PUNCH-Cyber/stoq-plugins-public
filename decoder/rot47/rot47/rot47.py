@@ -57,8 +57,7 @@ class Rot47Decoder(StoqDecoderPlugin):
                     new_value = (33 + ((ord_value + 14) % 94))
                     byte_content[index] = new_value
                 else:
-                    message = "Value out of range for ROT47, offset {}".format(index)
-                    self.stoq.log.warn(message)
+                    self.log.warn("Value out of range for ROT47, offset {}".format(index))
 
             # Define the metadata we want to return
             meta = {}
@@ -68,5 +67,5 @@ class Rot47Decoder(StoqDecoderPlugin):
             return [(meta, bytes(byte_content))]
 
         except Exception as err:
-            self.stoq.log.error("Unable to ROT47 payload: {}".format(str(err)))
+            self.log.error("Unable to ROT47 payload: {}".format(str(err)))
             return None

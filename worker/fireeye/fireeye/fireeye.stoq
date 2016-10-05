@@ -18,7 +18,7 @@ Module = fireeye
 
 [Documentation]
 Author = Marcus LaFerrera & Aaron Gee-Clough
-Version = 0.1.4
+Version = 0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Submit a file to a Fireeye MAS/AX via filesystem or API
 

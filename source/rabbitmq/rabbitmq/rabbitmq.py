@@ -73,7 +73,7 @@ class RabbitMQSource(StoqSourcePlugin):
                 while True:
                     conn.drain_events()
         else:
-            self.stoq.log.error("No worker name defined!")
+            self.log.error("No worker name defined!")
 
     def queue_callback(self, amqp_message_data, amqp_message_handler):
         try:
@@ -87,7 +87,7 @@ class RabbitMQSource(StoqSourcePlugin):
             # Something went wrong, let's publish to the error queue.  and
             # append the error message.
             kwargs['err'] = str(e)
-            self.stoq.log.error(kwargs)
+            self.log.error(kwargs)
             self.publish_connect()
             self.publish(kwargs, self.stoq.worker.name, err=True)
             self.publish_release()
@@ -156,5 +156,4 @@ class RabbitMQSource(StoqSourcePlugin):
         Error handling for AMQP publishing
 
         """
-        self.stoq.log.warn("Unable to publish message: {}. Retry in {}s.".format(
-                           exc, interval))
+        self.log.warn("Unable to publish message: {}. Retry in {}s.".format(exc, interval))

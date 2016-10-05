@@ -63,13 +63,13 @@ class PDFTextReader(StoqReaderPlugin):
                 # password.
                 decrypt_return = pdf_object.decrypt(kwargs['pdf_password'])
                 if decrypt_return == 0:
-                    self.stoq.log.warn("Incorrect PDF encryption password")
+                    self.log.warn("Incorrect PDF encryption password")
             except NotImplementedError:
-                self.stoq.log.warn("Unsupported encryption method")
+                self.log.warn("Unsupported encryption method")
             except:
-                self.stoq.log.error("Unable to decrypt PDF. Was a password provided?")
+                self.log.error("Unable to decrypt PDF. Was a password provided?")
 
-        # Iterate over the pages and append to our 
+        # Iterate over the pages and append to our
         for page in pdf_object.pages:
             results.append(page.extractText())
 

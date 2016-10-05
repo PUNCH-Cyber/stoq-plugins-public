@@ -46,7 +46,7 @@ class FileDirSource(StoqSourcePlugin):
 
         # Scan an entire directory
         if os.path.isdir(self.stoq.worker.path):
-            self.stoq.log.debug("Handling files in {}".format(self.stoq.worker.path))
+            self.log.debug("Handling files in {}".format(self.stoq.worker.path))
 
             if self.recursive:
                 for root_path, subdirs, files in walk(self.stoq.worker.path):
@@ -61,12 +61,10 @@ class FileDirSource(StoqSourcePlugin):
 
         # Only scanning a single file
         elif os.path.isfile(self.stoq.worker.path):
-            self.stoq.log.debug("Handling file {}".format(self.stoq.worker.path))
+            self.log.debug("Handling file {}".format(self.stoq.worker.path))
             self.stoq.worker.multiprocess_put(path=self.stoq.worker.path,
                                               archive='file')
         else:
-            self.stoq.log.error("File/Path does not exist: {}".format(
-                                self.stoq.worker.path))
+            self.log.error("File/Path does not exist: {}".format(self.stoq.worker.path))
 
         return True
-

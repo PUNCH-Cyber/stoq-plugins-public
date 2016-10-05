@@ -18,7 +18,6 @@ Module = bitrot
 
 [Documentation]
 Author = Adam Trask, Marcus LaFerrera
-Version = 0.2
+Version = 0.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Rotate bits left or right. Defaults to 4 bits right for nibble swapping.
-

@@ -47,12 +47,12 @@ class QueueConnector(StoqConnectorPlugin):
         if 'index' in kwargs:
             routing_key = kwargs['index']
         else:
-            routing_key = "{}-{}".format(self.parentname, "results") 
+            routing_key = "{}-{}".format(self.parentname, "results")
 
         if hasattr(self.queue, 'publish'):
             self.queue.publish(payload, routing_key)
         else:
-            self.stoq.log.warn("{} does not support publishing!".format(self.publisher))
+            self.log.warn("{} does not support publishing!".format(self.publisher))
             return False
 
         return True

@@ -109,9 +109,9 @@ class GcsConnector(StoqConnectorPlugin):
             req = self.conn.objects().insert(bucket=bucket, body=body,
                                              media_body=media_body)
             resp = req.execute()
-            self.stoq.log.debug(resp)
+            self.log.debug(resp)
         except Exception as err:
-            self.stoq.log.error("Unable to save file to GCS: {}".format(str(err)))
+            self.log.error("Unable to save file to GCS: {}".format(str(err)))
             return None
 
         return filename

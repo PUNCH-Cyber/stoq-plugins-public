@@ -112,7 +112,6 @@ class VtmisScan(StoqWorkerPlugin):
                                  dest='max_threads',
                                  help="Max number of threads when processing feeds")
 
-
         options = parser.parse_args(self.stoq.argv[2:])
 
         super().activate(options=options)
@@ -170,7 +169,7 @@ class VtmisScan(StoqWorkerPlugin):
             uri = resource.replace("_", "/")
             url = "{}/{}".format(self.api_url, uri)
         else:
-            self.stoq.log.warn("Invalid API resource:{}".format(resource))
+            self.log.warn("Invalid API resource:{}".format(resource))
             return None
 
         # Start building the parameters of our API call
@@ -281,7 +280,7 @@ class VtmisScan(StoqWorkerPlugin):
                                                       path=self.feed_path,
                                                       filename=filename)
         else:
-            self.stoq.log.error("No connector or payload defined. Unable to save payload.")
+            self.log.error("No connector or payload defined. Unable to save payload.")
 
     def generate_dates(self, query):
         """
@@ -337,7 +336,7 @@ class VtmisScan(StoqWorkerPlugin):
             for content in raw_content:
                 lines = content[1].decode().split("\n")
                 compressed_filename = content[0]['filename']
-                self.stoq.log.info("Processing {} items from {}".format(len(lines), compressed_filename))
+                self.log.info("Processing {} items from {}".format(len(lines), compressed_filename))
                 for line in lines:
                     line = self.stoq.loads(line)
                     queue.put(line)
@@ -357,7 +356,7 @@ class VtmisScan(StoqWorkerPlugin):
 
                 self.connectors[self.output_connector].save(result, index=index)
             except Exception as err:
-                self.stoq.log.error("Unable to process VTMIS feed: {}".format(str(err)))
+                self.log.error("Unable to process VTMIS feed: {}".format(str(err)))
                 queue.put(result)
 
             queue.task_done()

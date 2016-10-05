@@ -53,14 +53,14 @@ class SlackWorker(StoqWorkerPlugin):
 
     def scan(self, payload, **kwargs):
         """
-        Monitor a Slack channel for events 
+        Monitor a Slack channel for events
 
         """
 
         super().scan()
 
         # Connect to slack with out RTM API token
-        self.slackclient = SlackClient(self.token) 
+        self.slackclient = SlackClient(self.token)
 
         self.errors = 0
         self.time_since = 0
@@ -118,7 +118,7 @@ class SlackWorker(StoqWorkerPlugin):
                     # exception. Let's just ignore it.
                     pass
                 except Exception as e:
-                    self.stoq.log.error("Error handling message: {}".format(str(msg)))
+                    self.log.error("Error handling message: {}".format(str(msg)))
                     # Looks like something is not happy, let's die so we don't
                     # make everyone hate the bot
                     if self.errors > 2 and self.time_since < 30:
@@ -131,7 +131,7 @@ class SlackWorker(StoqWorkerPlugin):
                     self.send_msg(channel, "Well crap..something went wrong.\n{}".format(str(e)))
 
         else:
-            self.stoq.log.error("Unable to connect to Slack. Invalid token?")
+            self.log.error("Unable to connect to Slack. Invalid token?")
 
     def process_payload(self, msg):
         """
@@ -189,7 +189,7 @@ class SlackWorker(StoqWorkerPlugin):
         # Let's archive the payload now, if needed, rather than having the
         # worker archive it. Otherwise it will be done multiple times
         if self.archive_connector:
-            self.save_payload(payload, self.archive_connector) 
+            self.save_payload(payload, self.archive_connector)
 
         # Iterate over the worker plugins and send the results back as they
         # are completed
@@ -242,11 +242,11 @@ class SlackWorker(StoqWorkerPlugin):
             try:
                 self.connectors[self.conversation_connector].save(msg)
             except Exception as err:
-                self.stoq.log.error("Unable to log conversation: {}".format(str(err)))
+                self.log.error("Unable to log conversation: {}".format(str(err)))
 
-        self.stoq.log.info('New message from {}: {}'.format(user, text))
+        self.log.info("New message from {}: {}".format(user, text))
 
-        # Check if the message starts with our command character 
+        # Check if the message starts with our command character
         if text.startswith(self.command_character):
             # It does, let's split the message by whitespace
             match = re.split("\s", text)
@@ -283,7 +283,7 @@ class SlackWorker(StoqWorkerPlugin):
             # them so we can pass the full message onto the worker
             value_matches = re.search(r"<.*\|(.*)>(.*)", value)
             if value_matches:
-                value = "{} {}".format(value_matches.group(1), 
+                value = "{} {}".format(value_matches.group(1),
                                        value_matches.group(2)).rstrip()
 
             # Make sure the encoding is correct
@@ -316,8 +316,7 @@ class SlackWorker(StoqWorkerPlugin):
     def get_payload(self, value):
         # See if the user wants us to rescan a file based on
         # md5/sha1/sha256 hash
-        hash_matches = re.search("^([a-fA-F0-9]{32}$|[a-fA-F0-9]{40}$|[a-fA-F0-9]{60}$)",
-                                 value)
+        hash_matches = re.search("^([a-fA-F0-9]{32}$|[a-fA-F0-9]{40}$|[a-fA-F0-9]{60}$)", value)
 
         # Let's continue on if it is not a valid hash
         if not hash_matches:
@@ -396,7 +395,7 @@ class SlackWorker(StoqWorkerPlugin):
             msg_slice = msg[i:i+msg_size]
             self.slackclient.rtm_send_message(channel, msg_slice)
             time.sleep(1)
- 
+
     def print_help(self, channel):
         """
         Print a help msg to the channel or user

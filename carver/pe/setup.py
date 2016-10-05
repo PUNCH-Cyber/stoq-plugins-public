@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pe",
-    version="0.9",
+    version="0.10",
     author="Jeff Ito, Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",

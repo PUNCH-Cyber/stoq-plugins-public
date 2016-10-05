@@ -18,7 +18,7 @@ Module = rtf
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.9
+Version = 0.10
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Carve hex/binary streams from RTF payloads
 

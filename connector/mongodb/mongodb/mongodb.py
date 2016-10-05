@@ -25,7 +25,6 @@ from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from gridfs.errors import FileExists
 
-from stoq.scan import get_sha1
 from stoq.plugins import StoqConnectorPlugin
 
 
@@ -70,7 +69,7 @@ class MongoConnector(StoqConnectorPlugin):
 
                 # So gridfs' documentation states we can use find_one, but
                 # it doesn't exist. So instead, we are going to use find,
-                # then just use the first item in the index, since we 
+                # then just use the first item in the index, since we
                 # should always only return a single result anyway.
                 results = self.collection.find({key: kwargs[key]})
 
@@ -79,8 +78,7 @@ class MongoConnector(StoqConnectorPlugin):
                         with self.collection.get(results[0]._id) as requested_file:
                             return requested_file.read()
                     except Exception as e:
-                        self.stoq.log.error("Unable to retrieve file "
-                                            "{0} :: {1}".format(kwargs, str(e)))
+                        self.log.error("Unable to retrieve file {} :: {}".format(kwargs, str(e)))
                         return None
 
         # No results, carry on.
@@ -104,7 +102,7 @@ class MongoConnector(StoqConnectorPlugin):
 
         self.archive = archive
 
-        # Define the index name, if available. 
+        # Define the index name, if available.
         index = kwargs.get('index', None)
 
         if not hasattr(self, 'collection'):
@@ -187,4 +185,3 @@ class MongoConnector(StoqConnectorPlugin):
 
         self.mongo_client.disconnect()
         super().disconnect()
-

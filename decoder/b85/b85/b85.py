@@ -59,6 +59,5 @@ class Base85Decoder(StoqDecoderPlugin):
             return [(meta, content)]
 
         except Exception as err:
-            self.stoq.log.error("Unable to Base85 decode payload: {}".format(str(err)))
+            self.log.error("Unable to Base85 decode payload: {}".format(str(err)))
             return None
-

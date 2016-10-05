@@ -95,7 +95,7 @@ class DecompressExtractor(StoqExtractorPlugin):
 
         # Make sure the payload is not larger that what is permitted
         if len(payload) > int(self.maximum_size):
-            self.stoq.log.warn("Compressed file too large: {}".format(kwargs))
+            self.log.warn("Compressed file too large: {}".format(kwargs))
             return None
 
         if 'filename' in kwargs:
@@ -120,10 +120,10 @@ class DecompressExtractor(StoqExtractorPlugin):
             if archive_type in archive_cmds:
                 archiver = archive_cmds[archive_type]
             else:
-                self.stoq.log.warn("Unknown archive type: {}".format(archive_type))
+                self.log.warn("Unknown archive type: {}".format(archive_type))
                 return None
         else:
-            self.stoq.log.warn("Unknown MIME type: {}".format(mimetype))
+            self.log.warn("Unknown MIME type: {}".format(mimetype))
             return None
 
         # Build our temporary directory and file structure
@@ -150,7 +150,7 @@ class DecompressExtractor(StoqExtractorPlugin):
                 outs, errs = p.communicate(timeout=45)
             except TimeoutExpired:
                 p.kill()
-                self.stoq.log.error("Timed out decompressing {}".format(archive_file))
+                self.log.error("Timed out decompressing {}".format(archive_file))
 
             # Attempt to list contents of extract_dir, if files exist,
             # then let's break out of the loop and continue on
@@ -184,10 +184,10 @@ class DecompressExtractor(StoqExtractorPlugin):
                         # Construct our set for return
                         results.append((meta, content))
 
-                        self.stoq.log.info("Extracted file {} ({} bytes) from "
-                                           "{}".format(meta['filename'],
-                                                       meta['size'],
-                                                       filename))
+                        self.log.info("Extracted file {} ({} bytes) from "
+                                      "{}".format(meta['filename'],
+                                                  meta['size'],
+                                                  filename))
 
         # Cleanup the extracted content
         if os.path.isdir(tmp_archive_dir):

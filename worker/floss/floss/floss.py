@@ -68,7 +68,7 @@ class FlossScan(StoqWorkerPlugin):
 
         # Check for FLOSS executable
         if not os.path.isfile(self.floss_path):
-            self.stoq.log.error("FLOSS program does not exist at {}!".format(self.floss_path))
+            self.log.error("FLOSS program does not exist at {}!".format(self.floss_path))
             return None
 
         # Create temp file for processing with external FLOSS executable
@@ -138,7 +138,6 @@ class FlossScan(StoqWorkerPlugin):
             if os.path.isfile(target_path):
                 os.remove(target_path)
         except:
-            self.stoq.log.warn("Unable to delete temp "
-                               "file {0}".format(target_path))
+            self.log.warn("Unable to delete temp file {}".format(target_path))
 
         return floss_results

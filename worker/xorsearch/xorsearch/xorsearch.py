@@ -73,7 +73,7 @@ class XorSearchScan(StoqWorkerPlugin):
                                binary=True)
 
         if not os.path.isfile(self.bin):
-            self.stoq.log.error("XORSearch does not exist at {}!".format(self.bin))
+            self.log.error("XORSearch does not exist at {}!".format(self.bin))
             return None
 
         # Build our command and then execute it

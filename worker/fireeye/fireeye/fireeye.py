@@ -36,7 +36,6 @@ from plugins.worker.fireeye import FireEyeMAS
 from plugins.worker.fireeye import FireEyeJSON
 
 
-
 class FireeyeScan(StoqWorkerPlugin):
 
     def __init__(self):
@@ -149,7 +148,7 @@ class FireeyeScan(StoqWorkerPlugin):
             # to query. Not sure how to pass that back.
             response = {}
             for image in images:
-                self.stoq.log.info("Sending file to Fireeye image: {}".format(image))
+                self.log.info("Sending file to Fireeye image: {}".format(image))
                 submissionResponse = server.submitFile(fileHandle,
                                                        filename,
                                                        profiles=[image])
@@ -169,7 +168,7 @@ class FireeyeScan(StoqWorkerPlugin):
                 for image, submissionID in imagesToGet:
                     status = server.getSubmissionStatus(submissionID)
                     if status == "Done":
-                        self.stoq.log.info("Fireeye image {} is done".format(image))
+                        self.log.info("Fireeye image {} is done".format(image))
                         response[image]['done'] = True
                         result = server.getSubmission(submissionID).jsonObj
                         result = FireEyeJSON.fixFireEyeJSON(result)
@@ -182,9 +181,10 @@ class FireeyeScan(StoqWorkerPlugin):
                             # result.
                             response[image]['done'] = True
 
-                imagesToGet = [(image, response[image]["SubmissionID"]) for image in response 
-                                if ((response[image]['done'] is not True) and 
-                                    (response[image]['numTries'] < maxWaitTime))] 
+                imagesToGet = [(image, response[image]["SubmissionID"]) for image in response
+                                if ((response[image]['done'] is not True) and
+                                    (response[image]['numTries'] < maxWaitTime))]
+
                 if imagesToGet:
                     time.sleep(60)
             for image in response:
@@ -205,7 +205,6 @@ class FireeyeScan(StoqWorkerPlugin):
         """
         super().scan()
 
-
         if "images" in kwargs and kwargs['images']:
             images = kwargs['images']
         else:
@@ -225,4 +224,3 @@ class FireeyeScan(StoqWorkerPlugin):
         elif self.method == "Files":
             self.write_file_to_disk(images, payload, filename)
             return None
-

@@ -73,7 +73,7 @@ class SWFCarver(StoqCarverPlugin):
         return results
 
     def decompress(self, payload, offset=0):
-        try: 
+        try:
             ##
             # Header as obtained from SWF File Specification:
             # Field Type Comment
@@ -98,13 +98,13 @@ class SWFCarver(StoqCarverPlugin):
             payload.seek(offset)
 
             # Grab the first three bytes, should be FWS, CWS or ZWS
-            magic = payload.read(3).decode() 
+            magic = payload.read(3).decode()
 
             # Grab the SWF version - 1 byte
             swf_version = struct.unpack('<b', payload.read(1))[0]
 
             # Grab next 4 bytes so we can unpack to calculate the uncompressed
-            # size of the payload. 
+            # size of the payload.
             decompressed_size = struct.unpack("<i", payload.read(4))[0] - 8
 
             # Let's go back to the offset byte, jumping beyond the SWF header
@@ -141,16 +141,15 @@ class SWFCarver(StoqCarverPlugin):
                     'size': decompressed_size + 8
                     }
 
-            self.stoq.log.info("Carved SWF at offset {} ({} bytes)".format(meta['offset'],
+            self.log.info("Carved SWF at offset {} ({} bytes)".format(meta['offset'],
                                                                            meta['size']))
             return (meta, swf)
 
         except:
-            self.stoq.log.warn("Unable to decompress SWF payload at offset {}".format(offset))
+            self.log.warn("Unable to decompress SWF payload at offset {}".format(offset))
             return None
 
 
 class InvalidSWFSize(Exception):
     """ Invalid size of carved SWF content """
     pass
-

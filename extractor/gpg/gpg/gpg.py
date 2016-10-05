@@ -54,13 +54,13 @@ class GpgExtractor(StoqExtractorPlugin):
         super().activate()
 
         if not os.path.exists(self.gpg_home):
-            self.stoq.exception("GPG Home is not defined! Skipping...")
+            self.critical("GPG Home is not defined! Skipping...")
+            return
 
         self.gpg = GPG(gnupghome=self.gpg_home,
                        gpgbinary=self.gpg_bin,
                        keyring=self.public_keyring,
                        secret_keyring=self.secret_keyring)
-
 
     def extract(self, payload, **kwargs):
         """
@@ -101,6 +101,5 @@ class GpgExtractor(StoqExtractorPlugin):
             return [(meta, content)]
 
         else:
-            self.stoq.log.error("Unable to decrypt payload: {}".format(kwargs))
-            return None
-
+            self.log.error("Unable to decrypt payload: {}".format(kwargs))
+            return

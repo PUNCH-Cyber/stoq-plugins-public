@@ -18,6 +18,6 @@ Module = xor
 
 [Documentation]
 Author = Adam Trask
-Version = 0.1
+Version = 0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Decode XOR encoded content

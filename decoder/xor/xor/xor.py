@@ -38,8 +38,8 @@ class XorDecoder(StoqDecoderPlugin):
         XOR decode content from provided payload
 
         :param bytes payload: Payload to be decoded
-        :param **kwargs key: String of space separated XOR keys
-                              (i.e., "41 166 3") or list/tuple of xor values
+        :param str key: String of space-separated XOR keys
+                        (i.e., "41 166 3") or list/tuple of xor values
 
         :returns: XOR decoded payload
         :rtype: list of tuples or None
@@ -54,7 +54,7 @@ class XorDecoder(StoqDecoderPlugin):
                 if type(kwargs['key']) is not (list, tuple):
                     xor_values = kwargs['key'].split(" ")
             else:
-                self.stoq.log.error("No XOR key(s) provided.")
+                self.log.error("No XOR key(s) provided.")
                 return None
 
             last_rolling_index = len(xor_values) - 1
@@ -78,6 +78,5 @@ class XorDecoder(StoqDecoderPlugin):
             return [(meta, bytes(byte_content))]
 
         except Exception as err:
-            self.stoq.log.warn("Unable to XOR payload: {}".format(str(err)))
+            self.log.warn("Unable to XOR payload: {}".format(str(err)))
             return None
-

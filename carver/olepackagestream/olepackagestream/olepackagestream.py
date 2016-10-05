@@ -56,7 +56,7 @@ class OLEPackageStreamCarver(StoqCarverPlugin):
             payload = BytesIO(payload)
             return self.parse_stream(payload)
         except:
-           return None
+            return None
 
     def split_null(self, payload):
         pos = payload.tell()
@@ -104,9 +104,7 @@ class OLEPackageStreamCarver(StoqCarverPlugin):
 
         meta['OrgFileW'] = hexlify(payload.read(meta['OrgFileWLength'] * 2)).decode()
 
-        self.stoq.log.info("Carved OLE Package Stream {} ({} bytes)".format(meta['DefaultExtractPath'],
-                                                                            meta['size']))
- 
+        self.log.info("Carved OLE Package Stream {} ({} bytes)".format(meta['DefaultExtractPath'],
+                                                                       meta['size']))
+
         return [(meta, stream_buffer)]
-
-

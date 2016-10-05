@@ -67,7 +67,7 @@ class ExifScan(StoqWorkerPlugin):
                                binary=True)
 
         if not os.path.isfile(self.exiftool):
-            self.stoq.log.error("ExifTool does not exist at {}!".format(self.exiftool))
+            self.log.critical("ExifTool does not exist at {}!".format(self.exiftool))
             return None
 
         try:
@@ -89,8 +89,7 @@ class ExifScan(StoqWorkerPlugin):
             if os.path.isfile(path):
                 os.remove(path)
         except:
-            self.stoq.log.warn("Unable to delete temp "
-                               "file {0}".format(path))
+            self.log.error("Unable to delete temp file {}".format(path))
 
         super().scan()
 

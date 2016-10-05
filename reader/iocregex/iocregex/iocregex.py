@@ -42,7 +42,7 @@ class IOCRegexReader(StoqReaderPlugin):
     def activate(self, stoq):
         self.stoq = stoq
         self.whitelist_file_list = []
-        
+
         super().activate()
 
         # Our TLD file is not defined in the config file, let's set a default
@@ -55,9 +55,9 @@ class IOCRegexReader(StoqReaderPlugin):
                 with open(self.iana_tld_file) as f:
                     iana_tlds = "|".join(f.read().splitlines()[1:])
             else:
-                self.stoq.log.error("Not a valid IANA TLD file!")
+                self.log.error("Not a valid IANA TLD file!")
         except:
-            self.stoq.log.error("IANA TLD File not found!")
+            self.log.error("IANA TLD File not found!")
 
         # Helper regexes
         self.helpers = {}
@@ -174,12 +174,12 @@ class IOCRegexReader(StoqReaderPlugin):
             normalized_results[indicator_type] = set()
             for indicator in parsed_results[indicator_type]:
                 for normalizer in self.normalizers:
-                    self.stoq.log.debug("Indicator being normalized: %s" % indicator)
+                    self.log.debug("Indicator being normalized: %s" % indicator)
                     indicator = re.sub(self.helpers[normalizer],
                                        self.normalizers[normalizer],
                                        indicator,
                                        flags=re.IGNORECASE)
-                    self.stoq.log.debug("Normalized result %s" % indicator)
+                    self.log.debug("Normalized result %s" % indicator)
                 if self.__check_whitelist(indicator, indicator_type):
                     normalized_results[indicator_type].add(indicator)
             normalized_results[indicator_type] = list(normalized_results[indicator_type])
@@ -200,7 +200,7 @@ class IOCRegexReader(StoqReaderPlugin):
     def __load_whitelist(self):
         for whitelist_file in self.whitelist_file_list:
             if not os.path.isfile(whitelist_file):
-                self.stoq.log.warn("Invalid whitelist file...skipping {}".format(whitelist_file))
+                self.log.warn("Invalid whitelist file...skipping {}".format(whitelist_file))
                 continue
 
             with open(whitelist_file) as content:
@@ -212,7 +212,7 @@ class IOCRegexReader(StoqReaderPlugin):
                     try:
                         self.whitelist_patterns[indicator_type].add(pattern.strip())
                     except KeyError:
-                        self.stoq.log.error("Unknown indicator type: {}".format(indicator_type))
+                        self.log.error("Unknown indicator type: {}".format(indicator_type))
 
     def __check_whitelist(self, indicator, indicator_type):
 
@@ -269,10 +269,10 @@ class IOCRegexReader(StoqReaderPlugin):
                         return False
 
         except KeyError:
-            self.stoq.log.error("Unknown indicator type: {}".format(indicator_type))
+            self.log.error("Unknown indicator type: {}".format(indicator_type))
             return False
         except Exception as err:
-            self.stoq.log.error("Unable to handle indicator/pattern: {}".format(str(err)))
+            self.log.error("Unable to handle indicator/pattern: {}".format(str(err)))
             return False
 
         return True

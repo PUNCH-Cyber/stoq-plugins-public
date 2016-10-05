@@ -57,7 +57,6 @@ class ClamAvScan(StoqWorkerPlugin):
 
         return True
 
-
     def deactivate(self):
         self.heartbeat_thread.terminate()
 
@@ -82,9 +81,9 @@ class ClamAvScan(StoqWorkerPlugin):
             hit = self.clamd.scan_stream(payload)
             results['sig'] = hit['stream'][1]
         except IOError as err:
-            self.stoq.log.warn("Unable to scan payload: {}".format(err))
+            self.log.warn("Unable to scan payload: {}".format(err))
         except ValueError as err:
-            self.stoq.log.warn("Payload buffer too large: {}".format(err))
+            self.log.warn("Payload buffer too large: {}".format(err))
         except TypeError:
             pass
         finally:
@@ -110,7 +109,7 @@ class ClamAvScan(StoqWorkerPlugin):
             except AttributeError:
                 success = False
             except pyclamd.ConnectionError:
-                self.stoq.log.warn("Unable to connect to ClamAV. Attempting to connect.")
+                self.log.warn("Unable to connect to ClamAV. Attempting to connect.")
                 success = False
             finally:
                 self.clamd_lock.release()
@@ -132,4 +131,3 @@ class ClamAvScan(StoqWorkerPlugin):
             self.clamd = pyclamd.ClamdUnixSocket(filename=self.socket,
                                                  timeout=self.timeout)
         self.clamd_lock.release()
-

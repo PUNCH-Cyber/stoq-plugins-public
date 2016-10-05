@@ -69,11 +69,9 @@ class BitwiseRotateDecoder(StoqDecoderPlugin):
             for index in range(payload_length):
                 byte_value = payload[index]
                 if direction == 'left':
-                    payload[index] = (byte_value << bits | 
-                                    byte_value >> (8 - bits)) & 0xFF
+                    payload[index] = (byte_value << bits | byte_value >> (8 - bits)) & 0xFF
                 else:
-                    payload[index] = (byte_value >> bits | 
-                                    byte_value << (8 - bits)) & 0xFF
+                    payload[index] = (byte_value >> bits | byte_value << (8 - bits)) & 0xFF
 
             # Define the metadata we want to return
             meta = {}
@@ -85,5 +83,5 @@ class BitwiseRotateDecoder(StoqDecoderPlugin):
             return [(meta, payload)]
 
         except Exception as err:
-            self.stoq.log.error("Unable to bitwise rotate payload: {}".format(str(err)))
+            self.log.error("Unable to bitwise rotate payload: {}".format(str(err)))
             return None

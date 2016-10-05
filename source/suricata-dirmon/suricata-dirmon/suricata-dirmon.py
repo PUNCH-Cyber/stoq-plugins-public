@@ -83,12 +83,11 @@ class SuricataDirmonSource(StoqSourcePlugin, FileSystemEventHandler):
         observer = Observer()
         observer.schedule(self, self.stoq.worker.path, recursive=False)
         observer.start()
-        self.stoq.log.info("Monitoring {} for extracted files...".format(
-                           self.stoq.worker.path))
+        self.log.info("Monitoring {} for extracted files...".format(self.stoq.worker.path))
+
         try:
             while True:
                 sleep(2)
         except KeyboardInterrupt:
             observer.stop()
         observer.join()
-
