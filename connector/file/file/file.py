@@ -74,10 +74,11 @@ class FileConnector(StoqConnectorPlugin):
             binary = kwargs.get('binary', True)
 
         else:
-            path = kwargs.get('path', self.stoq.results_dir)
-            name = kwargs.get('index', self.parentname)
-
-            path = os.path.join(path, name)
+            path = kwargs.get('path', None)
+            if not path:
+                path = self.stoq.results_dir
+                name = kwargs.get('index', self.parentname)
+                path = os.path.join(path, name)
 
             filename = kwargs.get('filename', None)
             binary = kwargs.get('binary', False)

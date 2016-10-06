@@ -22,6 +22,6 @@ compactly = False
 
 [Documentation]
 Author = Marcus LaFerrera & Adam Trask
-Version = 0.9.7
+Version = 0.9.8
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Retrieves and saves content to local disk
