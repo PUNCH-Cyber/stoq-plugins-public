@@ -85,8 +85,8 @@ class DecompressExtractor(StoqExtractorPlugin):
         Decompress a payload
 
         :param bytes payload: Content to be decompressed
-        :param **kwargs filename: Filename of compressed archive
-        :param **kwargs archive_passwords: List of passwords to attempt against the archive
+        :param str filename: Filename of compressed archive
+        :param list archive_passwords: List of passwords to attempt against the archive
 
         :returns: Metadata and content extracted
         :rtype: list of tuples
@@ -115,6 +115,7 @@ class DecompressExtractor(StoqExtractorPlugin):
         # Determine the mimetype of the payload so we can identify the
         # correct archiver
         mimetype = get_magic(payload)
+        self.log.debug("Mimetype: {}".format(mimetype))
         if mimetype in archive_magic:
             archive_type = archive_magic[mimetype]
             if archive_type in archive_cmds:
