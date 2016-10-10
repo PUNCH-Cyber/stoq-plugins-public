@@ -65,12 +65,16 @@ class GcsConnector(StoqConnectorPlugin):
                 req = self.conn.objects().get_media(bucket=bucket,
                                                     object=kwargs[key])
 
-                downloader = http.MediaIoBaseDownload(content, req)
+                downloader = http.MediaIoBaseDownload(content, req, chunksize=1024*1024)
 
                 done = False
+                count = 0
                 while not done:
-                    status, done = downloader.next_chunk()
-
+                    status, done = downloader.next_chunk(num_retries=10)
+                    if count / 100 == 1:
+                        sp = int(status.progress() * 100)
+                        self.log.debug("Download {}% complete, done == {}".format(sp, done))
+                self.log.debug("Download completed")
                 return content.getvalue()
 
         return None
