@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-2016 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ from stoq.args import StoqArgs
 from stoq.plugins import StoqWorkerPlugin
 
 from plugins.worker.fireeye import FireEyeMAS
-from plugins.worker.fireeye import FireEyeJSON
 
 
 class FireeyeScan(StoqWorkerPlugin):
@@ -100,10 +99,10 @@ class FireeyeScan(StoqWorkerPlugin):
         api_opts.add_argument("-v", "--version",
                               dest="api_version",
                               required=False,
-                              choices=("1.0.0", "1.1.0"),
+                              choices=("1.1.0",),
                               help="API Version to use. This is only "
-                                   " used when using the API. Supported"
-                                   " versions are 1.0.0 and 1.1.0 (default)")
+                                   " used when using the API. Supports"
+                                   " version 1.1.0 (default)")
 
         options = parser.parse_args(self.stoq.argv[2:])
         super().activate(options=options)
@@ -133,28 +132,26 @@ class FireeyeScan(StoqWorkerPlugin):
             fileHandle = BytesIO()
             fileHandle.write(payload)
             fileHandle.seek(0)
-            if self.api_version == "1.0.0":
-                server = FireEyeMAS.FireEyeServerv100(self.address,
-                                                      self.username,
-                                                      self.password,
-                                                      verifySSL=self.verify_ssl)
-            elif self.api_version == "1.1.0":
-                server = FireEyeMAS.FireEyeServerv110(self.address,
-                                                      self.username,
-                                                      self.password,
-                                                      verifySSL=self.verify_ssl)
+
+            if self.api_version == "1.1.0":
+                server = FireEyeMAS.ApiVersion110(self.address,
+                                                  verifySSL=self.verify_ssl)
+
+            server.authenticate(self.username, self.password)
 
             # API returns an ID here that corresponds to the alertID
             # to query. Not sure how to pass that back.
             response = {}
             for image in images:
-                self.log.info("Sending file to Fireeye image: {}".format(image))
-                submissionResponse = server.submitFile(fileHandle,
-                                                       filename,
-                                                       profiles=[image])
+                self.stoq.log.info("Sending file to Fireeye image: {}".format(image))
+                submissionResponse = server.submit_file(fileHandle,
+                                                        filename,
+                                                        profiles=[image],
+                                                        force='true')
+
                 if submissionResponse.status_code == 200:
-                    response_json = submissionResponse.json()
-                    submissionID = response_json[0]['ID']
+                    fireeyeResponse = FireEyeMAS.ResponseHandler(submissionResponse, responseType='json')
+                    submissionID = fireeyeResponse.response_object[0]['ID']
                     response[image] = {}
                     response[image]['SubmissionID'] = submissionID
                     response[image]['done'] = False
@@ -166,13 +163,23 @@ class FireeyeScan(StoqWorkerPlugin):
 
             while imagesToGet:
                 for image, submissionID in imagesToGet:
-                    status = server.getSubmissionStatus(submissionID)
-                    if status == "Done":
-                        self.log.info("Fireeye image {} is done".format(image))
+                    status = server.query_submission_status(submissionID)
+                    if status.text == "Done":
+                        self.stoq.log.info("Fireeye image {} is done".format(image))
                         response[image]['done'] = True
-                        result = server.getSubmission(submissionID).jsonObj
-                        result = FireEyeJSON.fixFireEyeJSON(result)
-                        response[image].update(result)
+
+                        # Reduce chances of race condition between time that
+                        # analysis stops and time for the report to generate
+                        time.sleep(5)
+
+                        resultResponse = server.retrieve_submission_results(submissionID)
+                        result = FireEyeMAS.ResponseHandler(resultResponse, responseType='json')
+
+                        try:
+                            response[image].update(result.format_JSON())
+                        except:
+                            # Just in case recursion error occurs
+                            response[image].update(result.response_object)
                     else:
                         response[image]['numTries'] += 1
                         if response[image]['numTries'] > maxWaitTime:
@@ -184,7 +191,6 @@ class FireeyeScan(StoqWorkerPlugin):
                 imagesToGet = [(image, response[image]["SubmissionID"]) for image in response
                                 if ((response[image]['done'] is not True) and
                                     (response[image]['numTries'] < maxWaitTime))]
-
                 if imagesToGet:
                     time.sleep(60)
             for image in response:
@@ -220,7 +226,7 @@ class FireeyeScan(StoqWorkerPlugin):
 
         if self.method == "API":
             result = self.send_file_to_api(images, payload, filename)
-            return result
+            return self.stoq.__normalize_json(result)
         elif self.method == "Files":
             self.write_file_to_disk(images, payload, filename)
             return None

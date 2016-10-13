@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-2016 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ Name = fireeye
 Module = fireeye
 
 [Documentation]
-Author = Marcus LaFerrera & Aaron Gee-Clough
-Version = 0.2
+Author = Marcus LaFerrera, Aaron Gee-Clough, & Adam Trask
+Version = 0.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Submit a file to a Fireeye MAS/AX via filesystem or API
 
