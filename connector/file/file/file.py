@@ -61,10 +61,11 @@ class FileConnector(StoqConnectorPlugin):
 
         :param str payload: Content to be saved
         :param bool archive: Is this a file that is being archived?
-        :param **kwargs index: Directory name to save content to
-        :param **kwargs sha1: SHA1 hash to use as a filename
-        :param **kwargs filename: Filename to save the file as
-        :param **kwargs path: Path where the file will be saved to
+        :param str index: Directory name to save content to
+        :param str sha1: SHA1 hash to use as a filename
+        :param str filename: Filename to save the file as
+        :param str path: Path where the file will be saved to
+        :param bool append: Allow append to output file?
 
         """
 
@@ -72,7 +73,7 @@ class FileConnector(StoqConnectorPlugin):
             filename = kwargs.get('sha1', get_sha1(payload))
             path = self.stoq.hashpath(filename)
             binary = kwargs.get('binary', True)
-
+            append = kwargs.get('append', False)
         else:
             path = kwargs.get('path', None)
             if not path:
@@ -80,13 +81,18 @@ class FileConnector(StoqConnectorPlugin):
                 name = kwargs.get('index', self.parentname)
                 path = os.path.join(path, name)
 
+            append = kwargs.get('append', False)
             filename = kwargs.get('filename', None)
             binary = kwargs.get('binary', False)
 
         if not binary:
             payload = self.stoq.dumps(payload, compactly=self.compactly)
 
-        fullpath = self.stoq.write(path=path, filename=filename,
-                                   payload=payload, binary=binary)
+            # Append a newline to the result, if we are appending to a file
+            if append:
+                payload += '\n'
+
+        fullpath = self.stoq.write(path=path, filename=filename, payload=payload,
+                                   binary=binary, append=append)
 
         return fullpath
