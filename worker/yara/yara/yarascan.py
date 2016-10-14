@@ -115,8 +115,8 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
             compiled_rules = yara.compile(self.yararules)
             self.rules = compiled_rules
             self.rule_lock.release()
-        except:
-            self.log.critical("Error in yara rules. Compile failed.")
+        except Exception:
+            self.log.critical("Error in yara rules. Compile failed.", exc_info=True)
             # If this is the first time we are loading the rules,
             # we are going to exit here.
             if not hasattr(self, 'rules'):
