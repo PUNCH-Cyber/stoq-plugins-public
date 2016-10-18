@@ -41,13 +41,16 @@ class IOCRegexReader(StoqReaderPlugin):
 
     def activate(self, stoq):
         self.stoq = stoq
-        self.whitelist_file_list = []
 
         super().activate()
 
         # Our TLD file is not defined in the config file, let's set a default
         if not hasattr(self, 'iana_tld_file'):
             self.iana_tld_file = os.path.join(self.stoq.base_dir, "plugins/reader/iocregex/tlds-alpha-by-domain.txt")
+
+        # If whitelist files not defined in config file, set to blank list
+        if not hasattr(self, 'whitelist_file_list'):
+            self.whitelist_file_list = []
 
         # Read TLD list from file for building regex
         try:
