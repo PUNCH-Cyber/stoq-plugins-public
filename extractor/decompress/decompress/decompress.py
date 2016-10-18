@@ -169,26 +169,29 @@ class DecompressExtractor(StoqExtractorPlugin):
                     path = os.path.join(base_path, f)
                     extracted_filename = os.path.basename(path)
 
-                    # Open the file so we can return the content
-                    with open(path, "rb") as extracted_file:
-                        # Generate relevant metadata
-                        meta = {}
-                        content = extracted_file.read()
-                        meta['filename'] = extracted_filename
-                        meta['size'] = len(content)
+                    try:
+                        # Open the file so we can return the content
+                        with open(path, "rb") as extracted_file:
+                            # Generate relevant metadata
+                            meta = {}
+                            content = extracted_file.read()
+                            meta['filename'] = extracted_filename
+                            meta['size'] = len(content)
 
-                        # Since we defined results as None above, we need to
-                        # ensure it is a list now that we have results
-                        if not results:
-                            results = []
+                            # Since we defined results as None above, we need to
+                            # ensure it is a list now that we have results
+                            if not results:
+                                results = []
 
-                        # Construct our set for return
-                        results.append((meta, content))
+                            # Construct our set for return
+                            results.append((meta, content))
 
-                        self.log.info("Extracted file {} ({} bytes) from "
-                                      "{}".format(meta['filename'],
-                                                  meta['size'],
-                                                  filename))
+                            self.log.info("Extracted file {} ({} bytes) from "
+                                          "{}".format(meta['filename'],
+                                                      meta['size'],
+                                                      filename))
+                    except Exception as err:
+                        self.log.warn("Unable to access extracted content: {}".format(err))
 
         # Cleanup the extracted content
         if os.path.isdir(tmp_archive_dir):
