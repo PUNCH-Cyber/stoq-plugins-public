@@ -78,23 +78,20 @@ class PublisherWorker(StoqWorkerPlugin):
 
         super().scan()
 
-        self.log.info("Ingesting: %s" % kwargs['uuid'])
-
         # For every file we ingest we are going to assign a unique
         # id so we can link everything across the scope of the ingest.
         # This will be assigned to submissions within archive files as well
         # in order to simplify correlating files post-ingest.
         if 'uuid' not in kwargs:
-            kwargs['uuid'] = self.stoq.get_uuid
+            kwargs['uuid'] = [self.stoq.get_uuid]
+
+        self.log.info("Ingesting: %s" % kwargs['uuid'])
 
         if payload and 'sha1' not in kwargs:
             kwargs['sha1'] = get_sha1(payload)
 
         if 'path' in kwargs:
             kwargs['path'] = os.path.abspath(kwargs['path'])
-
-        if self.user_comments:
-            kwargs['user_comments'] = self.user_comments
 
         if 'submission_list' in kwargs:
             self.submission_list = kwargs['submission_list']
