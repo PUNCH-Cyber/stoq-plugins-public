@@ -125,7 +125,7 @@ class SmtpScan(StoqWorkerPlugin):
             # Return as a list so we can iterate
             return [payload]
 
-    def attachment_metadata(self, payload=None, filename=None, puuid=None):
+    def attachment_metadata(self, payload=None, filename=None, uuid=None):
         # Make sure we have a payload, otherwise return None
         if not payload or len(payload) <= 0:
             return None
@@ -149,18 +149,18 @@ class SmtpScan(StoqWorkerPlugin):
         attachment_json['filename'] = filename
 
         # Make sure we have the parent uuid generated with the original email
-        attachment_json['puuid'] = puuid
+        attachment_json['uuid'] = uuid.copy()
 
         # Generate a unique ID
-        attachment_json['uuid'] = self.stoq.get_uuid
+        attachment_json['uuid'].append(self.stoq.get_uuid)
 
         return attachment_json
 
-    def handle_attachments(self, payload=None, filename=None, puuid=None):
+    def handle_attachments(self, payload=None, filename=None, uuid=None):
 
         attachment_json = self.attachment_metadata(payload=payload,
                                                    filename=filename,
-                                                   puuid=puuid)
+                                                   uuid=uuid)
 
         if attachment_json:
 
@@ -185,8 +185,10 @@ class SmtpScan(StoqWorkerPlugin):
                 for worker in self.workers_list:
                     # Handle the payload with the worker, and get the results
                     # along with the templated results, if there is any
-                    self.workers[worker].start(payload, **attachment_json)
-
+                    try:
+                        self.workers[worker].start(payload, **attachment_json)
+                    except:
+                        self.log.warn("Failed to scan payload using {}".format(worker), exc_info=True)
             return attachment_json
 
         else:
@@ -198,7 +200,7 @@ class SmtpScan(StoqWorkerPlugin):
         extracted_ips = None
 
         # Grab the uuid of so we can pass it off to the attachment
-        uuid = kwargs.get('uuid', None)
+        uuid = kwargs.get('uuid', [self.stoq.get_uuid])
 
         payload = self.stoq.force_unicode(payload)
         email_sessions = self.carve_email(payload)
@@ -315,7 +317,7 @@ class SmtpScan(StoqWorkerPlugin):
                                 try:
                                     attachment_json = self.handle_attachments(payload=tnef_attachment.data,
                                                                               filename=filename,
-                                                                              puuid=message_json['uuid'])
+                                                                              uuid=message_json['uuid'])
                                     if attachment_json:
                                         message_json['att'].append(attachment_json)
                                 except:
@@ -325,7 +327,7 @@ class SmtpScan(StoqWorkerPlugin):
                 if not skip_attachment:
                     attachment_json = self.handle_attachments(payload=mailpart.get_payload(),
                                                               filename=filename,
-                                                              puuid=uuid)
+                                                              uuid=uuid)
                     if attachment_json:
                         attachment_json['desc'] = mailpart.part.get('Content-Description')
                         attachment_json['type'] = mailpart.type
