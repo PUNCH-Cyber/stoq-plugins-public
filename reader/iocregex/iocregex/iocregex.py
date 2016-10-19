@@ -200,7 +200,11 @@ class IOCRegexReader(StoqReaderPlugin):
                     if line.startswith("#") or len(line) < 3:
                         continue
 
-                    indicator_type, pattern = line.split(':', 1)
+                    try:
+                        indicator_type, pattern = line.split(':', 1)
+                    except:
+                        self.log.error("Invalid line in whitelist: {}".format(line))
+
                     try:
                         self.whitelist_patterns[indicator_type].add(pattern.strip())
                     except KeyError:
