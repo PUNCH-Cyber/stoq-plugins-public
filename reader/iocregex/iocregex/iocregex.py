@@ -252,7 +252,7 @@ class IOCRegexReader(StoqReaderPlugin):
                     else:
                         indicator_domain = ".{}".format(indicator)
 
-                    if indicator_domain.endswith(pattern):
+                    if indicator_domain.endswith(pattern) or indicator == pattern:
                         return False
 
                 elif indicator_type in ['mac_address', 'email', 'md5',

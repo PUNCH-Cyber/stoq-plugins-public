@@ -18,7 +18,8 @@
 # Valid Indicator Types:
 #   - ipv4 - Can be an IP address or CIDR notation
 #   - ipv6 - Can be an IP address or CIDR notation
-#   - domain - Matches a domain/url that ends with the pattern. Must be preceeded by a '.'
+#   - domain - Matches a domain/url that ends with or exactly matches pattern.
+#              Pattern must begin with '.' to match against subdomains.
 #   - email - Exact matches only
 #   - url - Matches the domain only. Pattern is identical to domain
 #   - md5 - Exact matches only
