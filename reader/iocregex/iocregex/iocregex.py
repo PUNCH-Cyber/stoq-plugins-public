@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-2016 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ Regex routines to extract and normalize IOC's from a payload
 
 import re
 import os
+import time
 import socket
 
 from urllib.parse import urlsplit
@@ -44,23 +45,11 @@ class IOCRegexReader(StoqReaderPlugin):
 
         super().activate()
 
-        # Our TLD file is not defined in the config file, let's set a default
-        if not hasattr(self, 'iana_tld_file'):
-            self.iana_tld_file = os.path.join(self.stoq.base_dir, "plugins/reader/iocregex/tlds-alpha-by-domain.txt")
-
-        # If whitelist files not defined in config file, set to blank list
+        # If whitelist file is not defined in config file, set to blank list
         if not hasattr(self, 'whitelist_file_list'):
             self.whitelist_file_list = []
 
-        # Read TLD list from file for building regex
-        try:
-            if os.path.isfile(self.iana_tld_file):
-                with open(self.iana_tld_file) as f:
-                    iana_tlds = "|".join(f.read().splitlines()[1:])
-            else:
-                self.log.error("Not a valid IANA TLD file!")
-        except:
-            self.log.error("IANA TLD File not found!")
+        iana_tlds = self.__parse_iana()
 
         # Helper regexes
         self.helpers = {}
@@ -279,3 +268,43 @@ class IOCRegexReader(StoqReaderPlugin):
             return False
 
         return True
+
+    def __parse_iana(self, update=False):
+        # Our TLD file is not defined in the config file, let's set a default
+        if not hasattr(self, 'iana_tld_file'):
+            self.iana_tld_file = os.path.abspath("plugins/reader/iocregex/tlds-alpha-by-domain.txt")
+
+        # Read TLD list from file for building regex
+        if not os.path.isfile(self.iana_tld_file):
+            self.log.error("IANA TLD File does not exist")
+            update = True
+        else:
+            # Yes, I know this is a silly way of doing it. However, I hate datetime
+            # and this is in protest.
+            tld_age = int(int(time.time() - os.path.getmtime(self.iana_tld_file)) / 86400)
+            if os.path.getsize(self.iana_tld_file) == 0:
+                self.log.warn("IANA TLD file is empty")
+                update = True
+            elif tld_age >= int(self.update_interval):
+                self.log.info("IANA TLD file is {} days old".format(tld_age))
+                update = True
+
+        if update and self.auto_update:
+            self.__download_iana()
+
+        try:
+            with open(self.iana_tld_file) as f:
+                iana_tlds = "|".join(f.read().splitlines()[1:])
+        except Exception as err:
+            self.log.warn("Unable to open IANA TLD File: {}".format(err))
+            iana_tlds = None
+
+        return iana_tlds
+
+    def __download_iana(self):
+        self.log.info("Downloading latest IANA TLD file from {}".format(self.iana_url))
+        content = self.stoq.get_file(self.iana_url)
+        if content:
+            self.stoq.write(content, filename=self.iana_tld_file, binary=True, overwrite=True)
+        else:
+            self.log.warn("No content received from {}".format(self.iana_url))

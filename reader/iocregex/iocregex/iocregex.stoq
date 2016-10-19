@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-2016 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,15 +18,22 @@ Module = iocregex
 
 [Documentation]
 Author = Mike Geide, Marcus LaFerrera
-Version = 0.11
+Version = 0.12
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Regex routines to extract and normalize IOC's from a payload
 
 [options]
 # Where is the IANA TLD file? located locally?
-# Updated file can be obtained from:
-#    https://data.iana.org/TLD/tlds-alpha-by-domain.txt
 iana_tld_file = plugins/reader/iocregex/tlds-alpha-by-domain.txt
+
+# What is the URL for the IANA TLD file?
+iana_url = https://data.iana.org/TLD/tlds-alpha-by-domain.txt
+
+# Should the IANA TLD file be updated automatically?
+auto_update = True
+
+# What is the maximum age of the IANA TLD file in days?
+update_interval = 30
 
 # List of files that contain whitelisted IOC's, separated by a comma
 whitelist_file_list = plugins/reader/iocregex/whitelist.txt
