@@ -204,6 +204,7 @@ class IOCRegexReader(StoqReaderPlugin):
                         indicator_type, pattern = line.split(':', 1)
                     except:
                         self.log.error("Invalid line in whitelist: {}".format(line))
+                        continue
 
                     try:
                         self.whitelist_patterns[indicator_type].add(pattern.strip())
