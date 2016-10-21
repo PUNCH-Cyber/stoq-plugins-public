@@ -40,11 +40,6 @@ class PublisherWorker(StoqWorkerPlugin):
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
         worker_opts = parser.add_argument_group("Plugin Options")
-        worker_opts.add_argument("-O", "--comment",
-                                 dest='user_comments',
-                                 default="",
-                                 help="Comment associated with sample \
-                                       submission")
         worker_opts.add_argument("-w", "--worker",
                                  dest='submission_list',
                                  action='append',
