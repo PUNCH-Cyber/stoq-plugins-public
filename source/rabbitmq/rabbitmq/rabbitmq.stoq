@@ -18,7 +18,7 @@ Module = rabbitmq
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.10
+Version = 0.11
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from a RabbitMQ Server
 
@@ -50,3 +50,18 @@ retries = 5
 
 # Each worker will grab N many messages from the queue.
 prefetch = 2
+
+# Should we attempt to use SSL?
+use_ssl = False
+
+# Path to the CA Certs file
+ca_certs =
+
+# Path to private key
+keyfile =
+
+# Path to certificate
+certfile =
+
+# Should certificates be checked?
+cert_reqs = False

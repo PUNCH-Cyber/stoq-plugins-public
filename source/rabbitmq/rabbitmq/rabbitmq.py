@@ -20,6 +20,8 @@ Publish and Consume messages from a RabbitMQ Server
 
 """
 
+import ssl
+
 from kombu.pools import producers
 from kombu import Connection, Consumer, Exchange, Queue
 
@@ -37,6 +39,19 @@ class RabbitMQSource(StoqSourcePlugin):
         super().activate()
 
         self.amqp_publish_conn = None
+        if self.use_ssl:
+            try:
+                self.ssl_config = {}
+                self.ssl_config['ca_certs'] = self.ca_certs
+                self.ssl_config['keyfile'] = self.keyfile
+                self.ssl_config['certfile'] = self.certfile
+                if self.cert_reqs:
+                    self.ssl_config['cert_reqs'] = ssl.CERT_REQUIRED
+            except AttributeError as err:
+                self.log.critical("SSL option missing, but required: {}".format(err))
+                self.ssl_config = False
+        else:
+            self.ssl_config = False
 
     def ingest(self):
         """
@@ -56,22 +71,29 @@ class RabbitMQSource(StoqSourcePlugin):
             exchange = Exchange(self.exchange_name, type=self.exchange_type)
             queue = Queue(routing_key, exchange, routing_key=routing_key)
 
+            self.log.info("Monitoring {} queue for messages...".format(routing_key))
+
             # Setup our broker connection with RabbitMQ
             with Connection(hostname=self.host,
                             port=self.port,
                             userid=self.user,
                             password=self.password,
-                            virtual_host=self.virtual_host) as conn:
+                            virtual_host=self.virtual_host,
+                            ssl=self.ssl_config) as conn:
 
                 conn.connect()
 
-                consumer = Consumer(conn, queue,
-                                    callbacks=[self.queue_callback])
+                consumer = Consumer(conn, queue, callbacks=[self.queue_callback])
                 consumer.qos(prefetch_count=int(self.prefetch))
                 consumer.consume()
 
                 while True:
-                    conn.drain_events()
+                    try:
+                        conn.drain_events()
+                    except Exception as err:
+                        self.log.critical("Unable to process queue: {}".format(err), exc_info=True)
+                        conn.release()
+                        break
         else:
             self.log.error("No worker name defined!")
 
@@ -83,11 +105,11 @@ class RabbitMQSource(StoqSourcePlugin):
             # Send the message to the worker
             self.stoq.worker.multiprocess_put(**kwargs)
 
-        except Exception as e:
+        except Exception as err:
+            self.log.error("Unable to process message: {}, msg: {}".format(err, kwargs))
             # Something went wrong, let's publish to the error queue.  and
             # append the error message.
-            kwargs['err'] = str(e)
-            self.log.error(kwargs)
+            kwargs['err'] = str(err)
             self.publish_connect()
             self.publish(kwargs, self.stoq.worker.name, err=True)
             self.publish_release()
@@ -110,7 +132,8 @@ class RabbitMQSource(StoqSourcePlugin):
                                             port=self.port,
                                             userid=self.user,
                                             password=self.password,
-                                            virtual_host=self.virtual_host)
+                                            virtual_host=self.virtual_host,
+                                            ssl=self.ssl_config)
         self.amqp_publish_conn.connect()
 
         return self.amqp_publish_conn
