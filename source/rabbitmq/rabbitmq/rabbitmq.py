@@ -59,43 +59,40 @@ class RabbitMQSource(StoqSourcePlugin):
 
         """
 
-        if self.stoq.worker.name:
-            # Define our RabbitMQ route
-            routing_key = self.stoq.worker.name
+        # Define our RabbitMQ route
+        routing_key = self.stoq.worker.name
 
-            # If this is an error message, let's make sure our queue
-            # has "-errors" affixed to it
-            if self.stoq.worker.error_queue is True:
-                routing_key = routing_key + "-errors".strip()
+        # If this is an error message, let's make sure our queue
+        # has "-errors" affixed to it
+        if self.stoq.worker.error_queue is True:
+            routing_key = routing_key + "-errors".strip()
 
-            exchange = Exchange(self.exchange_name, type=self.exchange_type)
-            queue = Queue(routing_key, exchange, routing_key=routing_key)
+        exchange = Exchange(self.exchange_name, type=self.exchange_type)
+        queue = Queue(routing_key, exchange, routing_key=routing_key)
 
-            self.log.info("Monitoring {} queue for messages...".format(routing_key))
+        self.log.info("Monitoring {} queue for messages...".format(routing_key))
 
-            # Setup our broker connection with RabbitMQ
-            with Connection(hostname=self.host,
-                            port=self.port,
-                            userid=self.user,
-                            password=self.password,
-                            virtual_host=self.virtual_host,
-                            ssl=self.ssl_config) as conn:
+        # Setup our broker connection with RabbitMQ
+        with Connection(hostname=self.host,
+                        port=self.port,
+                        userid=self.user,
+                        password=self.password,
+                        virtual_host=self.virtual_host,
+                        ssl=self.ssl_config) as conn:
 
-                conn.connect()
+            conn.connect()
 
-                consumer = Consumer(conn, queue, callbacks=[self.queue_callback])
-                consumer.qos(prefetch_count=int(self.prefetch))
-                consumer.consume()
+            consumer = Consumer(conn, queue, callbacks=[self.queue_callback])
+            consumer.qos(prefetch_count=int(self.prefetch))
+            consumer.consume()
 
-                while True:
-                    try:
-                        conn.drain_events()
-                    except Exception as err:
-                        self.log.critical("Unable to process queue: {}".format(err), exc_info=True)
-                        conn.release()
-                        break
-        else:
-            self.log.error("No worker name defined!")
+            while True:
+                try:
+                    conn.drain_events()
+                except Exception as err:
+                    self.log.critical("Unable to process queue: {}".format(err), exc_info=True)
+                    conn.release()
+                    break
 
     def queue_callback(self, amqp_message_data, amqp_message_handler):
         try:
@@ -145,12 +142,13 @@ class RabbitMQSource(StoqSourcePlugin):
         """
         return self.amqp_publish_conn.release()
 
-    def publish(self, msg, routing_key, err=False):
+    def publish(self, msg, routing_key, err=False, priority=0):
         """
         Publish a message to AMQP
 
         :param dict msg: Message to be published, preferrably json
         :param bytes routing_key: Route to be used, should be name of worker
+        :param int priority: Priority of the message
         :param err err: Define whether we should process error queue
 
         """
@@ -166,13 +164,16 @@ class RabbitMQSource(StoqSourcePlugin):
 
         # Define the queue so we can ensure it is declared before
         # publishing to it
-        queue = Queue(routing_key, self.amqp_exchange, routing_key=routing_key)
+        queue_arguments = {'x-max-priority': 10}
+        queue = Queue(routing_key, self.amqp_exchange, routing_key=routing_key,
+                      queue_arguments=queue_arguments)
 
         with producers[self.amqp_publish_conn].acquire(block=True) as producer:
             producer.publish(self.stoq.dumps(msg),
                              exchange=self.amqp_exchange,
                              declare=[self.amqp_exchange, queue],
-                             routing_key=routing_key)
+                             routing_key=routing_key,
+                             priority=priority)
 
     def __errback(self, exc, interval):
         """

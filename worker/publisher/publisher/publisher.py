@@ -40,6 +40,11 @@ class PublisherWorker(StoqWorkerPlugin):
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
         worker_opts = parser.add_argument_group("Plugin Options")
+        worker_opts.add_argument("-p", "--priority",
+                                 dest='priority',
+                                 type=int,
+                                 choices=range(0,11),
+                                 help="Priority of message")
         worker_opts.add_argument("-w", "--worker",
                                  dest='submission_list',
                                  action='append',
@@ -62,12 +67,10 @@ class PublisherWorker(StoqWorkerPlugin):
         Publish messages to single or multiple RabbitMQ queues for processing
 
         :param bytes payload: Payload to be published
-        :param **kwargs path: Path to file being ingested
-        :param **kwargs user_comments: Comments associated with payload
-        :param **kwargs submission_list: List of queues to publish to
+        :param str path: Path to file being ingested
+        :param list submission_list: List of queues to publish to
 
-        :returns: Results from scan
-        :rtype: True
+        :returns: True
 
         """
 
@@ -101,7 +104,13 @@ class PublisherWorker(StoqWorkerPlugin):
         else:
             kwargs['archive'] = "file"
 
+        if 'priority' in kwargs:
+            priority = int(kwargs['priority'])
+            kwargs.pop('priority')
+        else:
+            priority = self.priority
+
         for routing_key in self.submission_list:
-            self.publish_connector.publish(kwargs, routing_key)
+            self.publish_connector.publish(kwargs, routing_key, priority=priority)
 
         return True
