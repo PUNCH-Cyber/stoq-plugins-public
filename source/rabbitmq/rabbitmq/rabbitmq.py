@@ -18,6 +18,8 @@ Overview
 
 Publish and Consume messages from a RabbitMQ Server
 
+.. note:: Requires a minimum of RabbitMQ 3.5
+
 """
 
 import ssl
