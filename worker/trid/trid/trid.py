@@ -74,6 +74,10 @@ class TridScan(StoqWorkerPlugin):
             self.log.error("TrID does not exist at {}!".format(self.bin))
             return None
 
+        if not os.path.isfile(self.defs):
+            self.log.error("TrID definitions not exist at {}!".format(self.defs))
+            return None
+
         # Build our command and then execute it
         cmd = [self.bin, "-d:{}".format(self.defs), path]
         trid_results = check_output(cmd).splitlines()
