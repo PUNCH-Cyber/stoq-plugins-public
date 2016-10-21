@@ -80,13 +80,14 @@ class PublisherWorker(StoqWorkerPlugin):
         if 'uuid' not in kwargs:
             kwargs['uuid'] = [self.stoq.get_uuid]
 
-        self.log.info("Ingesting: %s" % kwargs['uuid'])
-
         if payload and 'sha1' not in kwargs:
             kwargs['sha1'] = get_sha1(payload)
 
         if 'path' in kwargs:
             kwargs['path'] = os.path.abspath(kwargs['path'])
+            self.log.info("Ingesting {}".format(kwargs['path']))
+        else:
+            self.log.info("Ingesting {}".format(kwargs['uuid'][-1]))
 
         if 'submission_list' in kwargs:
             self.submission_list = kwargs['submission_list']
