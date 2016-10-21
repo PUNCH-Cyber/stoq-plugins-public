@@ -146,10 +146,10 @@ class RabbitMQSource(StoqSourcePlugin):
         """
         Publish a message to AMQP
 
-        :param dict msg: Message to be published, preferrably json
-        :param bytes routing_key: Route to be used, should be name of worker
-        :param int priority: Priority of the message
-        :param err err: Define whether we should process error queue
+        :param dict msg: Message to be published
+        :param str routing_key: Route to be used, should be name of worker
+        :param int priority: Priority of the message, between 0-10
+        :param bool err: Define whether we should process error queue
 
         """
 
