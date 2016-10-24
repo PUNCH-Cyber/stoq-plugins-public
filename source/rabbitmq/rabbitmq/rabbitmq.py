@@ -70,7 +70,9 @@ class RabbitMQSource(StoqSourcePlugin):
             routing_key = routing_key + "-errors".strip()
 
         exchange = Exchange(self.exchange_name, type=self.exchange_type)
-        queue = Queue(routing_key, exchange, routing_key=routing_key)
+        queue_arguments = {'x-max-priority': 10}
+        queue = Queue(routing_key, exchange, routing_key=routing_key,
+                      queue_arguments=queue_arguments)
 
         self.log.info("Monitoring {} queue for messages...".format(routing_key))
 
