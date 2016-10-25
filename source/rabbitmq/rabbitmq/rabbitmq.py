@@ -146,7 +146,7 @@ class RabbitMQSource(StoqSourcePlugin):
         """
         return self.amqp_publish_conn.release()
 
-    def publish(self, msg, routing_key, err=False, priority=0):
+    def publish(self, msg, routing_key, err=False, **kwargs):
         """
         Publish a message to AMQP
 
@@ -161,6 +161,8 @@ class RabbitMQSource(StoqSourcePlugin):
         if not self.amqp_publish_conn:
             self.publish_connect()
 
+        priority = kwargs.get('priority', 0)
+        
         # If this is an error message, let's make sure our queue
         # has "-errors" affixed to it
         if err:
