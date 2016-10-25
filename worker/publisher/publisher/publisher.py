@@ -50,6 +50,9 @@ class PublisherWorker(StoqWorkerPlugin):
                                  action='append',
                                  help="Worker queues that should process \
                                        sample. May be used multiple times")
+        worker_opts.add_argument("-q", "--publisher",
+                                 dest='publisher',
+                                 help="Source plugin to publish samples to")
 
         options = parser.parse_args(self.stoq.argv[2:])
 
@@ -57,8 +60,11 @@ class PublisherWorker(StoqWorkerPlugin):
 
         # Activate the appropriate plugin so we can publish messages,
         # if needed.
-        self.publish_connector = self.stoq.load_plugin(self.publisher,
-                                                       'source')
+        self.publish_connector = self.stoq.load_plugin(self.publisher, 'source')
+
+        if not hasattr(self.publish_connector, 'publish'):
+            self.log.warn("Plugin does not support publishing to queues")
+            return False
 
         return True
 
@@ -69,12 +75,15 @@ class PublisherWorker(StoqWorkerPlugin):
         :param bytes payload: Payload to be published
         :param str path: Path to file being ingested
         :param list submission_list: List of queues to publish to
+        :param int priority: Priority of message, if supported by publisher
 
         :returns: True
 
         """
 
         super().scan()
+
+        opts = {}
 
         # For every file we ingest we are going to assign a unique
         # id so we can link everything across the scope of the ingest.
@@ -99,18 +108,20 @@ class PublisherWorker(StoqWorkerPlugin):
         # Using self.stoq.worker.archive_connector in case this plugin is
         # called from another plugin. This will ensure that the correct
         # archive connector is defined when the message is published.
-        if self.stoq.worker.archive_connector:
+        if self.stoq.worker.archive_connector and self.name != self.stoq.worker.name:
+            kwargs['archive'] = self.stoq.worker.archive_connector
+        elif self.archive_connector:
             kwargs['archive'] = self.archive_connector
         else:
             kwargs['archive'] = "file"
 
         if 'priority' in kwargs:
-            priority = int(kwargs['priority'])
+            opts['priority'] = int(kwargs['priority'])
             kwargs.pop('priority')
         else:
-            priority = self.priority
+            opts['priority'] = self.priority
 
         for routing_key in self.submission_list:
-            self.publish_connector.publish(kwargs, routing_key, priority=priority)
+            self.publish_connector.publish(kwargs, routing_key, **opts)
 
         return True

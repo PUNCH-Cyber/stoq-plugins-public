@@ -18,7 +18,7 @@ Module = publisher
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.12
+Version = 0.12.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish messages to single or multiple RabbitMQ queues for processing
 
@@ -36,5 +36,6 @@ submission_list = yara, exif, peinfo, trid
 publisher = rabbitmq
 
 # What priority level should be used for messages? Must be an integer
-# between 0-10. The higher the number, the higher the priority level
+# between 0-10. The higher the number, the higher the priority level.
+# Must be supported by the publisher source plugin.
 priority = 0
