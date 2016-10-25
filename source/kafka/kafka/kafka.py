@@ -80,7 +80,7 @@ class KafkaSource(StoqSourcePlugin):
         """
         return self.producer.close()
 
-    def publish(self, msg, topic, err=False):
+    def publish(self, msg, topic, err=False, **kwargs):
         """
         Publish a message to Kafka
 
@@ -102,4 +102,4 @@ class KafkaSource(StoqSourcePlugin):
         try:
             self.producer.send(topic, self.stoq.dumps(msg).encode())
         except:
-            self.log.error("Unable to publish message to kafka server: {}".format(msg))
+            self.log.error("Unable to publish message to Kafka server: {}".format(msg))

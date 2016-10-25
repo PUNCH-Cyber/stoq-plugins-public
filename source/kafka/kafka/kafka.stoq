@@ -18,7 +18,7 @@ Module = kafka
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1
+Version = 0.1.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from a Kafka Server
 
