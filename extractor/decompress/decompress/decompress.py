@@ -50,6 +50,7 @@ from stoq.plugins import StoqExtractorPlugin
 
 archive_magic = {
     'application/gzip': 'gzip',
+    'application/jar': '7z',
     'application/java-archive': '7z',
     'application/rar': '7z',
     'application/x-7z-compressed': '7z',
