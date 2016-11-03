@@ -66,10 +66,6 @@ class TridScan(StoqWorkerPlugin):
         results = []
         start_pos = 6
 
-        path = self.stoq.write(path=self.stoq.temp_dir,
-                               payload=payload,
-                               binary=True)
-
         if not os.path.isfile(self.bin):
             self.log.error("TrID does not exist at {}!".format(self.bin))
             return None
@@ -77,6 +73,10 @@ class TridScan(StoqWorkerPlugin):
         if not os.path.isfile(self.defs):
             self.log.error("TrID definitions not exist at {}!".format(self.defs))
             return None
+
+        path = self.stoq.write(path=self.stoq.temp_dir,
+                               payload=payload,
+                               binary=True)
 
         # Build our command and then execute it
         cmd = [self.bin, "-d:{}".format(self.defs), path]
@@ -104,13 +104,10 @@ class TridScan(StoqWorkerPlugin):
                 results.append(r)
 
         # Time to cleanup if we wrote a temp file to disk
-        try:
-            if os.isfile(path):
-                os.remove(path)
-        except:
-            pass
-
-        super().scan()
+        if os.path.isfile(path):
+            os.remove(path)
+        else:
+            self.log.warn("Unable to delete temp file {}".format(path))
 
         if results:
             return results
