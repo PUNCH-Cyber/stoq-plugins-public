@@ -20,9 +20,11 @@ Gather relevant information about an executable using pefile
 
 """
 
-import argparse
-import peutils
 import pefile
+import struct
+import peutils
+import hashlib
+import argparse
 
 from datetime import datetime
 
@@ -89,6 +91,7 @@ class PEInfoScan(StoqWorkerPlugin):
             results['section_count'] = self.get_sectioncount()
             results['sections'] = self.get_sections()
             results['imports'] = self.get_imports()
+            results['rich_header'] = self.get_rich_header()
 
             # self.pe must be closed when done otherwise you may be in store
             # for an unpleasant memory leak.
@@ -296,4 +299,46 @@ class PEInfoScan(StoqWorkerPlugin):
         except:
             return None
 
+    # http://www.ntcore.com/files/richsign.htm
+    # Originally from https://github.com/crits/crits_services/blob/master/peinfo_service/__init__.py
+    # Modified for use with stoQ
+    def get_rich_header(self):
+        try:
+            rich_hdr = self.pe.parse_rich_header()
+            if not rich_hdr:
+                return
 
+            rich_hdr['checksum'] = hex(rich_hdr['checksum'])
+
+            # Generate a signature of the block. Need to apply checksum
+            # appropriately. The hash here is sha256 because others are using
+            # that here.
+            #
+            # Most of this code was taken from pefile but modified to work
+            # on the start and checksum blocks.
+            try:
+                rich_data = self.pe.get_data(0x80, 0x80)
+                if len(rich_data) != 0x80:
+                    return None
+                data = list(struct.unpack("<32I", rich_data))
+            except pefile.PEFormatError as e:
+                return None
+
+            checksum = data[1]
+            headervalues = []
+
+            for i in range(len(data) // 2):
+                if data[2 * i] == 0x68636952: # Rich
+                    if data[2 * i + 1] != checksum:
+                        self.log.error('Rich Header corrupted')
+                    break
+                headervalues += [data[2 * i] ^ checksum, data[2 * i + 1] ^ checksum]
+
+            sha_256 = hashlib.sha256()
+            for hv in headervalues:
+                sha_256.update(struct.pack('<I', hv))
+            rich_hdr['sha256'] = sha_256.hexdigest()
+
+            return rich_hdr
+        except:
+            return None
