@@ -122,6 +122,10 @@ class PublisherWorker(StoqWorkerPlugin):
             opts['priority'] = self.priority
 
         for routing_key in self.submission_list:
-            self.publish_connector.publish(kwargs, routing_key, **opts)
+            if self.publish_connector.payload:
+                payload = self.stoq.get_file(kwargs['path'])
+                self.publish_connector.publish(kwargs, routing_key, payload=payload, **opts)
+            else:
+                self.publish_connector.publish(kwargs, routing_key, **opts)
 
         return True
