@@ -43,6 +43,8 @@ class RedisSource(StoqSourcePlugin):
 
         """
 
+        payload = None
+
         if not self.conn:
             self.connect()
 
@@ -60,15 +62,27 @@ class RedisSource(StoqSourcePlugin):
             msg = self.conn.blpop(queue, timeout=0)
             msgid = msg[1].decode()
 
-            payload = self.conn.get("{}_buf".format(msgid))
-            meta = self.conn.get("{}_meta".format(msgid))
-            meta = meta.decode()
+            try:
+                payload = self.conn.get("{}_buf".format(msgid))
+            except:
+                pass
 
-            meta = self.stoq.loads(meta)
+            try:
+                meta = self.conn.get("{}_meta".format(msgid))
+                meta = meta.decode()
+                meta = self.stoq.loads(meta)
+            except:
+                self.log.error("Unable to parse metadata: {}".format(meta))
 
             # Send the message to the worker
             try:
-                self.stoq.worker.start(payload, **meta)
+                # If there is a payload, we need to end it directly to the
+                # worker since multiprocessing is unable to accept a payload
+                if payload:
+                    self.stoq.worker.start(payload, **meta)
+                else:
+                    self.stoq.worker.multiprocess_put(**meta)
+
             except Exception as err:
                 self.log.critical(err, exc_info=True)
                 self.conn.rpush("{}-errors".format(queue), msgid)
@@ -104,16 +118,21 @@ class RedisSource(StoqSourcePlugin):
             queue = queue + "-errors".strip()
 
         try:
-            msgid = msg['uuid'][0]
+            try:
+                msgid = msg['uuid'][0]
+            except:
+                msgid = self.stoq.get_uuid
 
             # Keeping the naming structure inline with the Suricata Redis branch from LMCO
             # https://github.com/lmco/suricata/tree/file_extract_redis_prototype_v1
             msg = self.stoq.dumps(msg, compactly=True)
             self.conn.set("{}_meta".format(msgid), msg)
-            self.conn.set("{}_buf".format(msgid), payload)
+
+            if payload:
+                self.conn.set("{}_buf".format(msgid), payload)
 
             # Finally, publish the id to the queue that workers are monitoring
             self.conn.rpush(queue, msgid)
 
-        except:
-            self.log.error("Unable to publish message to Redis server: {}".format(msg))
+        except Exception as err:
+            self.log.error("Unable to publish message to Redis server: {}".format(msg), exc_info=True)

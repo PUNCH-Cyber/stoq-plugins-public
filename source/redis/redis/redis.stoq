@@ -18,15 +18,13 @@ Module = redis
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1
+Version = 0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from a Redis Server
 
 [options]
 # Does this plugin support multiprocessing?
 multiprocess = False
-
-payload = True
 
 # Host of the RabbitMQ server
 redis_host = 127.0.0.1
