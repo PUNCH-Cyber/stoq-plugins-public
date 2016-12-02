@@ -1,0 +1,16 @@
+[Core]
+Name = hybridanalysis
+Module = hybridanalysis
+
+[Documentation]
+Author = Adam Trask (@Taskr)
+Version = 0.1
+Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
+Description = Retrieve public feed data from Hybrid Analysis
+
+# All options below will be made available to the worker via self or
+# via the framework via worker.plugin_object
+[options]
+
+# Should the results of the plugin be saved?
+saveresults = True
