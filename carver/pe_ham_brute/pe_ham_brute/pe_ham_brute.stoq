@@ -1,0 +1,27 @@
+#   Copyright 2014-2016 PUNCH Cyber Analytics Group
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+[Core]
+Name = pe_ham_brute
+Module = pe_ham_brute
+
+[Documentation]
+Author = Marcus LaFerrera (Based on code from Alexander Hanel)
+Version = 0.1
+Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
+Description = Search for n-grams for use as XOR key and leverages hamming distance to determine key size.
+
+[options]
+headers = \x4d\x5a|\x5a\x4d
+key_length = 64
