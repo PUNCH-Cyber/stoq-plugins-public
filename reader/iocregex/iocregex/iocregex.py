@@ -277,7 +277,10 @@ class IOCRegexReader(StoqReaderPlugin):
     def __parse_iana(self, update=False):
         # Our TLD file is not defined in the config file, let's set a default
         if not hasattr(self, 'iana_tld_file'):
-            self.iana_tld_file = os.path.abspath("plugins/reader/iocregex/tlds-alpha-by-domain.txt")
+            self.iana_tld_file = "plugins/reader/iocregex/tlds-alpha-by-domain.txt"
+
+        # Make sure we validate the entire path
+        self.iana_tld_file = os.path.abspath(self.iana_tld_file)
 
         # Read TLD list from file for building regex
         if not os.path.isfile(self.iana_tld_file):
@@ -310,6 +313,8 @@ class IOCRegexReader(StoqReaderPlugin):
         self.log.info("Downloading latest IANA TLD file from {}".format(self.iana_url))
         content = self.stoq.get_file(self.iana_url)
         if content:
-            self.stoq.write(content, filename=self.iana_tld_file, binary=True, overwrite=True)
+            path = os.path.dirname(self.iana_tld_file)
+            filename = os.path.basename(self.iana_tld_file)
+            self.stoq.write(content, filename=filename, path=path, binary=True, overwrite=True)
         else:
             self.log.warn("No content received from {}".format(self.iana_url))
