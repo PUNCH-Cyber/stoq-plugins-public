@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-2016 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ Overview
 Retrieves and saves content to local disk
 
 """
-
-import os
 
 from stoq.scan import get_sha1
 from stoq.plugins import StoqConnectorPlugin
@@ -76,10 +74,10 @@ class FileConnector(StoqConnectorPlugin):
             append = kwargs.get('append', False)
         else:
             path = kwargs.get('path', None)
+
             if not path:
-                path = self.stoq.results_dir
-                name = kwargs.get('index', self.parentname)
-                path = os.path.join(path, name)
+                index = kwargs.get('index', self.parentname)
+                path = "{}/{}".format(self.stoq.results_dir, index)
 
             append = kwargs.get('append', False)
             filename = kwargs.get('filename', None)
