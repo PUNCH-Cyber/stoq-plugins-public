@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-2016 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ Publish messages to single or multiple queues for processing
 
 import os
 import argparse
+
+from inspect import signature
 
 from stoq.scan import get_sha1
 from stoq.args import StoqArgs
@@ -122,7 +124,7 @@ class PublisherWorker(StoqWorkerPlugin):
             opts['priority'] = self.priority
 
         for routing_key in self.submission_list:
-            if self.publish_connector.payload:
+            if 'payload' in signature(self.publish_connector.publish).parameters:
                 payload = self.stoq.get_file(kwargs['path'])
                 self.publish_connector.publish(kwargs, routing_key, payload=payload, **opts)
             else:
