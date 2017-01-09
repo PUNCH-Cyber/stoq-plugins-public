@@ -54,7 +54,7 @@ class PubsubSource(StoqSourcePlugin):
 
         while True:
             try:
-                with AutoAck(subscription, max_messages=10) as ack:
+                with AutoAck(subscription, max_messages=int(self.max_messages)) as ack:
                     for ack_id, message in list(ack.items()):
                         try:
                             msg = message.data
@@ -111,6 +111,8 @@ class PubsubSource(StoqSourcePlugin):
 
         msg = self.stoq.dumps(msg).encode()
 
+        # Sometimes the session times out, let's attempt to connect up to 5
+        # times.
         while True:
             try:
                 message_id = self.topic.publish(msg)
