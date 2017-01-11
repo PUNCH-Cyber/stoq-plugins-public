@@ -226,7 +226,7 @@ class FireeyeScan(StoqWorkerPlugin):
 
         if self.method == "API":
             result = self.send_file_to_api(images, payload, filename)
-            return self.stoq.__normalize_json(result)
+            return self.stoq.normalize_json(result)
         elif self.method == "Files":
             self.write_file_to_disk(images, payload, filename)
             return None

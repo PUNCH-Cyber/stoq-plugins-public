@@ -18,11 +18,13 @@ Module = fireeye
 
 [Documentation]
 Author = Marcus LaFerrera, Aaron Gee-Clough, & Adam Trask
-Version = 0.3
+Version = 0.3.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Submit a file to a Fireeye MAS/AX via filesystem or API
 
 [options]
+# Minimum required stoQ version
+min_stoq_version = 0.10.12
 
 # Should the payload be hashed? Set to False if using the Files method
 hashpayload = True
