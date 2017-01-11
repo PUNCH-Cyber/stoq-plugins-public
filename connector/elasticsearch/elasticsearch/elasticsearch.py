@@ -22,6 +22,8 @@ Saves content to an ElasticSearch index
 import time
 import threading
 import traceback
+
+from datetime import datetime
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch.helpers import bulk
@@ -32,18 +34,29 @@ from stoq.plugins import StoqConnectorPlugin
 class ElasticSearchConnector(StoqConnectorPlugin):
 
     def __init__(self):
-        super().__init__()
+        self.date_suffix = None
         self.buffer_lock = threading.Lock()
         self.buffer = []
 
+        super().__init__()
+
     def activate(self, stoq):
         self.stoq = stoq
+
         super().activate()
+
         self.bulk_size = int(self.bulk_size)
         self.bulk_interval = int(self.bulk_interval)
+
         if self.bulk:
             self.last_commit_time = time.time()
             self.wants_heartbeat = True
+
+        self.date_suffixes = {'day': '%Y%m%d',
+                              'month': '%Y%m',
+                              'year': '%Y'
+                              }
+
         # No ES connection, let's make one.
         self.connect()
 
@@ -78,8 +91,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
             while len(self.buffer) > 0:
                 self.buffer.pop()
         except TransportError:
-            tb = traceback.format_exc()
-            self.log.error("Error committing to Elasticsearch: {}".format(tb))
+            self.log.error("Error committing to Elasticsearch", exc_info=True)
             self.log.error("Failed commits: {}".format(str(self.buffer)))
         finally:
             self.buffer_lock.release()
@@ -102,7 +114,8 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         Save results to elasticsearch
 
         :param bytes payload: Content to be inserted into elasticsearch
-        :param **kwargs index: Index name to save content to
+        :param str index: Index name to save content to
+        :param str date_suffix: Date formated string to append to the index
 
         :returns: Results of the elasticsearch insert
 
@@ -110,24 +123,38 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         # Define the index name, if available. Will default to the plugin name
         index = kwargs.get('index', self.parentname)
+        doc_type = index
+
+        date_suffix = kwargs.get('date_suffix', self.date_suffix)
+        date_format = self.date_suffixes.get(date_suffix, None)
+
+        # Append a date suffix to the index
+        if date_format:
+            try:
+                date = kwargs.get('date', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                formated_date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').strftime(date_format)
+                index = "{}-{}".format(index, formated_date)
+            except Exception as err:
+                self.log.error("Unable to append date suffix ({}) to index: {}".format(date, err))
 
         # Make sure we convert the dict() into a valid json string,
         # otherwise some issues will arise when values containing bytes
-        # are saved.
-        # Insert our data and return our results from the ES server
+        # are saved. Insert our data and return our results from the ES server
+        result = self.stoq.dumps(payload, compactly=True)
         if not self.bulk:
             return self.es.index(index=index,
-                                 doc_type=index,
-                                 body=self.stoq.dumps(payload))
+                                 doc_type=doc_type,
+                                 body=result)
         else:
             action = {"_index": index,
                       "_type": index,
-                      "_source": self.stoq.dumps(payload,
-                                                 compactly=True)}
+                      "_source": result}
+
             self.buffer_lock.acquire()
             self.buffer.append(action)
             buf_len = len(self.buffer)
             self.buffer_lock.release()
+
             return "queued: {}".format(buf_len)
 
     def connect(self):
