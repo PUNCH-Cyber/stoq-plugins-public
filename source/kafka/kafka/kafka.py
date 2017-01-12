@@ -44,8 +44,8 @@ class KafkaSource(StoqSourcePlugin):
         """
 
         # Define our Kafka topic
-        if not self.source_queue:
-            topic = self.source_queue
+        if self.stoq.worker.source_queue:
+            topic = self.stoq.worker.source_queue
         else:
             topic = self.stoq.worker.name
 

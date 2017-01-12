@@ -37,8 +37,8 @@ class PubsubSource(StoqSourcePlugin):
         self.conn = None
 
         # If no source_queue is defined, default to the name of the worker
-        if not self.source_queue:
-            self.topic = self.source_queue
+        if self.stoq.worker.source_queue:
+            self.topic = self.stoq.worker.source_queue
         else:
             self.topic = self.stoq.worker.name
 

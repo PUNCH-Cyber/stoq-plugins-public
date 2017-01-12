@@ -49,8 +49,8 @@ class RedisSource(StoqSourcePlugin):
             self.connect()
 
         # If no source_queue is defined, default to the name of the worker
-        if not self.source_queue:
-            queue = self.source_queue
+        if self.stoq.worker.source_queue:
+            queue = self.stoq.worker.source_queue
         else:
             queue = self.stoq.worker.name
 

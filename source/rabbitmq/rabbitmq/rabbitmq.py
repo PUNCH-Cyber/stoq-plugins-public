@@ -63,8 +63,8 @@ class RabbitMQSource(StoqSourcePlugin):
         """
 
         # Define our RabbitMQ route
-        if not self.source_queue:
-            routing_key = self.source_queue
+        if self.stoq.worker.source_queue:
+            routing_key = self.stoq.worker.source_queue
         else:
             routing_key = self.stoq.worker.name
 
