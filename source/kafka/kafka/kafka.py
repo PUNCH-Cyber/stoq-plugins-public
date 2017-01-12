@@ -44,7 +44,10 @@ class KafkaSource(StoqSourcePlugin):
         """
 
         # Define our Kafka topic
-        topic = self.stoq.worker.name
+        if not self.source_queue:
+            topic = self.source_queue
+        else:
+            topic = self.stoq.worker.name
 
         # If this is an error message, let's make sure our topic
         # has "-errors" affixed to it
@@ -85,12 +88,12 @@ class KafkaSource(StoqSourcePlugin):
         Publish a message to Kafka
 
         :param dict msg: Message to be published
-        :param str topic: Topic to be used, should be name of worker
+        :param str topic: Topic used to publish message into
         :param bool err: Define whether we should process error topic
 
         """
 
-        # Make sure we have a valid connection to RabbitMQ
+        # Make sure we have a valid connection to Kafka
         if not self.producer:
             self.producer_connect()
 

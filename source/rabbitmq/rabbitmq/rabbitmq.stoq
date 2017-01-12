@@ -18,11 +18,14 @@ Module = rabbitmq
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.12.2
+Version = 0.12.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from a RabbitMQ Server
 
 [options]
+# Minimum version of stoQ required
+min_stoq_version = 0.10.13
+
 # Does this plugin support multiprocessing?
 multiprocess = False
 

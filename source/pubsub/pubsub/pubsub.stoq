@@ -18,11 +18,16 @@ Module = pubsub
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.2
+Version = 0.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from Google's Pub/Sub Service
 
 [options]
 # Does this plugin support multiprocessing?
 multiprocess = False
+
+# Number of messages to retrieve per request
 max_messages = 100
+
+# Minimum version of stoQ required
+min_stoq_version = 0.10.13

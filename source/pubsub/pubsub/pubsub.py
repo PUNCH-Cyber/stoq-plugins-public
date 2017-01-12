@@ -34,7 +34,14 @@ class PubsubSource(StoqSourcePlugin):
 
     def activate(self, stoq):
         self.stoq = stoq
-        self.topic = None
+        self.conn = None
+
+        # If no source_queue is defined, default to the name of the worker
+        if not self.source_queue:
+            self.topic = self.source_queue
+        else:
+            self.topic = self.stoq.worker.name
+
         super().activate()
 
     def ingest(self):
@@ -45,12 +52,12 @@ class PubsubSource(StoqSourcePlugin):
 
         self._connect()
 
-        subscription = self.topic.subscription(self.stoq.worker.name)
+        subscription = self.conn.subscription(self.topic)
 
         if not subscription.exists():
             subscription.create()
 
-        self.log.info("Monitoring {} subscription for messages...".format(self.stoq.worker.name))
+        self.log.info("Monitoring {} subscription for messages...".format(self.topic))
 
         while True:
             try:
@@ -85,13 +92,13 @@ class PubsubSource(StoqSourcePlugin):
         pubsub_client = pubsub.Client()
 
         if not topic:
-            topic = self.stoq.worker.name
+            topic = self.topic
 
-        self.topic = pubsub_client.topic(topic)
+        self.conn = pubsub_client.topic(topic)
 
         # Create topic if it does not exist
-        if not self.topic.exists():
-            self.topic.create()
+        if not self.conn.exists():
+            self.conn.create()
 
     def publish(self, msg, topic, err=False, **kwargs):
         """
@@ -105,8 +112,8 @@ class PubsubSource(StoqSourcePlugin):
 
         count = 0
 
-        # Make sure we have a valid connection to RabbitMQ
-        if not self.topic:
+        # Make sure we have a valid connection to Pub/Sub
+        if not self.conn:
             self._connect(topic)
 
         msg = self.stoq.dumps(msg).encode()
@@ -115,7 +122,7 @@ class PubsubSource(StoqSourcePlugin):
         # times.
         while True:
             try:
-                message_id = self.topic.publish(msg)
+                message_id = self.conn.publish(msg)
                 self.log.debug("Message {} published".format(message_id))
                 break
             except Exception as err:

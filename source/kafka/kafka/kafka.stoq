@@ -18,15 +18,18 @@ Module = kafka
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.1.1
+Version = 0.1.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from a Kafka Server
 
 [options]
+# Minimum version of stoQ required
+min_stoq_version = 0.10.13
+
 # Does this plugin support multiprocessing?
 multiprocess = False
 
-# Host of the RabbitMQ server
+# Host of the Kafka server
 servers_list = 127.0.0.1:9092
 
 # Group to consume/publish messages from/to

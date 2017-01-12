@@ -41,6 +41,7 @@ class RabbitMQSource(StoqSourcePlugin):
         super().activate()
 
         self.amqp_publish_conn = None
+
         if self.use_ssl:
             try:
                 self.ssl_config = {}
@@ -62,7 +63,10 @@ class RabbitMQSource(StoqSourcePlugin):
         """
 
         # Define our RabbitMQ route
-        routing_key = self.stoq.worker.name
+        if not self.source_queue:
+            routing_key = self.source_queue
+        else:
+            routing_key = self.stoq.worker.name
 
         # If this is an error message, let's make sure our queue
         # has "-errors" affixed to it
@@ -162,7 +166,7 @@ class RabbitMQSource(StoqSourcePlugin):
             self.publish_connect()
 
         priority = kwargs.get('priority', 0)
-        
+
         # If this is an error message, let's make sure our queue
         # has "-errors" affixed to it
         if err:

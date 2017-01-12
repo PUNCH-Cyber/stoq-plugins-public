@@ -37,7 +37,7 @@ class RedisSource(StoqSourcePlugin):
 
         super().activate()
 
-    def ingest(self, queue=None):
+    def ingest(self):
         """
         Monitor Redis for messages
 
@@ -48,7 +48,10 @@ class RedisSource(StoqSourcePlugin):
         if not self.conn:
             self.connect()
 
-        if not queue:
+        # If no source_queue is defined, default to the name of the worker
+        if not self.source_queue:
+            queue = self.source_queue
+        else:
             queue = self.stoq.worker.name
 
         # If this is an error message, let's make sure our topic
