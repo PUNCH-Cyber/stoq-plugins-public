@@ -25,7 +25,7 @@ import traceback
 
 from datetime import datetime
 from elasticsearch import Elasticsearch
-from elasticsearch.exceptions import TransportError
+from elasticsearch.exceptions import TransportError, RequestError
 from elasticsearch.helpers import bulk, BulkIndexError
 
 from stoq.plugins import StoqConnectorPlugin
@@ -86,13 +86,27 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
     def _commit(self):
         self.buffer_lock.acquire()
-        try:
-            bulk(client=self.es, actions=self.buffer)
-        except (TransportError, BulkIndexError):
-            self.log.error("Error committing to Elasticsearch", exc_info=True)
-        finally:
-            self.buffer = []
-            self.buffer_lock.release()
+        count = 0
+
+        while True:
+            try:
+                bulk(client=self.es, actions=self.buffer)
+                break
+            except BulkIndexError:
+                self.log.error("Failed committing to Elasticsearch: {}".format(err))
+                break
+            except Exception as err:
+                # Make sure we don't end up in an infinite loop
+                if count > 5:
+                    self.log.error("Failed to commit to Elasticsearch: ", exc_info=True)
+                    break
+
+                self.log.warn("Error committing to Elasticsearch, trying again: {}".format(err))
+                time.sleep(2)
+                count += 1
+
+        self.buffer = []
+        self.buffer_lock.release()
 
     def _check_commit(self):
         if not self.bulk:
@@ -140,9 +154,22 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         # are saved. Insert our data and return our results from the ES server
         result = self.stoq.dumps(payload, compactly=True)
         if not self.bulk:
-            return self.es.index(index=index,
-                                 doc_type=doc_type,
-                                 body=result)
+            count = 0
+            while True:
+                try:
+                    return self.es.index(index=index, doc_type=doc_type, body=result)
+                except RequestError:
+                    self.log.error("Failed committing to Elasticsearch: {}".format(err))
+                    break
+                except Exception as err:
+                    # Make sure we don't end up in an infinite loop
+                    if count > 5:
+                        self.log.error("Failed to commit to Elasticsearch: ", exc_info=True)
+                        break
+
+                    self.log.warn("Error committing to Elasticsearch, trying again: {}".format(err))
+                    time.sleep(2)
+                    count += 1
         else:
             action = {"_index": index,
                       "_type": index,
