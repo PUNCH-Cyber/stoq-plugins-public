@@ -26,7 +26,7 @@ import traceback
 from datetime import datetime
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
-from elasticsearch.helpers import bulk
+from elasticsearch.helpers import bulk, BulkIndexError
 
 from stoq.plugins import StoqConnectorPlugin
 
@@ -88,12 +88,10 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         self.buffer_lock.acquire()
         try:
             bulk(client=self.es, actions=self.buffer)
-            while len(self.buffer) > 0:
-                self.buffer.pop()
-        except TransportError:
+        except (TransportError, BulkIndexError):
             self.log.error("Error committing to Elasticsearch", exc_info=True)
-            self.log.error("Failed commits: {}".format(str(self.buffer)))
         finally:
+            self.buffer = []
             self.buffer_lock.release()
 
     def _check_commit(self):
