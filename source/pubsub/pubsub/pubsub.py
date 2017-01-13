@@ -77,7 +77,7 @@ class PubsubSource(StoqSourcePlugin):
 
             except Exception as err:
                 self.log.warn("Unable to connect to Pub/Sub subscription: {}".format(err))
-                sleep(1)
+                self._connect()
 
     def _connect(self, topic=None):
         """
