@@ -92,7 +92,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
             try:
                 bulk(client=self.es, actions=self.buffer)
                 break
-            except BulkIndexError:
+            except BulkIndexError as err:
                 self.log.error("Failed committing to Elasticsearch: {}".format(err))
                 break
             except Exception as err:
@@ -158,7 +158,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
             while True:
                 try:
                     return self.es.index(index=index, doc_type=doc_type, body=result)
-                except RequestError:
+                except RequestError as err:
                     self.log.error("Failed committing to Elasticsearch: {}".format(err))
                     break
                 except Exception as err:
