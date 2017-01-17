@@ -53,7 +53,7 @@ class PastebinScan(StoqWorkerPlugin):
 
     def scan(self, payload=None, **kwargs):
         """
-        Interact with Censys API
+        Interact with Pastebin API
 
         :param None payload: Unused
         :param str limit: Maximum number of results to return
@@ -82,6 +82,7 @@ class PastebinScan(StoqWorkerPlugin):
             paste_date =  int(paste['date'])
             if epoch < paste_date:
                 paste_dates.append(paste_date)
+                paste['date'] = datetime.datetime.utcfromtimestamp(paste_date).isoformat()
                 try:
                     content = self.stoq.get_file(paste['scrape_url'])
                     paste['content'] = self.stoq.force_unicode(content)

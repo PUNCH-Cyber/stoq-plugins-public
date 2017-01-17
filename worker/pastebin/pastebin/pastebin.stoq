@@ -18,7 +18,7 @@ Module = pastebin
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.2
+Version = 0.2.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Scrape pastebin content
 
