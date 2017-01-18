@@ -50,18 +50,15 @@ class PubsubSource(StoqSourcePlugin):
 
         """
 
-        self._connect()
-
-        subscription = self.conn.subscription(self.topic)
-
-        if not subscription.exists():
-            subscription.create()
+        if not self.conn:
+            self._connect()
 
         self.log.info("Monitoring {} subscription for messages...".format(self.topic))
 
         while True:
             try:
-                with AutoAck(subscription, max_messages=int(self.max_messages)) as ack:
+                with AutoAck(self.subscription, max_messages=int(self.max_messages)) as ack:
+                    self.log.info("Received {} messages from {}".format(len(ack), self.topic))
                     for ack_id, message in list(ack.items()):
                         try:
                             msg = message.data
@@ -76,7 +73,6 @@ class PubsubSource(StoqSourcePlugin):
                                 pass
 
             except Exception as err:
-                self.log.warn("Unable to connect to Pub/Sub subscription: {}".format(err))
                 self._connect()
 
     def _connect(self, topic=None):
@@ -99,6 +95,11 @@ class PubsubSource(StoqSourcePlugin):
         # Create topic if it does not exist
         if not self.conn.exists():
             self.conn.create()
+
+        self.subscription = self.conn.subscription(topic)
+
+        if not self.subscription.exists():
+            self.subscription.create()
 
     def publish(self, msg, topic, err=False, **kwargs):
         """

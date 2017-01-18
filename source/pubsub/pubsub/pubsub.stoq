@@ -18,7 +18,7 @@ Module = pubsub
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.3.1
+Version = 0.3.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from Google's Pub/Sub Service
 
