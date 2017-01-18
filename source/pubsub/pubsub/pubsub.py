@@ -122,7 +122,7 @@ class PubsubSource(StoqSourcePlugin):
         # The largest message permitted by pub/sub is 10mb, so we will need
         # to skip anything that is larger.
         if len(msg) > 10485759:
-            self.log.warn("Message is larger than 10m, skipping!")
+            self.log.warn("Message is larger than 10mb, skipping!")
             return
 
         # Sometimes the session times out, let's attempt to connect up to 5
@@ -139,5 +139,5 @@ class PubsubSource(StoqSourcePlugin):
                     break
 
                 self.log.warn("Unable to publish message, trying again...")
-                sleep(1)
+                self._connect(topic)
                 count += 1
