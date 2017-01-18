@@ -58,7 +58,7 @@ class PubsubSource(StoqSourcePlugin):
         while True:
             try:
                 with AutoAck(self.subscription, max_messages=int(self.max_messages)) as ack:
-                    self.log.info("Received {} messages from {}".format(len(ack), self.topic))
+                    self.log.debug("Received {} messages from {}".format(len(ack), self.topic))
                     for ack_id, message in list(ack.items()):
                         try:
                             msg = message.data
@@ -118,6 +118,12 @@ class PubsubSource(StoqSourcePlugin):
             self._connect(topic)
 
         msg = self.stoq.dumps(msg).encode()
+
+        # The largest message permitted by pub/sub is 10mb, so we will need
+        # to skip anything that is larger.
+        if len(msg) > 10485759:
+            self.log.warn("Message is larger than 10m, skipping!")
+            return
 
         # Sometimes the session times out, let's attempt to connect up to 5
         # times.
