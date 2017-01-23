@@ -62,13 +62,10 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
     def scan(self, payload, **kwargs):
         """
         Scan a payload using yara
-
         :param bytes payload: Payload to be scanned
-        :param **kwargs kwargs: Additional parameters (unused)
-
+        :param **kwargs yararules: specify a particular ruleset
         :returns: Results from scan
         :rtype: dict or None
-
         """
 
         # Define our required variables
@@ -76,8 +73,16 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
 
         # Scan the payload with a timeout using yara
         self.rule_lock.acquire()
-        self.rules.match(data=payload, timeout=60,
-                         callback=self._scan_callback)
+
+        # We want to be special... let's use a specific ruleset
+        if 'yararules' in kwargs:
+            ruleset_path = kwargs.get('yararules')
+            self._custom_scan(payload, ruleset_path)
+
+        else:
+            self.rules.match(data=payload, timeout=60,
+                             callback=self._scan_callback)
+
         self.rule_lock.release()
         super().scan()
 
@@ -86,6 +91,22 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
             return self.results
         else:
             return None
+
+    def _custom_scan(self, payload, ruleset_path):
+        try:
+            # Assume the target ruleset is already compiled
+            rules = yara.load(ruleset_path)
+        except yara.Error:
+            # What?! These rules aren't compiled? Fine... let's try to compile them
+            try:
+                rules = yara.compile(ruleset_path)
+            except yara.Error:
+                # Well that was unfortunate, no rules for us
+                rules = None
+
+        if rules:
+            rules.match(data=payload, timeout=60,
+                        callback=self._scan_callback)
 
     # If the rules file is modified, we are going to reload the rules.
     def on_modified(self, event):
