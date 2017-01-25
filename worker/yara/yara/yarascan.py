@@ -76,7 +76,7 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
 
         # We want to be special... let's use a specific ruleset
         if 'yararules' in kwargs:
-            ruleset_path = kwargs.get('yararules')
+            ruleset_path = kwargs.pop('yararules')
             self._custom_scan(payload, ruleset_path)
 
         else:
