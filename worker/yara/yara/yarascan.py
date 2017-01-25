@@ -92,17 +92,29 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
         else:
             return None
 
-    def _custom_scan(self, payload, ruleset_path):
-        try:
-            # Assume the target ruleset is already compiled
-            rules = yara.load(ruleset_path)
-        except yara.Error:
-            # What?! These rules aren't compiled? Fine... let's try to compile them
+    def _custom_scan(self, payload, ruleset):
+
+        # StringIO Object
+        if hasattr(ruleset, 'getvalue'):
             try:
-                rules = yara.compile(ruleset_path)
+                rules = yara.compile(source=ruleset.getvalue())
             except yara.Error:
-                # Well that was unfortunate, no rules for us
                 rules = None
+                self.log.error("Unable to compile ruleset from passed StringIO object")
+
+        # File path
+        else:
+            try:
+                # Assume the target ruleset is already compiled
+                rules = yara.load(filepath=ruleset)
+            except yara.Error:
+                # What?! These rules aren't compiled? Fine... let's try to compile them
+                try:
+                    rules = yara.compile(filepath=ruleset)
+                except yara.Error:
+                    # Well that was unfortunate, no rules for us
+                    rules = None
+                    self.log.error("Unable to load custom ruleset from filepath {}".format(ruleset))
 
         if rules:
             rules.match(data=payload, timeout=60,
