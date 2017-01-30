@@ -44,10 +44,7 @@ class QueueConnector(StoqConnectorPlugin):
 
         """
 
-        if 'index' in kwargs:
-            routing_key = kwargs['index']
-        else:
-            routing_key = "{}-{}".format(self.parentname, "results")
+        routing_key = kwargs.get('index', "{}-results".format(self.parentname))
 
         if hasattr(self.queue, 'publish'):
             self.queue.publish(payload, routing_key)

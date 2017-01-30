@@ -18,7 +18,7 @@ Module = queue
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.3
+Version = 0.3.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Send results to a queuing system, such as RabbitMQ
 
