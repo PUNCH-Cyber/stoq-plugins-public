@@ -21,6 +21,7 @@ Scrape Pastebin content
 """
 
 import argparse
+import datetime
 
 from stoq.args import StoqArgs
 from stoq.plugins import StoqWorkerPlugin
