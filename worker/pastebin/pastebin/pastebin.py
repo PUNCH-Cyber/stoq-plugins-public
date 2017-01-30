@@ -90,7 +90,7 @@ class PastebinScan(StoqWorkerPlugin):
                 except:
                     paste['content'] = "ERR"
 
-                self.connectors[self.output_connector].save(paste)
+                self.connectors[self.output_connector].save(paste, index='pastebin')
 
         # Write the latest epoch to the tracker file
         with open(self.tracker, "w") as tracker:
