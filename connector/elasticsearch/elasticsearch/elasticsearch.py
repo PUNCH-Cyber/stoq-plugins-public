@@ -45,6 +45,8 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         super().activate()
 
+        self.es_timeout = int(self.es_timeout)
+        self.es_max_retries = int(self.es_max_retries)
         self.bulk_size = int(self.bulk_size)
         self.bulk_interval = int(self.bulk_interval)
 
@@ -187,4 +189,6 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         Connect to an elasticsearch instance
 
         """
-        self.es = Elasticsearch(self.conn)
+        self.es = Elasticsearch(self.conn, timeout=self.es_timeout,
+                                max_retries=self.es_max_retries,
+                                retry_on_timeout=self.es_retry)

@@ -18,7 +18,7 @@ Module = elasticsearch
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.6.2
+Version = 0.6.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Saves content to an ElasticSearch index
 
@@ -42,6 +42,15 @@ Description = Saves content to an ElasticSearch index
 # conn = [{'host': 'localhost'}, {'host': 'othernode', 'port': 443, 'url_prefix': 'es', 'use_ssl': True}, ]
 
 conn = 127.0.0.1:9200
+
+# How long should we wait for ES operations before it times out?
+es_timeout = 60
+
+# Should we try again if an operation fails?
+es_retry = True
+
+# How many time should we try an operation if a timeout occurs?
+es_max_retries = 10
 
 # Date formatting that is appended to the index. If this required, simply uncomment
 # the below value. Valid options are day, month, year
