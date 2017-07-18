@@ -6,9 +6,15 @@ import argparse
 from tnefparse import TNEF
 
 from stoq.args import StoqArgs
-from stoq.filters import StoqBloomFilter
 from stoq.plugins import StoqWorkerPlugin
 from stoq.scan import get_md5, get_sha1, get_sha256, get_sha512, get_ssdeep, get_magic
+
+try:
+    from stoq.filters import StoqBloomFilter
+    BLOOM_ENABLED = True
+except ImportError:
+    BLOOM_ENABLED = False
+    pass
 
 
 class SmtpScan(StoqWorkerPlugin):
@@ -42,7 +48,7 @@ class SmtpScan(StoqWorkerPlugin):
             self.log.warn("iocregex reader plugin is not installed. IOC's will not be extracted")
             self.extract_iocs = False
 
-        if self.use_bloom:
+        if self.use_bloom and BLOOM_ENABLED:
             # Initialize bloomfilters
             self.bloomfilters = {}
 

@@ -4,7 +4,7 @@ Module = smtp
 
 [Documentation]
 Author = Marcus LaFerrera, Adam Trask
-Version = 0.11
+Version = 0.11.1
 Website = https://github.com/PUNCH-Cyber/stoq
 Description = SMTP Parser Worker
 
@@ -24,7 +24,7 @@ attachment_connector = file
 
 # Should bloom filters be used to track specified SMTP headers?
 # If True, the SMTP plugin may only be run once at a time
-use_bloom = True
+use_bloom = False
 
 # Where is the bloom filters file located?
 bloom_directory = plugins/worker/smtp/email_filters
