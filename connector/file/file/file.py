@@ -19,6 +19,7 @@ Overview
 Retrieves and saves content to local disk
 
 """
+from datetime import datetime
 
 from stoq.scan import get_sha1
 from stoq.plugins import StoqConnectorPlugin
@@ -31,6 +32,8 @@ class FileConnector(StoqConnectorPlugin):
 
     def activate(self, stoq):
         self.stoq = stoq
+        self.date_format = "%Y/%m/%d"
+
         super().activate()
 
     # We are just going to be a wrapper for Stoq.get_file()
@@ -63,6 +66,7 @@ class FileConnector(StoqConnectorPlugin):
         :param str sha1: SHA1 hash to use as a filename
         :param str filename: Filename to save the file as
         :param str path: Path where the file will be saved to
+        :param bool use_date: Append current date to the path
         :param bool append: Allow append to output file?
 
         """
@@ -89,6 +93,11 @@ class FileConnector(StoqConnectorPlugin):
             # Append a newline to the result, if we are appending to a file
             if append:
                 payload += '\n'
+
+        use_date = kwargs.get('use_date', False)
+        if use_date:
+            now = datetime.now().strftime(self.date_format)
+            path = "{}/{}".format(path, now)
 
         fullpath = self.stoq.write(path=path, filename=filename, payload=payload,
                                    binary=binary, append=append)

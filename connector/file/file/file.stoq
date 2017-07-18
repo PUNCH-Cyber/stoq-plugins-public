@@ -18,10 +18,13 @@ Module = file
 
 [Documentation]
 Author = Marcus LaFerrera & Adam Trask
-Version = 0.9.10
+Version = 0.10.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Retrieves and saves content to local disk
 
 [options]
 # Specify whether JSON output should be compact or not
 compactly = False
+
+# Append the below datetime formatter to the output path if requested
+date_format = %%Y/%%m/%%d
