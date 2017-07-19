@@ -4,7 +4,7 @@ Module = smtp
 
 [Documentation]
 Author = Marcus LaFerrera, Adam Trask
-Version = 0.11.1
+Version = 0.12.0
 Website = https://github.com/PUNCH-Cyber/stoq
 Description = SMTP Parser Worker
 

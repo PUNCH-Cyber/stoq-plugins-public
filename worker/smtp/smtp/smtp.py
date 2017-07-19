@@ -38,6 +38,10 @@ class SmtpScan(StoqWorkerPlugin):
 
         super().activate(options=options)
 
+        # We want to save each result individually, so let's save the output
+        # when we scan it rather than having the framework handle it
+        self.load_connector(self.output_connector)
+
         self.publisher = None
 
         try:
@@ -104,7 +108,7 @@ class SmtpScan(StoqWorkerPlugin):
             try:
                 if vortex_filename_split[6].find('s') == -1:
                     # Looks like this is a client file, no need to parse it.
-                    return
+                    return False
                 vortex_filename_ips = vortex_filename_split[6].split('s')
             except:
                 pass
@@ -212,6 +216,12 @@ class SmtpScan(StoqWorkerPlugin):
 
         # Get the appropriate metadata from the vortex filename
         vortex_meta = self.vortex_metadata(kwargs['filename'])
+
+        # If vortex_meta returns False, it means the payload being analyzed is the client
+        # session, which contains useless information. Let's just skip it.
+        if vortex_meta is False:
+            self.log.debug("Vortex client sessions provided, skipping...")
+            return True
 
         # Iterate over each e-mail session
         for email_session in self.carve_email(payload):
