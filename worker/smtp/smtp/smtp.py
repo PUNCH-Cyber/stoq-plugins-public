@@ -12,7 +12,7 @@ from stoq.scan import get_md5, get_sha1, get_sha256, get_sha512, get_ssdeep, get
 try:
     from stoq.filters import StoqBloomFilter
     BLOOM_ENABLED = True
-except ImportError:
+except:
     BLOOM_ENABLED = False
     pass
 
@@ -123,13 +123,13 @@ class SmtpScan(StoqWorkerPlugin):
 
         """
 
-        regex = re.compile(r'\r\n^DATA\r\n(.*?)\r\n^\.\r\n', re.M | re.S)
+        regex = re.compile(r'\r?\n^DATA\r?\n(.*?)\r?\n\r?\n^\.\r?\n', re.M | re.S)
         matches = re.findall(regex, payload)
         if matches:
-            return matches
+            for match in matches:
+                yield match
         else:
-            # Return as a list so we can iterate
-            return [payload]
+            yield payload
 
     def attachment_metadata(self, payload=None, filename=None, uuid=None):
         # Make sure we have a payload, otherwise return None
@@ -209,13 +209,12 @@ class SmtpScan(StoqWorkerPlugin):
         uuid = kwargs.get('uuid', [self.stoq.get_uuid])
 
         payload = self.stoq.force_unicode(payload)
-        email_sessions = self.carve_email(payload)
 
         # Get the appropriate metadata from the vortex filename
         vortex_meta = self.vortex_metadata(kwargs['filename'])
 
         # Iterate over each e-mail session
-        for email_session in email_sessions:
+        for email_session in self.carve_email(payload):
             message_json = {}
             message = pyzmail.message_from_string(email_session)
 
@@ -339,27 +338,34 @@ class SmtpScan(StoqWorkerPlugin):
                         attachment_json['type'] = mailpart.type
                         message_json['att'].append(attachment_json)
 
-        if self.use_bloom:
-            # Check bloom filters
-            for field_name, field_bloom in self.bloomfilters.items():
+            if self.use_bloom:
+                # Check bloom filters
+                for field_name, field_bloom in self.bloomfilters.items():
 
-                # If the configured field name exists in parsed data...
-                if field_name in message_json:
+                    # If the configured field name exists in parsed data...
+                    if field_name in message_json:
 
-                    # extract the field value and check if it has been seen
-                    # before...
-                    field_value = message_json[field_name]
-                    seen_before = field_bloom.query_filter(
-                        field_value, add_missing=True)
+                        # extract the field value and check if it has been seen
+                        # before...
+                        field_value = message_json[field_name]
+                        seen_before = field_bloom.query_filter(
+                            field_value, add_missing=True)
 
-                    # Generate JSON entry key for flagging new field values
-                    field_flag = "{}_isnew".format(field_name)
+                        # Generate JSON entry key for flagging new field values
+                        field_flag = "{}_isnew".format(field_name)
 
-                    # if the value has not been seen before...
-                    if not seen_before:
-                        # flag it as new within JSON
-                        message_json[field_flag] = True
-                    else:
-                        message_json[field_flag] = False
+                        # if the value has not been seen before...
+                        if not seen_before:
+                            # flag it as new within JSON
+                            message_json[field_flag] = True
+                        else:
+                            message_json[field_flag] = False
 
-        return message_json
+            # We are saving results here, rather than return to the framework due to some
+            # e-mail sessions having multiple e-mails per session. If this is not done,
+            # only the very last e-mail in the session will be saved.
+            # TODO: Update stoQ to be able to handle multiple results from a plugin
+            self.connectors[self.output_connector].save(message_json, index='smtp',
+                                                        use_date=self.use_output_date)
+
+        return True

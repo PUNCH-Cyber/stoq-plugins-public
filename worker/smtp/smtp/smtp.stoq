@@ -10,7 +10,10 @@ Description = SMTP Parser Worker
 
 [options]
 hashpayload = True
-saveresults = True
+saveresults = False
+
+# Minimum version of stoQ required to work
+min_stoq_version = 0.10.16
 
 # Should a queuing plugin be used? True or False
 # publisher worker plugin is required to be installed
