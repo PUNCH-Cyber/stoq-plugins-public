@@ -26,6 +26,10 @@ class SmtpScan(StoqWorkerPlugin):
 
         self.stoq = stoq
 
+        # Override the TNEF logger, otherwise we end up with a bunch of duplicate
+        # log events
+        TNEF.logger = self.stoq.log
+
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
 
@@ -88,9 +92,19 @@ class SmtpScan(StoqWorkerPlugin):
         if self.use_queue:
             self.publisher = self.stoq.load_plugin('publisher', 'worker')
         else:
-            for worker in self.workers_list:
-                self.load_worker(worker)
-                self.workers[worker].output_connector = self.output_connector
+            # Make sure the list isn't empty before we attempt to load plugins
+            if self.workers_list:
+                for worker in self.workers_list:
+                    try:
+                        self.load_worker(worker)
+                        self.workers[worker].output_connector = self.output_connector
+                    except:
+                        # Make sure we remove it from the list, otherwise an exception will
+                        # be raised when we go to deactivate all of the loaded plugins
+                        self.workers_list.remove(worker)
+
+                        # No reason to log anything here, the framework will handle that.
+                        pass
 
         return True
 
