@@ -26,10 +26,6 @@ class SmtpScan(StoqWorkerPlugin):
 
         self.stoq = stoq
 
-        # Override the TNEF logger, otherwise we end up with a bunch of duplicate
-        # log events
-        TNEF.logger = self.stoq.log
-
         parser = argparse.ArgumentParser()
         parser = StoqArgs(parser)
 
