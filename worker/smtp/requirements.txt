@@ -1,2 +1,2 @@
 pyzmail
-git+https://github.com/mlaferrera/tnefparse
+git+https://github.com/koodaamo/tnefparse+
