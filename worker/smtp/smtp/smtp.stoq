@@ -4,16 +4,16 @@ Module = smtp
 
 [Documentation]
 Author = Marcus LaFerrera, Adam Trask
-Version = 0.12.2
+Version = 0.13.1
 Website = https://github.com/PUNCH-Cyber/stoq
 Description = SMTP Parser Worker
 
 [options]
 hashpayload = True
-saveresults = False
+saveresults = True
 
 # Minimum version of stoQ required to work
-min_stoq_version = 0.10.16
+min_stoq_version = 0.11.0
 
 # Should a queuing plugin be used? True or False
 # publisher worker plugin is required to be installed

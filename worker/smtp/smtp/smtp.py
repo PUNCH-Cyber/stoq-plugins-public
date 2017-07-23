@@ -137,7 +137,7 @@ class SmtpScan(StoqWorkerPlugin):
 
         """
 
-        regex = re.compile(r'\r?\n^DATA\r?\n(.*?)\r?\n\r?\n^\.\r?\n', re.M | re.S)
+        regex = re.compile(b"\r\nDATA\r\n(.*?)\r\n[.]\r\n", re.M | re.S)
         matches = re.findall(regex, payload)
         if matches:
             for match in matches:
@@ -226,8 +226,6 @@ class SmtpScan(StoqWorkerPlugin):
         # Grab the uuid of so we can pass it off to the attachment
         uuid = kwargs.get('uuid', [self.stoq.get_uuid])
 
-        payload = self.stoq.force_unicode(payload)
-
         # Get the appropriate metadata from the vortex filename
         vortex_meta = self.vortex_metadata(kwargs['filename'])
 
@@ -239,12 +237,13 @@ class SmtpScan(StoqWorkerPlugin):
 
         # Iterate over each e-mail session
         for email_session in self.carve_email(payload):
+            email_session = self.stoq.force_unicode(email_session)
             message_json = {}
             message = pyzmail.message_from_string(email_session)
 
             if vortex_meta:
                 # Setup our primary message json blob
-                message_json = vortex_meta
+                message_json = vortex_meta.copy()
                 message_json['vortex_filename'] = kwargs['filename']
 
             # Create a dict of the headers in the session
@@ -385,11 +384,4 @@ class SmtpScan(StoqWorkerPlugin):
                         else:
                             message_json[field_flag] = False
 
-            # We are saving results here, rather than return to the framework due to some
-            # e-mail sessions having multiple e-mails per session. If this is not done,
-            # only the very last e-mail in the session will be saved.
-            # TODO: Update stoQ to be able to handle multiple results from a plugin
-            self.connectors[self.output_connector].save(message_json, index='smtp',
-                                                        use_date=self.use_output_date)
-
-        return True
+            yield message_json
