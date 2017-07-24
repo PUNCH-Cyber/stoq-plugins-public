@@ -218,7 +218,7 @@ class SmtpScan(StoqWorkerPlugin):
 
         if not payload:
             self.log.warn("SMTP session is empty. Do you have permission to the source?")
-            return None
+            return False
 
         extracted_urls = None
         extracted_ips = None
