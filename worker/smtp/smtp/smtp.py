@@ -137,7 +137,7 @@ class SmtpScan(StoqWorkerPlugin):
 
         """
 
-        regex = re.compile(b"\r\nDATA\r\n(.*?)\r\n[.]\r\n", re.M | re.S)
+        regex = re.compile(b"\r\nDATA\r\n(.*?)(?:\r\n.\r\n|\Z)", re.M | re.S)
         matches = re.findall(regex, payload)
         if matches:
             for match in matches:
