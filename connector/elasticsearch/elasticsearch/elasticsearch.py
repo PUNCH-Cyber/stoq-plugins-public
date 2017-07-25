@@ -151,6 +151,10 @@ class ElasticSearchConnector(StoqConnectorPlugin):
             except Exception as err:
                 self.log.error("Unable to append date suffix ({}) to index: {}".format(date, err))
 
+        # Make sure json is sanitized (remove '.' and ' ' from keys) so
+        # elasticsearch can handle it.
+        payload = self.stoq.sanitize_json(payload)
+
         # Make sure we convert the dict() into a valid json string,
         # otherwise some issues will arise when values containing bytes
         # are saved. Insert our data and return our results from the ES server

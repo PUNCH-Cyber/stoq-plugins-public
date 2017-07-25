@@ -108,6 +108,11 @@ class MongoConnector(StoqConnectorPlugin):
         if not hasattr(self, 'collection'):
             self.connect(index)
 
+        if not self.archive:
+            # Make sure json is sanitized (remove '.' and ' ' from keys) so
+            # mongodb can handle it.
+            payload = self.stoq.sanitize_json(payload)
+
         # Let's attempt to save our data to mongo at most 3 times.
         for save_attempt in range(3):
             try:
@@ -127,6 +132,11 @@ class MongoConnector(StoqConnectorPlugin):
                         # continue on.
                         break
                 else:
+                    if save_attempt == 0:
+                        # Make sure json is sanitized (remove '.' and ' ' from keys) so
+                        # mongodb can handle it.
+                        payload = self.stoq.sanitize_json(payload)
+
                     self.collection.insert(payload)
 
                 # Success..let's break out of our loop.
