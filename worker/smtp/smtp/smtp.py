@@ -33,6 +33,11 @@ class SmtpScan(StoqWorkerPlugin):
         worker_opts.add_argument("-c", "--attachment_connector",
                                  dest='attachment_connector',
                                  help="Connector plugin to save attachments with")
+        worker_opts.add_argument("-b", "--omit_body",
+                                 dest='omit_body',
+                                 default=False,
+                                 action='store_true',
+                                 help="Omit body from the results")
 
         options = parser.parse_args(self.stoq.argv[2:])
 
@@ -80,7 +85,7 @@ class SmtpScan(StoqWorkerPlugin):
                 self.bloomfilters[bloomfield].backup_scheduler(self.bloom_update)
 
         # Load the attachment connector plugin
-        self.load_connector(self.attachment_connector)
+    self.load_connector(self.attachment_connector)
 
         # If we are using a queue to handle attachments, load the plugin now
         # otherwise, load the worker plugins we will be using and set the
@@ -95,6 +100,7 @@ class SmtpScan(StoqWorkerPlugin):
                         self.load_worker(worker)
                         self.workers[worker].output_connector = self.output_connector
                     except:
+                        self.log.error("Failed to load worker", exc_info=True)
                         # Make sure we remove it from the list, otherwise an exception will
                         # be raised when we go to deactivate all of the loaded plugins
                         self.workers_list.remove(worker)
@@ -383,5 +389,10 @@ class SmtpScan(StoqWorkerPlugin):
                             message_json[field_flag] = True
                         else:
                             message_json[field_flag] = False
+
+            # Make sure we delete the body and body_html keys if they are to be omitted
+            if self.omit_body:
+                message_json.pop('body', None)
+                message_json.pop('body_html', None)
 
             yield message_json
