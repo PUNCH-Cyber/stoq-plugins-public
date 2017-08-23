@@ -32,7 +32,7 @@ class SmtpScan(StoqWorkerPlugin):
         worker_opts = parser.add_argument_group("Plugin Options")
         worker_opts.add_argument("-c", "--attachment_connector",
                                  dest='attachment_connector',
-                                 help="Connector plugin to save attachments with")
+                                 help="Connector plugin to save attachments")
         worker_opts.add_argument("-b", "--omit_body",
                                  dest='omit_body',
                                  default=False,
@@ -85,7 +85,7 @@ class SmtpScan(StoqWorkerPlugin):
                 self.bloomfilters[bloomfield].backup_scheduler(self.bloom_update)
 
         # Load the attachment connector plugin
-    self.load_connector(self.attachment_connector)
+        self.load_connector(self.attachment_connector)
 
         # If we are using a queue to handle attachments, load the plugin now
         # otherwise, load the worker plugins we will be using and set the
@@ -101,8 +101,9 @@ class SmtpScan(StoqWorkerPlugin):
                         self.workers[worker].output_connector = self.output_connector
                     except:
                         self.log.error("Failed to load worker", exc_info=True)
-                        # Make sure we remove it from the list, otherwise an exception will
-                        # be raised when we go to deactivate all of the loaded plugins
+                        # Make sure we remove it from the list, otherwise an
+                        # exception will be raised when we go to deactivate
+                        # all of the loaded plugins
                         self.workers_list.remove(worker)
 
                         # No reason to log anything here, the framework will handle that.
@@ -235,8 +236,9 @@ class SmtpScan(StoqWorkerPlugin):
         # Get the appropriate metadata from the vortex filename
         vortex_meta = self.vortex_metadata(kwargs['filename'])
 
-        # If vortex_meta returns False, it means the payload being analyzed is the client
-        # session, which contains useless information. Let's just skip it.
+        # If vortex_meta returns False, it means the payload being analyzed is
+        # the client session, which contains useless information. Let's just
+        # skip it.
         if vortex_meta is False:
             self.log.debug("Vortex client sessions provided, skipping...")
             return True
@@ -298,16 +300,14 @@ class SmtpScan(StoqWorkerPlugin):
                     if ip_header in message_json:
                         concat_ips += message_json[ip_header]
 
-                extracted_ips = self.readers['iocregex'].read(concat_ips,
-                                                              datatype_flag='ipv4')
+                extracted_ips = self.readers['iocregex'].read(concat_ips, datatype_flag='ipv4')
 
                 # Let's get a unique list of IP addresses from extracted data
                 if 'ipv4' in extracted_ips:
                     message_json['ips'] = extracted_ips['ipv4']
 
                 # extract and normalize any URLs found
-                extracted_urls = self.readers['iocregex'].read(email_body,
-                                                               datatype_flag='url')
+                extracted_urls = self.readers['iocregex'].read(email_body, datatype_flag='url')
 
                 # Extract any URLs that may be in the merged body
                 if 'url' in extracted_urls:
@@ -390,7 +390,8 @@ class SmtpScan(StoqWorkerPlugin):
                         else:
                             message_json[field_flag] = False
 
-            # Make sure we delete the body and body_html keys if they are to be omitted
+            # Make sure we delete the body and body_html keys if they are to
+            # be omitted
             if self.omit_body:
                 message_json.pop('body', None)
                 message_json.pop('body_html', None)
