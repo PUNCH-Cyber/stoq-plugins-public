@@ -58,7 +58,7 @@ class IOCRegexReader(StoqReaderPlugin):
         self.helpers['http'] = r"\b(?:H(?:XX|TT)P|MEOW):\/\/"
         self.helpers['https'] = r"\b(?:H(?:XX|TT)PS|MEOWS):\/\/"
         self.helpers['tld'] = self.helpers['dot'] + r"(?:%s)\b" % iana_tlds
-        self.helpers['host'] = r"\b(?:[A-Z0-9\-]+%s{0,4}" % self.helpers['dot']
+        self.helpers['host'] = r"\b(?:[A-Z0-9\-]+%s){0,4}" % self.helpers['dot']
         self.helpers['domain'] = r"[A-Z0-9\-]{2,50}" + self.helpers['tld']
         self.helpers['fqdn'] = "{0}{1}".format(self.helpers['host'],
                                                self.helpers['domain'])
