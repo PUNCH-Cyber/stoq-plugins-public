@@ -59,7 +59,7 @@ class TridScan(StoqWorkerPlugin):
         :param **kwargs kwargs: Additional parameters (unused)
 
         :returns: Results from scan
-        :rtype: dict or None
+        :rtype: list or None
 
         """
 
@@ -110,6 +110,6 @@ class TridScan(StoqWorkerPlugin):
             self.log.warn("Unable to delete temp file {}".format(path))
 
         if results:
-            return results
+            return [results]
         else:
             return None

@@ -23,6 +23,9 @@ Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Search a payload for XOR'd strings
 
 [options]
+# Minimum version of stoQ required to work
+min_stoq_version = 0.18.0
+
 hashpayload = True
 saveresults = True
 bin = /usr/local/bin/xorsearch

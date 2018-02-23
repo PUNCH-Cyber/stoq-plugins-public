@@ -62,7 +62,7 @@ class XorSearchScan(StoqWorkerPlugin):
         :param **kwargs kwargs: Additional parameters (unused)
 
         :returns: Results from scan
-        :rtype: dict or None
+        :rtype: list or None
 
         """
 
@@ -96,7 +96,7 @@ class XorSearchScan(StoqWorkerPlugin):
 
         # Time to cleanup if we wrote a temp file to disk
         try:
-            if os.isfile(path):
+            if os.path.isfile(path):
                 os.remove(path)
         except:
             pass
@@ -105,6 +105,6 @@ class XorSearchScan(StoqWorkerPlugin):
 
         # Return our results
         if results:
-            return results
+            return [results]
         else:
             return None

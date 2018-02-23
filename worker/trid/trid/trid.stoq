@@ -23,6 +23,9 @@ Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Identify file types from their TrID signature
 
 [options]
+# Minimum version of stoQ required to work
+min_stoq_version = 0.18.0
+
 hashpayload = True
 saveresults = True
 bin = /usr/local/bin/trid
