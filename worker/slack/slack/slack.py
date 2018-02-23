@@ -347,7 +347,8 @@ class SlackWorker(StoqWorkerPlugin):
         # Use Slack's user.info API call to gather information on the user
         # that submitted the file
         userinfo = self.slackclient.api_call("users.info", **{'user': id})
-        userinfo = self.stoq.loads(userinfo)
+        if type(userinfo) is not dict:
+            userinfo = self.stoq.loads(userinfo)
 
         # If an error was produced, return that instead
         if 'error' in userinfo:
