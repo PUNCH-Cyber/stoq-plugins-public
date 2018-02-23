@@ -88,7 +88,10 @@ class YaraScan(StoqWorkerPlugin, FileSystemEventHandler):
 
         # Return our results
         if self.results:
-            return self.results
+            # Because we may have multiple yara rules hit, let's ensure we return a list of lists
+            # with results, otherwise stoQ will save each yara rule as an individual scan, rather
+            # than a collective of results from one payload.
+            return [self.results]
         else:
             return None
 

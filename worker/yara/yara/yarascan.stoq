@@ -18,11 +18,14 @@ Module = yarascan
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.10.1
+Version = 0.11
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Process a payload using yara
 
 [options]
+# Minimum version of stoQ required to work
+min_stoq_version = 0.18.0
+
 hashpayload = True
 saveresults = True
 yararules = plugins/worker/yara/rules/stoq.yar
