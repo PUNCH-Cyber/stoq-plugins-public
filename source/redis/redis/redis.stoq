@@ -29,6 +29,6 @@ min_stoq_version = 0.10.13
 # Does this plugin support multiprocessing?
 multiprocess = False
 
-# Host of the RabbitMQ server
+# Host of the Redis server
 redis_host = 127.0.0.1
 redis_port = 6379
