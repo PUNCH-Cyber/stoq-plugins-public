@@ -201,18 +201,11 @@ class SlackWorker(StoqWorkerPlugin):
             # to what was defined when the slack plugin was instantiated
             self.workers[worker].output_connector = self.output_connector
 
-            # Handle the payload with the worker, and get the results along
-            # with the templated results, if there is any
-            results, tplresults = self.workers[worker].start(payload,
-                                                             template=self.template,
-                                                             **metadata)
+            # Handle the payload with the worker
+            results = self.workers[worker].start(
+                payload, template=self.template, **metadata)
 
-            # We don't want the worker plugin to spit out it's results to the
-            # channel
-            if tplresults:
-                self.send_msg(channel, tplresults)
-            else:
-                self.send_msg(channel, results)
+            self.send_msg(channel, results)
 
     def process_message(self, msg):
         """
@@ -304,14 +297,10 @@ class SlackWorker(StoqWorkerPlugin):
             kwargs = {command: value}
 
             # Pass our content to the worker
-            results, tplresults = self.workers[worker].start(payload,
-                                                             template=self.template,
-                                                             **kwargs)
+            results = self.workers[worker].start(
+                payload, template=self.template, **kwargs)
 
-            if tplresults:
-                self.send_msg(channel, tplresults)
-            else:
-                self.send_msg(channel, results)
+            self.send_msg(channel, results)
 
     def get_payload(self, value):
         # See if the user wants us to rescan a file based on

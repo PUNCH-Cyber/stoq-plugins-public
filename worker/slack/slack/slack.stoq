@@ -18,11 +18,14 @@ Module = slack
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.10
+Version = 0.11
 Website = https://github.com/PUNCH-Cyber/stoq
 Description = Interact with stoQ Plugins using Slack as an interface
 
 [options]
+# Minimum version of stoQ required to work
+min_stoq_version = 0.20.1
+
 # Hash the payload and attach them to the results?
 hashpayload = False
 
