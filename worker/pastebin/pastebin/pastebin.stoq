@@ -18,7 +18,7 @@ Module = pastebin
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 0.2.3
+Version = 0.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Scrape pastebin content
 
@@ -27,7 +27,7 @@ hashpayload = False
 saveresults = False
 
 # Scraping URL
-url = https://pastebin.com/api_scraping.php
+url = https://scrape.pastebin.com/api_scraping.php
 
 # What is the max number of results to return?
 limit = 100
