@@ -22,6 +22,7 @@ Saves content to an ElasticSearch index
 import time
 import threading
 import traceback
+import certifi
 
 from datetime import datetime
 from elasticsearch import Elasticsearch
@@ -193,6 +194,10 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         Connect to an elasticsearch instance
 
         """
-        self.es = Elasticsearch(self.conn, timeout=self.es_timeout,
+        self.es = Elasticsearch(self.connect_host_list,
+                                timeout=self.es_timeout,
                                 max_retries=self.es_max_retries,
-                                retry_on_timeout=self.es_retry)
+                                retry_on_timeout=self.es_retry,
+                                ca_certs=certifi.where(),
+                                **self.connect_opts_dict
+                                )

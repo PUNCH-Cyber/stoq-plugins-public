@@ -29,19 +29,18 @@ Description = Saves content to an ElasticSearch index
 #       http://elasticsearch-py.readthedocs.org/en/latest/api.html
 #
 # Examples:
-# create connection to localhost using the ThriftConnection and it's
-# default port (9500)
-# conn = connection_class=ThriftConnection
 #
 # create connection that will automatically inspect the cluster to get
 # the list of active nodes. Start with nodes 'esnode1' and 'esnode2'
-# conn =  ['esnode1', 'esnode2'], sniff_on_start=True, sniff_on_connection_fail=True, sniffer_timeout=60
+# connect_host_list = [esnode1, esnode2]
+# connect_opts_dict = {"sniff_on_start": true, "sniff_on_connection_fail": true, "sniffer_timeout": 60}
 #
-# connect to localhost directly and another node using SSL on port 443
-# and an url_prefix
-# conn = [{'host': 'localhost'}, {'host': 'othernode', 'port': 443, 'url_prefix': 'es', 'use_ssl': True}, ]
+# connect to a node using SSL on port 443
+# connect_host_list = [localhost]
+# connect_opts_dict = {"port": 443, "use_ssl": true, "verify_certs": true}
 
-conn = 127.0.0.1:9200
+connect_host_list = [localhost]
+connect_opts_dict = {"port": 9200}
 
 # How long should we wait for ES operations before it times out?
 es_timeout = 60
