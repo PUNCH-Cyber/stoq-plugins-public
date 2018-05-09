@@ -138,6 +138,11 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         # Define the index name, if available. Will default to the plugin name
         index = kwargs.get('index', self.parentname)
+
+        # Override index name if necessary
+        if self.es_single_index_bool:
+            index = self.es_single_index_name
+
         doc_type = index
 
         date_suffix = kwargs.get('date_suffix', self.date_suffix)

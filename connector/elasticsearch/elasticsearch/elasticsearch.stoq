@@ -61,3 +61,8 @@ es_max_retries = 10
 bulk = False
 bulk_interval = 10
 bulk_size = 500
+
+# Should the output be stored in an index per plugin or in a single unified index?
+# If true the index name here will be used
+es_single_index_bool = False
+es_single_index_name = stoq
