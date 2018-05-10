@@ -128,7 +128,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         """
         Save results to elasticsearch
 
-        :param bytes payload: Content to be inserted into elasticsearch
+        :param dict payload: Document to be inserted into elasticsearch
         :param str index: Index name to save content to
         :param str date_suffix: Date formated string to append to the index
 
@@ -138,6 +138,11 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
         # Define the index name, if available. Will default to the plugin name
         index = kwargs.get('index', self.parentname)
+
+        # Override index name if necessary
+        if self.es_index_name:
+            index = self.es_index_name
+
         doc_type = index
 
         date_suffix = kwargs.get('date_suffix', self.date_suffix)

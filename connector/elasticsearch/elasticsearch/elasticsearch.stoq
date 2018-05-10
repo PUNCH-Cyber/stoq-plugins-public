@@ -61,3 +61,7 @@ es_max_retries = 10
 bulk = False
 bulk_interval = 10
 bulk_size = 500
+
+# Should the output be stored in an index per plugin or in a single unified index?
+# If not False, all data will be saved in an index with the below value
+es_index_name = False
