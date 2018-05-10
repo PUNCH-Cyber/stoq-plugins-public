@@ -140,8 +140,8 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         index = kwargs.get('index', self.parentname)
 
         # Override index name if necessary
-        if self.es_single_index_bool:
-            index = self.es_single_index_name
+        if self.es_index_name:
+            index = self.es_index_name
 
         doc_type = index
 
