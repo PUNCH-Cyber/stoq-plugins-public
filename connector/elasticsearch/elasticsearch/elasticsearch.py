@@ -128,7 +128,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
         """
         Save results to elasticsearch
 
-        :param str payload: JSON document to be inserted into elasticsearch
+        :param dict payload: Document to be inserted into elasticsearch
         :param str index: Index name to save content to
         :param str date_suffix: Date formated string to append to the index
 
