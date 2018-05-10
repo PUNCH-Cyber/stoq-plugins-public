@@ -34,7 +34,6 @@ class ThreatGridWorker(StoqWorkerPlugin):
     def __init__(self):
         super().__init__()
         self.threadgrid_lock = threading.Lock()
-        self.wants_heartbeat = True
 
     def activate(self, stoq):
         self.stoq = stoq
@@ -74,9 +73,6 @@ class ThreatGridWorker(StoqWorkerPlugin):
         super().activate(options=options)
 
         return True
-
-    def deactivate(self):
-        self.heartbeat_thread.terminate()
 
     def scan(self, payload, **kwargs):
         """
