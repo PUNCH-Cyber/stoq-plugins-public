@@ -63,6 +63,5 @@ bulk_interval = 10
 bulk_size = 500
 
 # Should the output be stored in an index per plugin or in a single unified index?
-# If true the index name here will be used
-es_single_index_bool = False
-es_single_index_name = stoq
+# If not False, all data will be saved in an index with the below value
+es_index_name = False
