@@ -39,7 +39,7 @@ Description = Saves content to an ElasticSearch index
 # connect_host_list = [localhost]
 # connect_opts_dict = {"port": 443, "use_ssl": true, "verify_certs": true}
 
-connect_host_list = [localhost]
+connect_host_list = localhost
 connect_opts_dict = {"port": 9200}
 
 # How long should we wait for ES operations before it times out?
