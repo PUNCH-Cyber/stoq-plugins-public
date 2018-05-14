@@ -36,6 +36,7 @@ class ElasticSearchConnector(StoqConnectorPlugin):
 
     def __init__(self):
         self.date_suffix = None
+        self.es_index_name = False
         self.buffer_lock = threading.Lock()
         self.buffer = []
 
