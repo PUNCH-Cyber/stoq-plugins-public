@@ -61,7 +61,7 @@ class ThreatGridWorker(StoqWorkerPlugin):
                                  default=[],
                                  help="Tags applied to samples")
         worker_opts.add_argument("--playbook",
-                                 dest='tags',
+                                 dest='playbook',
                                  default='none',
                                  help="Name of playbook to apply to sample run")
         worker_opts.add_argument("--network_exit",
