@@ -95,5 +95,6 @@ class LiefScan(StoqWorkerPlugin):
 
         try:
             self.binary = lief.parse(payload, filename)
-        except lief.bad_format:
+        except (lief.bad_format, lief.bad_file) as err:
+            self.log.debug(err)
             self.binary = None
