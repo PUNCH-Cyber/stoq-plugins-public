@@ -20,6 +20,8 @@ Monitor a directory for files extracted by Suricata
 
 """
 
+import os
+
 from time import sleep
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -38,17 +40,27 @@ class SuricataDirmonSource(StoqSourcePlugin, FileSystemEventHandler):
 
     def on_created(self, event):
 
-        # Skip this file if it is the meta file created by Suricata
-        if event.src_path.endswith(".meta"):
+        # Skip this file if it is not the meta file created by Suricata
+        if not event.src_path.endswith(".meta") or not event.src_path.endswith(".meta.tmp"):
             return
+
+        # A bit of a race condition here. Suricata writes a tmp file, until the stream is complete.
+        # At that point, suricata moves file to a filename minus the .tmp extension which is not
+        # detected by the filesystem as an on_created() event, thus we will never see it. Let's
+        # assume that if the file name ends with a ".tmp" extension, by the time we get to loading
+        # the file itself, suricata has finished writing to disk. Ugly? yes.
+        if event.src_path.endswith(".tmp"):
+            meta_filename = os.path.splitext(event.src_path)[0]
+        else:
+            meta_filename = event.src_path
 
         # We should be left with only the file that was carved, time to
         # open the meta file, parse it, and make sure we pass the content
         # as metadata back into stoQ.
         meta = {}
 
-        # Make sure we define the filename is correctly
-        meta_filename = "{}.meta".format(event.src_path)
+        # Make sure we define the filename correctly
+        path = os.path.splitext(meta_filename)[0]
 
         content = self.stoq.get_file(meta_filename)
 
@@ -72,7 +84,7 @@ class SuricataDirmonSource(StoqSourcePlugin, FileSystemEventHandler):
 
         meta['src'] = 'suricata'
 
-        self.stoq.worker.multiprocess_put(path=event.src_path, archive='file', **meta)
+        self.stoq.worker.multiprocess_put(path=path, archive='file', **meta)
 
     def ingest(self):
         """
