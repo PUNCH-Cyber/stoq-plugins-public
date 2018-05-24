@@ -41,7 +41,7 @@ class SuricataDirmonSource(StoqSourcePlugin, FileSystemEventHandler):
     def on_created(self, event):
 
         # Skip this file if it is not the meta file created by Suricata
-        if not event.src_path.endswith(".meta") or not event.src_path.endswith(".meta.tmp"):
+        if not event.src_path.endswith(".meta") and not event.src_path.endswith(".meta.tmp"):
             return
 
         # A bit of a race condition here. Suricata writes a tmp file, until the stream is complete.
