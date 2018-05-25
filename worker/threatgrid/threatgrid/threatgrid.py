@@ -105,7 +105,7 @@ class ThreatGridWorker(StoqWorkerPlugin):
 
         # Error handling to exit nicely
         if 'error' in res.keys():
-            self.log.error("Error %s: %s" % (res['error']['code'], res['error']['message']))
+            self.log.error("Error {}: {}".format(res['error']['code'], res['error']['message']))
             return None
 
         sample_id = res['data']['id']
