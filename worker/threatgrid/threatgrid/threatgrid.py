@@ -102,6 +102,12 @@ class ThreatGridWorker(StoqWorkerPlugin):
 
         # Submit payload to ThreatGrid API
         res = tg.submit_sample(payload)
+
+        # Error handling to exit nicely
+        if 'error' in res.keys():
+            self.log.error("Error {}: {}".format(res['error']['code'], res['error']['message']))
+            return None
+
         sample_id = res['data']['id']
 
         # Block while we wait for our scan to be successful
