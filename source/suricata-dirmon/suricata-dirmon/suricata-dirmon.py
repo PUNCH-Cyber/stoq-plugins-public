@@ -62,7 +62,22 @@ class SuricataDirmonSource(StoqSourcePlugin, FileSystemEventHandler):
         # Make sure we define the filename correctly
         path = os.path.splitext(meta_filename)[0]
 
-        content = self.stoq.get_file(meta_filename)
+        max_attempts = 3
+        attempts = 0
+        # More trying to fix a race condition when files are written to disk. In some fringe cases,
+        # the file may not exist yet. Let's retry loading the file if it is None.
+        while attempts < max_attempts:
+            content = self.stoq.get_file(meta_filename)
+            if content:
+                break
+            attempts +=1
+            sleep(.3)
+
+        if not content:
+            self.log.warning(
+                "Attempted to open {}, but no content was found, skipping...".format(
+                    meta_filename))
+            return
 
         # Normalize the metadata content so we can store is in a dict
         for line in content.splitlines():
