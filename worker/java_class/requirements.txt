@@ -1,1 +1,1 @@
-javatools
+git+https://github.com/mlaferrera/python-javatools
