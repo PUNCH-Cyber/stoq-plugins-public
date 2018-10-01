@@ -1,0 +1,15 @@
+[Core]
+Name = smtp
+Module = smtp
+
+[Documentation]
+Author = Marcus LaFerrera
+Version = 2.0.0
+Website = https://github.com/PUNCH-Cyber/stoq
+Description = SMTP Parser Worker
+
+[options]
+# Minimum version of stoQ required to work
+min_stoq_version = 2.0.0
+
+omit_body = False
