@@ -11,5 +11,3 @@ Description = TNEF File Extractor
 [options]
 # Minimum version of stoQ required to work
 min_stoq_version = 2.0.0
-
-omit_body = False
