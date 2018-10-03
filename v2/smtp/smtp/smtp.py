@@ -51,24 +51,20 @@ class SMTPPlugin(WorkerPlugin):
             request_meta: RequestMeta,
     ) -> WorkerResponse:
 
-        if not payload:
-            self.log.warn("SMTP session is empty. Do you have permission to the source?")
-            return False
-
-        email_session = UnicodeDammit(payload.content).unicode_markup
         message_json = {}
         attachments = []
         errors = []
+        email_session = UnicodeDammit(payload.content).unicode_markup
         message = pyzmail.message_from_string(email_session)
 
-        # Create a dict of the headers in the session
-        for k, _ in list(message.items()):
-            curr_header = k.lower()
+        # Create a dict of the SMTP headers
+        for header in message.keys():
+            curr_header = header.lower()
             if curr_header in message_json:
                 # If the header key already exists, let's join them
-                message_json[curr_header] += f"\n{message.get_decoded_header(k)}"
+                message_json[curr_header] += f"\n{message.get_decoded_header(header)}"
             else:
-                message_json[curr_header] = message.get_decoded_header(k)
+                message_json[curr_header] = message.get_decoded_header(header)
 
         # Extract the e-mail body, to include HTML if available
         message_json['body'] = '' if message.text_part is None else UnicodeDammit(
@@ -76,34 +72,24 @@ class SMTPPlugin(WorkerPlugin):
         message_json['body_html'] = '' if message.html_part is None else UnicodeDammit(
             message.html_part.get_payload()).unicode_markup
 
-        # Make this easy, merge both text and html body within e-mail
-        # for the purpose of extracting any IOCs
-        # email_body = f"{message_json['body']}{message_json['body_html']}"
-
         # Handle attachments
         for mailpart in message.mailparts:
-            try:
-                filename = mailpart.filename
-            except TypeError:
-                filename = "None"
-
-            if mailpart.type == "text/plain":
-                try:
-                    message_json['body'] += UnicodeDammit(mailpart.get_payload()).unicode_markup
-                    continue
-                except Exception as err:
-                    errors.append(f'Failed parsing text/plain from attachment: {err}')
-
+            # Skip if the attachment is a body part
+            if mailpart.is_body:
+                continue
             try:
                 attachment_meta = PayloadMeta(extra_data={
-                    'filename': filename,
+                    'charset': mailpart.charset,
                     'content-description': mailpart.part.get('Content-Description'),
+                    'content-id': mailpart.content_id,
+                    'disposition': mailpart.disposition,
+                    'filename': mailpart.filename,
                     'type': mailpart.type
                     })
                 attachment = ExtractedPayload(mailpart.get_payload(), attachment_meta)
-                attachments.extend(attachment)
+                attachments.append(attachment)
             except Exception as err:
-                errors.append(f'Failed extracting TNEF object: {err}')
+                errors.append(f'Failed extracting attachment: {err}')
 
         # Make sure we delete the body and body_html keys if they are to
         # be omitted
