@@ -45,6 +45,13 @@ class SMTPPlugin(WorkerPlugin):
         else:
             self.omit_body = False
 
+        if plugin_opts and 'extract_iocs' in plugin_opts:
+            self.extract_iocs = plugin_opts['extract_iocs']
+        elif config.has_option('options', 'extract_iocs'):
+            self.extract_iocs = config.getboolean('options', 'extract_iocs')
+        else:
+            self.extract_iocs = False
+
     def scan(
             self,
             payload: Payload,
@@ -54,6 +61,7 @@ class SMTPPlugin(WorkerPlugin):
         message_json = {}
         attachments = []
         errors = []
+        ioc_content = ''
         email_session = UnicodeDammit(payload.content).unicode_markup
         message = pyzmail.message_from_string(email_session)
 
@@ -73,10 +81,29 @@ class SMTPPlugin(WorkerPlugin):
             message_json['body_html'] = '' if message.html_part is None else UnicodeDammit(
                 message.html_part.get_payload()).unicode_markup
 
+        if self.extract_iocs:
+            ioc_keys = [
+                'src_ip',
+                'dest_ip',
+                'received',
+                'x-orig-ip',
+                'x-originating-ip',
+                'x-remote-ip',
+                'x-sender-ip',
+                'body',
+                'body_html'
+                ]
+
+            for k in ioc_keys:
+                if k in message_json:
+                    ioc_content += f'{message_json[k]}\n'
+
         # Handle attachments
         for mailpart in message.mailparts:
             # Skip if the attachment is a body part
             if mailpart.is_body:
+                if self.extract_iocs:
+                    ioc_content += UnicodeDammit(mailpart.get_payload()).unicode_markup
                 continue
             try:
                 attachment_meta = PayloadMeta(extra_data={
@@ -91,5 +118,9 @@ class SMTPPlugin(WorkerPlugin):
                 attachments.append(attachment)
             except Exception as err:
                 errors.append(f'Failed extracting attachment: {err}')
+
+        if self.extract_iocs:
+            ioc_meta = PayloadMeta(should_archive=False, dispatch_to=['iocextract'])
+            attachments.append(ExtractedPayload(ioc_content.encode(), ioc_meta))
 
         return WorkerResponse(message_json, errors=errors, extracted=attachments)
