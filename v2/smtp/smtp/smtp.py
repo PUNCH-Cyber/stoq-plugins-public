@@ -38,10 +38,10 @@ class SMTPPlugin(WorkerPlugin):
                  plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
-        if plugin_opts and "omit_body" in plugin_opts:
-            self.omit_body = plugin_opts["omit_body"]
-        elif config.has_option("options", "omit_body"):
-            self.omit_body = config.getboolean("options", "omit_body")
+        if plugin_opts and 'omit_body' in plugin_opts:
+            self.omit_body = plugin_opts['omit_body']
+        elif config.has_option('options', 'omit_body'):
+            self.omit_body = config.getboolean('options', 'omit_body')
         else:
             self.omit_body = False
 
@@ -62,15 +62,16 @@ class SMTPPlugin(WorkerPlugin):
             curr_header = header.lower()
             if curr_header in message_json:
                 # If the header key already exists, let's join them
-                message_json[curr_header] += f"\n{message.get_decoded_header(header)}"
+                message_json[curr_header] += f'\n{message.get_decoded_header(header)}'
             else:
                 message_json[curr_header] = message.get_decoded_header(header)
 
-        # Extract the e-mail body, to include HTML if available
-        message_json['body'] = '' if message.text_part is None else UnicodeDammit(
-            message.text_part.get_payload()).unicode_markup
-        message_json['body_html'] = '' if message.html_part is None else UnicodeDammit(
-            message.html_part.get_payload()).unicode_markup
+        if not self.omit_body:
+            # Extract the e-mail body, to include HTML if available
+            message_json['body'] = '' if message.text_part is None else UnicodeDammit(
+                message.text_part.get_payload()).unicode_markup
+            message_json['body_html'] = '' if message.html_part is None else UnicodeDammit(
+                message.html_part.get_payload()).unicode_markup
 
         # Handle attachments
         for mailpart in message.mailparts:
@@ -83,18 +84,12 @@ class SMTPPlugin(WorkerPlugin):
                     'content-description': mailpart.part.get('Content-Description'),
                     'content-id': mailpart.content_id,
                     'disposition': mailpart.disposition,
-                    'filename': mailpart.filename,
+                    'filename': mailpart.filename if mailpart.filename else mailpart.sanitized_filename,
                     'type': mailpart.type
                     })
                 attachment = ExtractedPayload(mailpart.get_payload(), attachment_meta)
                 attachments.append(attachment)
             except Exception as err:
                 errors.append(f'Failed extracting attachment: {err}')
-
-        # Make sure we delete the body and body_html keys if they are to
-        # be omitted
-        if self.omit_body:
-            message_json.pop('body', None)
-            message_json.pop('body_html', None)
 
         return WorkerResponse(message_json, errors=errors, extracted=attachments)
