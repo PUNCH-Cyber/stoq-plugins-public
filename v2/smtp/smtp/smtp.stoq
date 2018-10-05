@@ -12,4 +12,7 @@ Description = SMTP Parser Worker
 # Minimum version of stoQ required to work
 min_stoq_version = 2.0.0
 omit_body = False
+# Automatically extract IOC's from SMTP sessions
 extract_iocs = True
+# SMTP sessions keys tp attempt to extract IOC's from
+ioc_keys = received, x-orig-ip, x-originating-ip, x-remote-ip, x-sender-ip, body, body_html

@@ -52,6 +52,13 @@ class SMTPPlugin(WorkerPlugin):
         else:
             self.extract_iocs = False
 
+        if plugin_opts and 'ioc_keys' in plugin_opts:
+            self.ioc_keys = plugin_opts['ioc_keys']
+        elif config.has_option('options', 'ioc_keys'):
+            self.ioc_keys = [x.strip() for x in config.get('options', 'ioc_keys').split(',')]
+        else:
+            self.ioc_keys = []
+
     def scan(
             self,
             payload: Payload,
@@ -82,19 +89,7 @@ class SMTPPlugin(WorkerPlugin):
                 message.html_part.get_payload()).unicode_markup
 
         if self.extract_iocs:
-            ioc_keys = [
-                'src_ip',
-                'dest_ip',
-                'received',
-                'x-orig-ip',
-                'x-originating-ip',
-                'x-remote-ip',
-                'x-sender-ip',
-                'body',
-                'body_html'
-                ]
-
-            for k in ioc_keys:
+            for k in self.ioc_keys:
                 if k in message_json:
                     ioc_content += f'{message_json[k]}\n'
 
