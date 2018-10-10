@@ -24,11 +24,12 @@ from configparser import ConfigParser
 from typing import Dict, Optional
 import re
 import os
-import time
 import requests
 import socket
 from urllib.parse import urlsplit
 from ipaddress import ip_address, ip_network
+from inspect import currentframe, getframeinfo
+from pathlib import Path
 
 from stoq import (
     Payload, RequestMeta, WorkerResponse,
@@ -47,11 +48,9 @@ class IOCExtract(WorkerPlugin):
         super().__init__(config, plugin_opts)
 
         self.whitelist_file = [e.strip() for e in config.get('options', 'whitelist_file').split(',')]
-        self.auto_update = config.get('options', 'auto_update')
-        self.update_interval = config.get('options', 'update_interval')
         self.iana_url = config.get('options', 'iana_url')
         self.iana_tld_file = config.get('options', 'iana_tld_file')
-        iana_tlds = self.__parse_iana()
+        iana_tlds = self._get_iana_tlds()
 
         # Helper regexes
         self.helpers = {}
@@ -106,7 +105,7 @@ class IOCExtract(WorkerPlugin):
             self.compiled_re[ioc] = re.compile(self.ioctypes[ioc],
                                                re.IGNORECASE)
 
-        self.__load_whitelist()
+        self._load_whitelist()
 
     def read(self, payload, normalize=True, ioctype='all', **kwargs):
         """
@@ -146,16 +145,16 @@ class IOCExtract(WorkerPlugin):
 
         if 'ipv6' in results:
             results['ipv6'] = [address for address in results['ipv6']
-                               if self.__validate_ipv6(address)]
+                               if self._validate_ipv6(address)]
             if not results['ipv6']:
                 results.pop('ipv6')
 
         if normalize:
-            results = self.__normalize(results)
+            results = self._normalize(results)
 
         return WorkerResponse(results)
 
-    def __normalize(self, parsed_results):
+    def _normalize(self, parsed_results):
         """
         Normalize, e.g., replace '[DOT]' with '.' for return value
 
@@ -170,13 +169,13 @@ class IOCExtract(WorkerPlugin):
                                        self.normalizers[normalizer],
                                        indicator,
                                        flags=re.IGNORECASE)
-                if self.__check_whitelist(indicator, indicator_type):
+                if self._check_whitelist(indicator, indicator_type):
                     normalized_results[indicator_type].add(indicator)
             normalized_results[indicator_type] = list(normalized_results[indicator_type])
 
         return normalized_results
 
-    def __validate_ipv6(self, address):
+    def _validate_ipv6(self, address):
         """
         Validate whether a result is a valid ipv6 address
 
@@ -187,8 +186,12 @@ class IOCExtract(WorkerPlugin):
         except socket.error:
             return False
 
-    def __load_whitelist(self):
+    def _load_whitelist(self):
         for whitelist_file in self.whitelist_file:
+            if not os.path.isabs(whitelist_file):
+                filename = getframeinfo(currentframe()).filename
+                parent = Path(filename).resolve().parent
+                whitelist_file = os.path.join(parent, whitelist_file)
             if not os.path.isfile(whitelist_file):
                 print("Invalid whitelist file...skipping {}".format(whitelist_file))
                 continue
@@ -209,7 +212,7 @@ class IOCExtract(WorkerPlugin):
                     except KeyError:
                         print("Unknown indicator type: {}".format(indicator_type))
 
-    def __check_whitelist(self, indicator, indicator_type):
+    def _check_whitelist(self, indicator, indicator_type):
 
         # Set to False so we can use only domain: in the whitelist_file
         is_url = False
@@ -272,48 +275,17 @@ class IOCExtract(WorkerPlugin):
 
         return True
 
-    def __parse_iana(self, update=False):
-        # Our TLD file is not defined in the config file, let's set a default
-        if not hasattr(self, 'iana_tld_file'):
-            self.iana_tld_file = "plugins/iocextract/tlds-alpha-by-domain.txt"
-
-        # Make sure we validate the entire path
-        self.iana_tld_file = os.path.abspath(self.iana_tld_file)
-
-        # Read TLD list from file for building regex
-        if not os.path.isfile(self.iana_tld_file):
-            print("IANA TLD File does not exist")
-            update = True
-        else:
-            # Yes, I know this is a silly way of doing it. However, I hate datetime
-            # and this is in protest.
-            tld_age = int(int(time.time() - os.path.getmtime(self.iana_tld_file)) / 86400)
-            if os.path.getsize(self.iana_tld_file) == 0:
-                print("IANA TLD file is empty")
-                update = True
-            elif tld_age >= int(self.update_interval):
-                print("IANA TLD file is {} days old".format(tld_age))
-                update = True
-
-        if update and self.auto_update:
-            self.__download_iana()
-
-        try:
+    def _get_iana_tlds(self):
+        if not os.path.isabs(self.iana_tld_file):
+            filename = getframeinfo(currentframe()).filename
+            parent = Path(filename).resolve().parent
+            self.iana_tld_file = os.path.join(parent, self.iana_tld_file)
+        if os.path.isfile(self.iana_tld_file):
             with open(self.iana_tld_file) as f:
-                iana_tlds = "|".join(f.read().splitlines()[1:])
-        except Exception as err:
-            print("Unable to open IANA TLD File: {}".format(err))
-            iana_tlds = None
-
-        return iana_tlds
-
-    def __download_iana(self):
-        print("Downloading latest IANA TLD file from {}".format(self.iana_url))
-        content = requests.get(self.iana_url).content
-        if content:
-            path = os.path.dirname(self.iana_tld_file)
-            filename = os.path.basename(self.iana_tld_file)
-            with open(f'{path}/{filename}', 'w') as outfile:
-                outfile.write(content.decode())
+                iana_content = f.read()
         else:
-            print("No content received from {}".format(self.iana_url))
+            print("Downloading latest IANA TLD file from {}".format(self.iana_url))
+            iana_content = requests.get(self.iana_url).content.decode()
+
+        return "|".join(iana_content.splitlines()[1:])
+

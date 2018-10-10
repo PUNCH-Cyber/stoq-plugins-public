@@ -24,16 +24,10 @@ Description = Regex routines to extract and normalize IOC's from a payload
 
 [options]
 # Where is the IANA TLD file? located locally?
-iana_tld_file = plugins/iocextract/tlds-alpha-by-domain.txt
+iana_tld_file = tlds-alpha-by-domain.txt
 
 # What is the URL for the IANA TLD file?
 iana_url = https://data.iana.org/TLD/tlds-alpha-by-domain.txt
 
-# Should the IANA TLD file be updated automatically?
-auto_update = True
-
-# What is the maximum age of the IANA TLD file in days?
-update_interval = 30
-
 # List of files that contain whitelisted IOC's, separated by a comma
-whitelist_file = plugins/iocextract/whitelist.txt
+whitelist_file = whitelist.txt
