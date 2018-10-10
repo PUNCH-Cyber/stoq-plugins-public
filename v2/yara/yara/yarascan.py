@@ -24,7 +24,8 @@ Process a payload using yara
 from configparser import ConfigParser
 import os
 from typing import Dict, List, Optional
-
+from inspect import currentframe, getframeinfo
+from pathlib import Path
 import yara
 
 from stoq import Payload, RequestMeta, WorkerResponse, DispatcherResponse
@@ -39,20 +40,28 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
 
         self.dispatch_rules = None
         self.worker_rules = None
+        filename = getframeinfo(currentframe()).filename
+        parent = Path(filename).resolve().parent
 
         if plugin_opts and "dispatch_rules" in plugin_opts:
-            self.dispatch_rules = self.compile_rules(
-                plugin_opts["dispatch_rules"])
+            dispatch_ruleset = plugin_opts["dispatch_rules"]
         elif config.has_option("options", "dispatch_rules"):
-            self.dispatch_rules = self.compile_rules(
-                config.get("options", "dispatch_rules"))
+            dispatch_ruleset = config.get("options", "dispatch_rules")
+        else:
+            dispatch_ruleset = None
+        if not os.path.isabs(dispatch_ruleset):
+            dispatch_ruleset = os.path.join(parent, dispatch_ruleset)
+        self.dispatch_rules = self.compile_rules(dispatch_ruleset)
 
         if plugin_opts and "yararules" in plugin_opts:
-            self.worker_rules = self.compile_rules(
-                plugin_opts["worker_rules"])
+            worker_ruleset = plugin_opts["worker_rules"]
         elif config.has_option("options", "worker_rules"):
-            self.worker_rules = self.compile_rules(
-                config.get("options", "worker_rules"))
+            worker_ruleset = config.get("options", "worker_rules")
+        else:
+            worker_ruleset = None
+        if not os.path.isabs(worker_ruleset):
+            worker_ruleset = os.path.join(parent, worker_ruleset)
+        self.worker_rules = self.compile_rules(worker_ruleset)
 
     def compile_rules(self, filepath: str) -> None:
         filepath = os.path.realpath(filepath)

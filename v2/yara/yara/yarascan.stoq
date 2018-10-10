@@ -25,5 +25,5 @@ Description = Process a payload using yara
 [options]
 # Minimum version of stoQ required to work
 min_stoq_version = 2.0.0
-worker_rules = plugins/yara/rules/stoq.yar
-dispatch_rules = plugins/yara/rules/dispatcher.yar
+worker_rules = rules/stoq.yar
+dispatch_rules = rules/dispatcher.yar
