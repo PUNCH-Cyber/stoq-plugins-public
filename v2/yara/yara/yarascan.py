@@ -82,7 +82,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
         }
         return WorkerResponse(results=results)
 
-    def dispatch(self, payload: Payload,
+    def get_dispatches(self, payload: Payload,
             request_meta: RequestMeta) -> DispatcherResponse:
         dr = DispatcherResponse()
         for match in self._yara_dispatch_matches(payload.content):
