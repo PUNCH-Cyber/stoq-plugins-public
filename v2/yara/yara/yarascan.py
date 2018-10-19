@@ -21,21 +21,20 @@ Process a payload using yara
 
 """
 
-from configparser import ConfigParser
 import os
+import yara
+from pathlib import Path
+from configparser import ConfigParser
 from typing import Dict, List, Optional
 from inspect import currentframe, getframeinfo
-from pathlib import Path
-import yara
 
-from stoq import Payload, RequestMeta, WorkerResponse, DispatcherResponse
-from stoq.plugins import WorkerPlugin, DispatcherPlugin
 from stoq.exceptions import StoqException
+from stoq.plugins import WorkerPlugin, DispatcherPlugin
+from stoq import Payload, RequestMeta, WorkerResponse, DispatcherResponse
 
 
 class YaraPlugin(WorkerPlugin, DispatcherPlugin):
-    def __init__(self, config: ConfigParser,
-                 plugin_opts: Optional[Dict]) -> None:
+    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
         self.dispatch_rules = None
@@ -66,41 +65,34 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
     def compile_rules(self, filepath: str) -> None:
         filepath = os.path.realpath(filepath)
         if not os.path.isfile(filepath):
-            raise StoqException(
-                f"Nonexistent yara rules file provided: {filepath}")
+            raise StoqException(f"Nonexistent yara rules file provided: {filepath}")
         else:
             return yara.compile(filepath=filepath)
 
-    def scan(
-            self,
-            payload: Payload,
-            request_meta: RequestMeta,
-    ) -> WorkerResponse:
+    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         matches = self.worker_rules.match(data=payload.content, timeout=60)
         dict_matches = []
         for match in matches:
-            dict_matches.append({
-                'tags': match.tags,
-                'namespace': match.namespace,
-                'rule': match.rule,
-                'meta': match.meta,
-                'strings': match.strings,
-            })
-        results = {
-            "matches": dict_matches,
-        }
+            dict_matches.append(
+                {
+                    'tags': match.tags,
+                    'namespace': match.namespace,
+                    'rule': match.rule,
+                    'meta': match.meta,
+                    'strings': match.strings,
+                }
+            )
+        results = {"matches": dict_matches}
         return WorkerResponse(results=results)
 
-    def get_dispatches(self, payload: Payload,
-            request_meta: RequestMeta) -> DispatcherResponse:
+    def get_dispatches(
+        self, payload: Payload, request_meta: RequestMeta
+    ) -> DispatcherResponse:
         dr = DispatcherResponse()
         for match in self._yara_dispatch_matches(payload.content):
             if 'plugin' in match['meta']:
                 plugin_str = match['meta']['plugin'].lower().strip()
-                plugin_names = {
-                    p.strip()
-                    for p in plugin_str.split(',') if p.strip()
-                }
+                plugin_names = {p.strip() for p in plugin_str.split(',') if p.strip()}
                 for name in plugin_names:
                     if name:
                         if match['meta'].get('save', '').lower().strip() == 'false':
@@ -116,11 +108,13 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
         matches = self.dispatch_rules.match(data=content, timeout=60)
         dict_matches = []
         for match in matches:
-            dict_matches.append({
-                'tags': match.tags,
-                'namespace': match.namespace,
-                'rule': match.rule,
-                'meta': match.meta,
-                'strings': match.strings,
-            })
+            dict_matches.append(
+                {
+                    'tags': match.tags,
+                    'namespace': match.namespace,
+                    'rule': match.rule,
+                    'meta': match.meta,
+                    'strings': match.strings,
+                }
+            )
         return dict_matches

@@ -24,17 +24,13 @@ Calculate symhash of payload
 
 from symhash import create_sym_hash
 
-from stoq import Payload, RequestMeta, WorkerResponse
 from stoq.plugins import WorkerPlugin
+from stoq import Payload, RequestMeta, WorkerResponse
 
 
-class Hash(WorkerPlugin):
-    def scan(
-        self,
-        payload: Payload,
-        request_meta: RequestMeta,
-    ) -> WorkerResponse:
+class SymHash(WorkerPlugin):
+    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
 
-        return WorkerResponse(results={
-            'symhash': create_sym_hash(data=payload.content),
-        })
+        return WorkerResponse(
+            results={'symhash': create_sym_hash(data=payload.content)}
+        )

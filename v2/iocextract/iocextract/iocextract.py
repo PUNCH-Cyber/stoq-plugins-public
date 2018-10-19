@@ -20,21 +20,19 @@ Extract and normalize Indicators of Compromise (IOC) from payloads
 
 """
 
-from configparser import ConfigParser
-from typing import Dict, Optional
-import re
 import os
-import requests
+import re
 import socket
+import requests
+from pathlib import Path
 from urllib.parse import urlsplit
+from configparser import ConfigParser
+from typing import Dict, Bool, Set, Optional
 from ipaddress import ip_address, ip_network
 from inspect import currentframe, getframeinfo
-from pathlib import Path
 
-from stoq import (
-    Payload, RequestMeta, WorkerResponse,
-    DispatcherResponse, ExtractedPayload, PayloadMeta)
 from stoq.plugins import WorkerPlugin
+from stoq import Payload, RequestMeta, WorkerResponse
 
 
 class IOCExtract(WorkerPlugin):
@@ -43,26 +41,32 @@ class IOCExtract(WorkerPlugin):
 
     """
 
-    def __init__(self, config: ConfigParser,
-                 plugin_opts: Optional[Dict]) -> None:
+    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
-        self.whitelist_file = [e.strip() for e in config.get('options', 'whitelist_file').split(',')]
+        self.whitelist_file = [
+            e.strip() for e in config.get('options', 'whitelist_file').split(',')
+        ]
         self.iana_url = config.get('options', 'iana_url')
         self.iana_tld_file = config.get('options', 'iana_tld_file')
         iana_tlds = self._get_iana_tlds()
 
         # Helper regexes
         self.helpers = {}
-        self.helpers['dot'] = r"(?:\.|\[\.\]|\<\.\>|\{\.\}|\(\.\)|\<DOT\>|\[DOT\]|\{DOT\}|\(DOT\))"
-        self.helpers['at'] = r"(?:@|\[@\]|\<@\>|\{@\}|\(@\)|\<AT\>|\[AT\]|\{AT\}|\(AT\))"
+        self.helpers[
+            'dot'
+        ] = r"(?:\.|\[\.\]|\<\.\>|\{\.\}|\(\.\)|\<DOT\>|\[DOT\]|\{DOT\}|\(DOT\))"
+        self.helpers[
+            'at'
+        ] = r"(?:@|\[@\]|\<@\>|\{@\}|\(@\)|\<AT\>|\[AT\]|\{AT\}|\(AT\))"
         self.helpers['http'] = r"\b(?:H(?:XX|TT)P|MEOW):\/\/"
         self.helpers['https'] = r"\b(?:H(?:XX|TT)PS|MEOWS):\/\/"
         self.helpers['tld'] = self.helpers['dot'] + r"(?:%s)\b" % iana_tlds
         self.helpers['host'] = r"\b(?:[A-Z0-9\-]+%s){0,4}" % self.helpers['dot']
         self.helpers['domain'] = r"[A-Z0-9\-]{2,50}" + self.helpers['tld']
-        self.helpers['fqdn'] = "{0}{1}".format(self.helpers['host'],
-                                               self.helpers['domain'])
+        self.helpers['fqdn'] = "{0}{1}".format(
+            self.helpers['host'], self.helpers['domain']
+        )
 
         # Simple normalizers, post-processing
         # key=regex_name, value=replacement value
@@ -74,7 +78,7 @@ class IOCExtract(WorkerPlugin):
             'https': 'https://',
             'tld': lambda m: m.group(0).lower(),
             'domain': lambda m: m.group(0).lower(),
-            'fqdn': lambda m: m.group(0).lower()
+            'fqdn': lambda m: m.group(0).lower(),
         }
 
         # Data-type regexes
@@ -83,50 +87,37 @@ class IOCExtract(WorkerPlugin):
         self.ioctypes['sha1'] = r"\b[A-F0-9]{40}\b"
         self.ioctypes['sha256'] = r"\b[A-F0-9]{64}\b"
         self.ioctypes['sha512'] = r"\b[A-F0-9]{128}\b"
-        self.ioctypes['ipv4'] = r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)%s){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" % self.helpers['dot']
-        self.ioctypes['ipv6'] = r"(?:(?:(?:\b|::)(?:(?:[\dA-F]{1,4}(?::|::)){1,7})(?:[\dA-F]{1,4}))(?:(?:(?:\.\d{1,3})?){3})(?:::|\b))|(?:[\dA-F]{1,4}::)|(?:::[\dA-F]{1,4}(?:(?:(?:\.\d{1,3})?){3}))"
+        self.ioctypes['ipv4'] = (
+            r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)%s){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+            % self.helpers['dot']
+        )
+        self.ioctypes[
+            'ipv6'
+        ] = r"(?:(?:(?:\b|::)(?:(?:[\dA-F]{1,4}(?::|::)){1,7})(?:[\dA-F]{1,4}))(?:(?:(?:\.\d{1,3})?){3})(?:::|\b))|(?:[\dA-F]{1,4}::)|(?:::[\dA-F]{1,4}(?:(?:(?:\.\d{1,3})?){3}))"
         self.ioctypes['mac_address'] = r"\b(?i)(?:[0-9A-F]{2}[:-]){5}(?:[0-9A-F]{2})\b"
-        self.ioctypes['email'] = "{0}{1}{2}".format(r"\b[A-Z0-9\.\_\%\+\-]+",
-                                                    self.helpers['at'],
-                                                    self.helpers['fqdn'])
+        self.ioctypes['email'] = "{0}{1}{2}".format(
+            r"\b[A-Z0-9\.\_\%\+\-]+", self.helpers['at'], self.helpers['fqdn']
+        )
         self.ioctypes['domain'] = self.helpers['fqdn']
-        self.ioctypes['url'] = "(?:{0}|{1})(?:{2}|{3}|{4}){5}".format(self.helpers['http'],
-                                                          self.helpers['https'],
-                                                          self.helpers['fqdn'],
-                                                          self.ioctypes['ipv4'],
-                                                          self.ioctypes['ipv6'],
-                                                          r"(?:[\:\/][A-Z0-9\/\:\+\%\.\_\-\=\~\&\\#\?]*){0,1}")
+        self.ioctypes['url'] = "(?:{0}|{1})(?:{2}|{3}|{4}){5}".format(
+            self.helpers['http'],
+            self.helpers['https'],
+            self.helpers['fqdn'],
+            self.ioctypes['ipv4'],
+            self.ioctypes['ipv6'],
+            r"(?:[\:\/][A-Z0-9\/\:\+\%\.\_\-\=\~\&\\#\?]*){0,1}",
+        )
 
         # Compile regexes for faster repeat usage
         self.compiled_re = {}
         self.whitelist_patterns = {}
         for ioc in self.ioctypes:
             self.whitelist_patterns[ioc] = set()
-            self.compiled_re[ioc] = re.compile(self.ioctypes[ioc],
-                                               re.IGNORECASE)
+            self.compiled_re[ioc] = re.compile(self.ioctypes[ioc], re.IGNORECASE)
 
         self._load_whitelist()
 
-    def read(self, payload, normalize=True, ioctype='all', **kwargs):
-        """
-        Extract IOC's out of a payload
-
-        :param bytes payload: Content to be analyzed for IOC's
-        :param bool normalize: Define whether the extracted IOC's should
-                               be normalized
-        :param bytes ioctype: Type of IOC to extract. Valid options are:
-                              all (default), md5, sha1, sha256, ipv4, ipv6,
-                              mac_address, email, domain, uri
-
-        :returns: IOC's extracted from payload
-        :rtype: dict
-
-        """
-    def scan(
-            self,
-            payload: Payload,
-            request_meta: RequestMeta,
-    ) -> WorkerResponse:
+    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
 
         normalize = True
         ioctype = 'all'
@@ -144,8 +135,9 @@ class IOCExtract(WorkerPlugin):
                 results[ioctype] = list(set(matches))
 
         if 'ipv6' in results:
-            results['ipv6'] = [address for address in results['ipv6']
-                               if self._validate_ipv6(address)]
+            results['ipv6'] = [
+                address for address in results['ipv6'] if self._validate_ipv6(address)
+            ]
             if not results['ipv6']:
                 results.pop('ipv6')
 
@@ -154,7 +146,7 @@ class IOCExtract(WorkerPlugin):
 
         return WorkerResponse(results)
 
-    def _normalize(self, parsed_results):
+    def _normalize(self, parsed_results: Dict[str, List[Set]]) -> Dict[str, Set]:
         """
         Normalize, e.g., replace '[DOT]' with '.' for return value
 
@@ -165,17 +157,21 @@ class IOCExtract(WorkerPlugin):
             normalized_results[indicator_type] = set()
             for indicator in parsed_results[indicator_type]:
                 for normalizer in self.normalizers:
-                    indicator = re.sub(self.helpers[normalizer],
-                                       self.normalizers[normalizer],
-                                       indicator,
-                                       flags=re.IGNORECASE)
+                    indicator = re.sub(
+                        self.helpers[normalizer],
+                        self.normalizers[normalizer],
+                        indicator,
+                        flags=re.IGNORECASE,
+                    )
                 if self._check_whitelist(indicator, indicator_type):
                     normalized_results[indicator_type].add(indicator)
-            normalized_results[indicator_type] = list(normalized_results[indicator_type])
+            normalized_results[indicator_type] = list(
+                normalized_results[indicator_type]
+            )
 
         return normalized_results
 
-    def _validate_ipv6(self, address):
+    def _validate_ipv6(self, address: str) -> Bool:
         """
         Validate whether a result is a valid ipv6 address
 
@@ -212,14 +208,13 @@ class IOCExtract(WorkerPlugin):
                     except KeyError:
                         print("Unknown indicator type: {}".format(indicator_type))
 
-    def _check_whitelist(self, indicator, indicator_type):
+    def _check_whitelist(self, indicator: str, indicator_type: str) -> Bool:
 
         # Set to False so we can use only domain: in the whitelist_file
         is_url = False
 
         # Define the default netmask for the ip version
-        netmasks = {'ipv4': '32',
-                    'ipv6': '128'}
+        netmasks = {'ipv4': '32', 'ipv6': '128'}
 
         try:
 
@@ -242,7 +237,9 @@ class IOCExtract(WorkerPlugin):
                     if pattern_has_netmask:
                         pattern_ip = ip_network("{}".format(pattern))
                     else:
-                        pattern_ip = ip_network("{}/{}".format(pattern, netmasks[indicator_type]))
+                        pattern_ip = ip_network(
+                            "{}/{}".format(pattern, netmasks[indicator_type])
+                        )
 
                     if indicator_has_netmask:
                         indicator_ip = ip_network(indicator)
@@ -261,8 +258,14 @@ class IOCExtract(WorkerPlugin):
                     if indicator_domain.endswith(pattern) or indicator == pattern:
                         return False
 
-                elif indicator_type in ['mac_address', 'email', 'md5',
-                                        'sha1', 'sha256', 'sha512']:
+                elif indicator_type in [
+                    'mac_address',
+                    'email',
+                    'md5',
+                    'sha1',
+                    'sha256',
+                    'sha512',
+                ]:
                     if indicator == pattern:
                         return False
 
@@ -275,7 +278,7 @@ class IOCExtract(WorkerPlugin):
 
         return True
 
-    def _get_iana_tlds(self):
+    def _get_iana_tlds(self) -> str:
         if not os.path.isabs(self.iana_tld_file):
             filename = getframeinfo(currentframe()).filename
             parent = Path(filename).resolve().parent

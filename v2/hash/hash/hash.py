@@ -24,19 +24,17 @@ Hash a payload
 
 from hashlib import md5, sha1, sha256
 
-from stoq import Payload, RequestMeta, WorkerResponse
 from stoq.plugins import WorkerPlugin
+from stoq import Payload, RequestMeta, WorkerResponse
 
 
 class Hash(WorkerPlugin):
-    def scan(
-        self,
-        payload: Payload,
-        request_meta: RequestMeta,
-    ) -> WorkerResponse:
+    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
 
-        return WorkerResponse(results={
-            'sha256': sha256(payload.content).hexdigest(),
-            'md5': md5(payload.content).hexdigest(),
-            'sha1': sha1(payload.content).hexdigest(),
-        })
+        return WorkerResponse(
+            results={
+                'sha256': sha256(payload.content).hexdigest(),
+                'md5': md5(payload.content).hexdigest(),
+                'sha1': sha1(payload.content).hexdigest(),
+            }
+        )

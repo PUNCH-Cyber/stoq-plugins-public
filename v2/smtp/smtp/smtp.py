@@ -21,21 +21,17 @@ Parse SMTP sessions
 
 """
 
-from configparser import ConfigParser
-from typing import Dict, Optional
 import pyzmail
 from bs4 import UnicodeDammit
+from typing import Dict, Optional
+from configparser import ConfigParser
 
-from stoq import (
-    Payload, RequestMeta, WorkerResponse,
-    DispatcherResponse, ExtractedPayload, PayloadMeta)
 from stoq.plugins import WorkerPlugin
+from stoq import Payload, RequestMeta, WorkerResponse, ExtractedPayload, PayloadMeta
 
 
 class SMTPPlugin(WorkerPlugin):
-
-    def __init__(self, config: ConfigParser,
-                 plugin_opts: Optional[Dict]) -> None:
+    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
         if plugin_opts and 'omit_body' in plugin_opts:
@@ -55,15 +51,13 @@ class SMTPPlugin(WorkerPlugin):
         if plugin_opts and 'ioc_keys' in plugin_opts:
             self.ioc_keys = plugin_opts['ioc_keys']
         elif config.has_option('options', 'ioc_keys'):
-            self.ioc_keys = [x.strip() for x in config.get('options', 'ioc_keys').split(',')]
+            self.ioc_keys = [
+                x.strip() for x in config.get('options', 'ioc_keys').split(',')
+            ]
         else:
             self.ioc_keys = []
 
-    def scan(
-            self,
-            payload: Payload,
-            request_meta: RequestMeta,
-    ) -> WorkerResponse:
+    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
 
         message_json = {}
         attachments = []
@@ -83,10 +77,16 @@ class SMTPPlugin(WorkerPlugin):
 
         if not self.omit_body:
             # Extract the e-mail body, to include HTML if available
-            message_json['body'] = '' if message.text_part is None else UnicodeDammit(
-                message.text_part.get_payload()).unicode_markup
-            message_json['body_html'] = '' if message.html_part is None else UnicodeDammit(
-                message.html_part.get_payload()).unicode_markup
+            message_json['body'] = (
+                ''
+                if message.text_part is None
+                else UnicodeDammit(message.text_part.get_payload()).unicode_markup
+            )
+            message_json['body_html'] = (
+                ''
+                if message.html_part is None
+                else UnicodeDammit(message.html_part.get_payload()).unicode_markup
+            )
 
         if self.extract_iocs:
             for k in self.ioc_keys:
@@ -101,14 +101,18 @@ class SMTPPlugin(WorkerPlugin):
                     ioc_content += UnicodeDammit(mailpart.get_payload()).unicode_markup
                 continue
             try:
-                attachment_meta = PayloadMeta(extra_data={
-                    'charset': mailpart.charset,
-                    'content-description': mailpart.part.get('Content-Description'),
-                    'content-id': mailpart.content_id,
-                    'disposition': mailpart.disposition,
-                    'filename': mailpart.filename if mailpart.filename else mailpart.sanitized_filename,
-                    'type': mailpart.type
-                    })
+                attachment_meta = PayloadMeta(
+                    extra_data={
+                        'charset': mailpart.charset,
+                        'content-description': mailpart.part.get('Content-Description'),
+                        'content-id': mailpart.content_id,
+                        'disposition': mailpart.disposition,
+                        'filename': mailpart.filename
+                        if mailpart.filename
+                        else mailpart.sanitized_filename,
+                        'type': mailpart.type,
+                    }
+                )
                 attachment = ExtractedPayload(mailpart.get_payload(), attachment_meta)
                 attachments.append(attachment)
             except Exception as err:

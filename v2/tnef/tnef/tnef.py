@@ -21,28 +21,20 @@ Extract object from TNEF payloads
 
 """
 
-from configparser import ConfigParser
-from typing import Dict, Optional
 from tnefparse import TNEF
 from bs4 import UnicodeDammit
+from typing import Dict, Optional
+from configparser import ConfigParser
 
-from stoq import (
-    Payload, RequestMeta, WorkerResponse,
-    ExtractedPayload, PayloadMeta)
 from stoq.plugins import WorkerPlugin
+from stoq import Payload, RequestMeta, WorkerResponse, ExtractedPayload, PayloadMeta
 
 
 class TNEFExtractorPlugin(WorkerPlugin):
-
-    def __init__(self, config: ConfigParser,
-                 plugin_opts: Optional[Dict]) -> None:
+    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
-    def scan(
-            self,
-            payload: Payload,
-            request_meta: RequestMeta,
-    ) -> WorkerResponse:
+    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
 
         extracted = []
         tnef_results = TNEF(payload.content)
