@@ -101,15 +101,17 @@ class SMTPPlugin(WorkerPlugin):
                     ioc_content += UnicodeDammit(mailpart.get_payload()).unicode_markup
                 continue
             try:
+                if mailpart.filename:
+                    att_filename = mailpart.filename
+                else:
+                    att_filename = mailpart.sanitized_filename
                 attachment_meta = PayloadMeta(
                     extra_data={
                         'charset': mailpart.charset,
                         'content-description': mailpart.part.get('Content-Description'),
                         'content-id': mailpart.content_id,
                         'disposition': mailpart.disposition,
-                        'filename': mailpart.filename
-                        if mailpart.filename
-                        else mailpart.sanitized_filename,
+                        'filename': att_filename,
                         'type': mailpart.type,
                     }
                 )
