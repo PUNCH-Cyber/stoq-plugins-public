@@ -67,6 +67,7 @@ class Decompress(WorkerPlugin):
         'application/zip': '7z',
         'application/x-bzip2': '7z',
         'application/octet-stream': '7z',
+        'application/x-dosexec': 'upx',
     }
 
     ARCHIVE_CMDS = {
@@ -74,6 +75,7 @@ class Decompress(WorkerPlugin):
         'gzip': 'gunzip %INFILE%',
         'tar': 'tar xf %INFILE% -C %OUTDIR%',
         'unace': 'unace x -p%PASSWORD% -y %INFILE% %OUTDIR%',
+        'upx': 'upx -d %INFILE% -o %OUTDIR%/unpacked_exe',
     }
 
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
