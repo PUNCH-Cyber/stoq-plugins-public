@@ -143,6 +143,7 @@ class Decompress(WorkerPlugin):
             fd, archive_file = tempfile.mkstemp(dir=extract_dir)
             with open(fd, 'xb') as f:
                 f.write(payload.content)
+                f.flush()
             archive_outdir = tempfile.mkdtemp(dir=extract_dir)
             for password in passwords:
                 cmd = archiver.replace('%INFILE%', shlex.quote(archive_file))
