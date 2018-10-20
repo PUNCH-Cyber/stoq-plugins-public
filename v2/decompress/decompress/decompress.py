@@ -43,6 +43,8 @@ import os
 import shlex
 import magic
 import tempfile
+from configparser import ConfigParser
+from typing import Dict, Optional
 from subprocess import Popen, PIPE, TimeoutExpired
 
 from stoq.plugins import WorkerPlugin
@@ -68,19 +70,21 @@ class Decompress(WorkerPlugin):
     }
 
     ARCHIVE_CMDS = {
-        '7z': '/usr/bin/7z x -o%OUTDIR% -y -p%PASSWORD% %INFILE%',
-        'gzip': '/bin/gunzip %INFILE%',
-        'tar': '/bin/tar xf %INFILE% -C %OUTDIR%',
-        'unace': '/usr/bin/unace x -p%PASSWORD% -y %INFILE% %OUTDIR%',
+        '7z': '7z x -o%OUTDIR% -y -p%PASSWORD% %INFILE%',
+        'gzip': 'gunzip %INFILE%',
+        'tar': 'tar xf %INFILE% -C %OUTDIR%',
+        'unace': 'unace x -p%PASSWORD% -y %INFILE% %OUTDIR%',
     }
 
-   def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
+    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
         if plugin_opts and 'passwords' in plugin_opts:
             self.passwords = [p.strip() for p in plugin_opts['passwords'].split(',')]
         elif config.has_option('options', 'passwords'):
-            self.passwords = [p.strip() for p in config.get('options', 'passwords').split(',')]
+            self.passwords = [
+                p.strip() for p in config.get('options', 'passwords').split(',')
+            ]
         else:
             self.passwords = []
 
@@ -89,7 +93,7 @@ class Decompress(WorkerPlugin):
         elif config.has_option('options', 'passwords'):
             self.maximum_size = int(config.get('options', 'maximum_size'))
         else:
-            self.maximum_size = 50000000
+            self.maximum_size = 50_000_000
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
@@ -100,24 +104,27 @@ class Decompress(WorkerPlugin):
             - archiver
         """
 
-        if len(payload) > int(self.maximum_size):
+        if len(payload.content) > int(self.maximum_size):
             raise StoqException('Compressed file too large')
 
         archiver = None
         results = {}
         errors = []
         extracted = []
-        passwords = request_meta.get('passwords', self.password_list)
-        passwords = [p.strip() for p in passwords.split(',')]
+        passwords = request_meta.extra_data.get('passwords', self.passwords)
+        if isinstance(passwords, str):
+            passwords = [p.strip() for p in passwords.split(',')]
 
         # Determine the mimetype of the payload so we can identify the
         # correct archiver. This should either be based off the request_meta
         # (useful when payload is passed via dispatching) or via magic
-        if 'archiver' in request_meta:
-            if request_meta['archiver'] in self.ARCHIVE_CMDS:
-                archiver = self.ARCHIVE_CMDS[request_meta['archiver']]
+        if 'archiver' in request_meta.extra_data:
+            if request_meta.extra_data['archiver'] in self.ARCHIVE_CMDS:
+                archiver = self.ARCHIVE_CMDS[request_meta.extra_data['archiver']]
             else:
-                raise StoqException(f'Unknown archive type of {request_meta['archiver']}')
+                raise StoqException(
+                    f"Unknown archive type of {request_meta['archiver']}"
+                )
         else:
             mimetype = magic.from_buffer(payload.content, mime=True)
             if mimetype in self.ARCHIVE_MAGIC:
@@ -153,8 +160,12 @@ class Decompress(WorkerPlugin):
                     path = os.path.join(extract_dir, root, f)
                     try:
                         with open(path, "rb") as extracted_file:
-                            meta = PayloadMeta(extra_data={'filename': os.path.basename(path)})
-                            extracted.append(ExtractedPayload(extracted_file.read(), meta)
+                            meta = PayloadMeta(
+                                extra_data={'filename': os.path.basename(path)}
+                            )
+                            extracted.append(
+                                ExtractedPayload(extracted_file.read(), meta)
+                            )
                     except Exception as err:
                         errors.append('Unable to access extracted content')
 

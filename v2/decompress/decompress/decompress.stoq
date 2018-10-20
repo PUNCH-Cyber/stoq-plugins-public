@@ -24,7 +24,7 @@ Description = Extract content from a multitude of archive formats
 
 [options]
 # Default passwords to iterate over when decompressing a file
-password_list = -, infected, password
+passwords = -, infected, password
 
 # Maximum size of payload to handle
 # Default: 50MB
