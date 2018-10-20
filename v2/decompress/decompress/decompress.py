@@ -59,6 +59,7 @@ class Decompress(WorkerPlugin):
         'application/java-archive': '7z',
         'application/rar': '7z',
         'application/x-7z-compressed': '7z',
+        'application/x-lzma': '7z',
         'application/x-ace': 'unace',
         'application/x-gzip': 'gzip',
         'application/x-rar': '7z',
