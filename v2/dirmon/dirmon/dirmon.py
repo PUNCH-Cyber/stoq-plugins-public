@@ -20,7 +20,11 @@ Monitor a directory for newly created files for processing
 
 """
 
+import os
 from time import sleep
+from queue import Queue
+from typing import Dict, Optional
+from configparser import ConfigParser
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -72,4 +76,4 @@ class WatchdogEvent(FileSystemEventHandler):
             }
         )
         with open(event.src_path, "rb") as f:
-            queue.put(Payload(f.read(), meta))
+            self.queue.put(Payload(f.read(), meta))
