@@ -20,7 +20,6 @@ Sends content to STDOUT
 
 """
 
-import stoq.helpers as helpers
 from stoq.data_classes import StoqResponse
 from stoq.plugins import ConnectorPlugin
 
@@ -31,4 +30,4 @@ class StdoutConnector(ConnectorPlugin):
         Print results to STDOUT
 
         """
-        print(helpers.dumps(response))
+        print(response)
