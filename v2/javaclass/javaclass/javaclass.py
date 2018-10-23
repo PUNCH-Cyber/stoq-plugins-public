@@ -23,7 +23,7 @@ Decodes and extracts information from Java Class files
 from javatools import unpack_class, ClassUnpackException
 
 from stoq.plugins import WorkerPlugin
-from stoq.exceptions import StoqException
+from stoq.exceptions import StoqPluginException
 from stoq import Payload, RequestMeta, WorkerResponse
 
 
@@ -39,7 +39,7 @@ class JavaClassPlugin(WorkerPlugin):
         try:
             content = unpack_class(payload.content)
         except ClassUnpackException as err:
-            raise StoqException(f'Unable to parse payload: {err}')
+            raise StoqPluginException(f'Unable to parse payload: {err}')
 
         try:
             results = {
@@ -55,6 +55,6 @@ class JavaClassPlugin(WorkerPlugin):
                 constants['data'] = data
                 results['constants'].append(constants)
         except Exception as err:
-            raise StoqException(f'Unable to analyze Java Class {err}')
+            raise StoqPluginException(f'Unable to analyze Java Class {err}')
 
         return WorkerResponse(results)

@@ -52,6 +52,6 @@ class ExifToolPlugin(WorkerPlugin):
                 cmd = [self.exiftool, '-j', '-n', temp_file.name]
                 results = json.loads(check_output(cmd))[0]
             except Exception as err:
-                raise StoqException(f'Failed gathering exif data: {err}')
+                raise StoqPluginException(f'Failed gathering exif data: {err}')
 
         return WorkerResponse(results)

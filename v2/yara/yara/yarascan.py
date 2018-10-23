@@ -28,7 +28,7 @@ from configparser import ConfigParser
 from typing import Dict, List, Optional
 from inspect import currentframe, getframeinfo
 
-from stoq.exceptions import StoqException
+from stoq.exceptions import StoqPluginException
 from stoq.plugins import WorkerPlugin, DispatcherPlugin
 from stoq import Payload, RequestMeta, WorkerResponse, DispatcherResponse
 
@@ -65,7 +65,9 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
     def compile_rules(self, filepath: str) -> None:
         filepath = os.path.realpath(filepath)
         if not os.path.isfile(filepath):
-            raise StoqException(f"Nonexistent yara rules file provided: {filepath}")
+            raise StoqPluginException(
+                f"Nonexistent yara rules file provided: {filepath}"
+            )
         else:
             return yara.compile(filepath=filepath)
 

@@ -44,7 +44,7 @@ class DirmonPlugin(ProviderPlugin):
             self.source_dir = None
 
         if not self.source_dir:
-            raise StoqException('Source directory not defined')
+            raise StoqPluginException('Source directory not defined')
 
     def ingest(self, queue: Queue) -> None:
         """

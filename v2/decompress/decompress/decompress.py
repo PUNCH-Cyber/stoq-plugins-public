@@ -48,7 +48,7 @@ from typing import Dict, Optional
 from subprocess import Popen, PIPE, TimeoutExpired
 
 from stoq.plugins import WorkerPlugin
-from stoq.exceptions import StoqException
+from stoq.exceptions import StoqPluginException
 from stoq import Payload, RequestMeta, WorkerResponse, ExtractedPayload, PayloadMeta
 
 
@@ -108,7 +108,7 @@ class Decompress(WorkerPlugin):
         """
 
         if len(payload.content) > int(self.maximum_size):
-            raise StoqException('Compressed file too large')
+            raise StoqPluginException('Compressed file too large')
 
         archiver = None
         results = {}
@@ -125,7 +125,7 @@ class Decompress(WorkerPlugin):
             if request_meta.extra_data['archiver'] in self.ARCHIVE_CMDS:
                 archiver = self.ARCHIVE_CMDS[request_meta.extra_data['archiver']]
             else:
-                raise StoqException(
+                raise StoqPluginException(
                     f"Unknown archive type of {request_meta['archiver']}"
                 )
         else:
@@ -135,9 +135,9 @@ class Decompress(WorkerPlugin):
                 if archive_type in self.ARCHIVE_CMDS:
                     archiver = self.ARCHIVE_CMDS[archive_type]
                 else:
-                    raise StoqException(f'Unknown archive type of {archive_type}')
+                    raise StoqPluginException(f'Unknown archive type of {archive_type}')
         if not archiver:
-            raise StoqException('Unable to determine archive type')
+            raise StoqPluginException('Unable to determine archive type')
 
         with tempfile.TemporaryDirectory() as extract_dir:
             fd, archive_file = tempfile.mkstemp(dir=extract_dir)
@@ -155,7 +155,7 @@ class Decompress(WorkerPlugin):
                     outs, errs = p.communicate(timeout=45)
                 except TimeoutExpired:
                     p.kill()
-                    raise StoqException('Timed out decompressing payload')
+                    raise StoqPluginException('Timed out decompressing payload')
                 if p.returncode == 0:
                     break
 
