@@ -37,7 +37,7 @@ class ExifToolPlugin(WorkerPlugin):
         if plugin_opts and 'exiftool' in plugin_opts:
             self.exiftool = plugin_opts['exiftool']
         elif config.has_option('options', 'exiftool'):
-            self.exiftool = config.getboolean('options', 'exiftool')
+            self.exiftool = config.get('options', 'exiftool')
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
