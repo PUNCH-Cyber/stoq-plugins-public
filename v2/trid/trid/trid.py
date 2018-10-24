@@ -20,28 +20,41 @@ Identify file types from their TrID signature
 
 """
 
+import os
 import tempfile
+from pathlib import Path
 from typing import Dict, Optional
-from configparser import ConfigParser
 from subprocess import check_output
+from configparser import ConfigParser
+from inspect import currentframe, getframeinfo
 
 from stoq.plugins import WorkerPlugin
+from stoq.exceptions import StoqPluginException
 from stoq import Payload, RequestMeta, WorkerResponse
 
 
-class ExifToolPlugin(WorkerPlugin):
+class TridPlugin(WorkerPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
+        filename = getframeinfo(currentframe()).filename
+        parent = Path(filename).resolve().parent
+
         if plugin_opts and 'trid_defs' in plugin_opts:
-            self.trid_defs = plugin_opts['trid_defs']
+            trid_defs = plugin_opts['trid_defs']
         elif config.has_option('options', 'trid_defs'):
-            self.trid_defs = config.get('options', 'trid_defs')
+            trid_defs = config.get('options', 'trid_defs')
+        if not os.path.isabs(trid_defs):
+            trid_defs = os.path.join(parent, trid_defs)
+        self.trid_defs = trid_defs
 
         if plugin_opts and 'trid_bin' in plugin_opts:
-            self.trid_bin = plugin_opts['trid_bin']
+            trid_bin = plugin_opts['trid_bin']
         elif config.has_option('options', 'trid_bin'):
-            self.trid_bin = config.get('options', 'trid_bin')
+            trid_bin = config.get('options', 'trid_bin')
+        if not os.path.isabs(trid_bin):
+            trid_bin = os.path.join(parent, trid_bin)
+        self.trid_bin = trid_bin
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
@@ -57,7 +70,7 @@ class ExifToolPlugin(WorkerPlugin):
                 cmd = [self.trid_bin, f"-d:{self.trid_defs}", temp_file.name]
                 trid_results = check_output(cmd).splitlines()
             except Exception as err:
-                raise StoqPluginException(f'Failed gathering TRiD data: {err}')
+                raise StoqPluginException('Failed gathering TRiD data')
 
         for line in trid_results[6:]:
             if line.startswith('Warning'.encode()):
