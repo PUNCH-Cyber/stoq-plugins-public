@@ -57,10 +57,7 @@ class PeinfoPlugin(WorkerPlugin):
 
         """
 
-        try:
-            pe = pefile.PE(data=payload.content)
-        except pefile.PEFormatError:
-            raise StoqPluginException('Invalid PE format')
+        pe = pefile.PE(data=payload.content)
 
         # Let's create our results if pefile was successful
         results = {}
