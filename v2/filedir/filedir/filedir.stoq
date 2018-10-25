@@ -13,15 +13,36 @@
 #   limitations under the License.
 
 [Core]
-Name = dirmon
-Module = dirmon
+Name = filedir
+Module = filedir
 
 [Documentation]
 Author = Marcus LaFerrera
 Version = 2.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Monitor a directory for newly created files for processing
+Description = Ingest a file or directory for processing
 
-[options]
+[provider]
+# Should directories be scanned recursively?
 recursive = False
+
+# Default directory for ingesting content
 # source_dir =
+
+[connector]
+# Where should results be saved to?
+# results_dir = /tmp
+
+# Save results to a directory structure using date_format
+date_mode = False
+
+# Append the below datetime formatter to the output path if requested
+date_format = %%Y/%%m/%%d
+
+[archiver]
+# Where should archived files be saved/read from?
+# archive_dir
+
+# Should archived files be saved in a directory structure
+# based on the first 5 characters of the sha1 hash?
+use_sha = True

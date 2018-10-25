@@ -21,40 +21,72 @@ Ingest a file or directory for processing
 """
 
 import os
+import hashlib
 from queue import Queue
+from pathlib import Path
+from datetime import datetime
 from typing import Dict, Optional
 from configparser import ConfigParser
 
-from stoq import Payload, PayloadMeta
-from stoq.plugins import ProviderPlugin
 from stoq.exceptions import StoqPluginException
+from stoq import Payload, PayloadMeta, ArchiverResponse, StoqResponse, RequestMeta
+from stoq.plugins import ProviderPlugin, ConnectorPlugin, ArchiverPlugin
 
 
-class FileDirPlugin(ProviderPlugin):
+class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
+        self.source_dir = None
+        self.recursive = False
+        self.results_dir = None
+        self.date_mode = False
+        self.date_format = '%Y/%m/%d'
+        self.archive_dir = None
+        self.use_sha = True
+
         if plugin_opts and 'source_dir' in plugin_opts:
             self.source_dir = plugin_opts['source_dir']
-        elif config.has_option('options', 'source_dir'):
-            self.source_dir = config.get('options', 'source_dir')
-        else:
-            self.source_dir = None
-        if not self.source_dir:
-            raise StoqPluginException('Source directory not defined')
+        elif config.has_option('provider', 'source_dir'):
+            self.source_dir = config.get('provider', 'source_dir')
 
         if plugin_opts and 'recursive' in plugin_opts:
             self.recursive = plugin_opts['recursive']
-        elif config.has_option('options', 'recursive'):
-            self.recursive = config.get('options', 'recursive')
-        else:
-            self.recursive = False
+        elif config.has_option('provider', 'recursive'):
+            self.recursive = config.getboolean('provider', 'recursive')
+
+        if plugin_opts and 'result_dir' in plugin_opts:
+            self.results_dir = plugin_opts['result_dir']
+        elif config.has_option('connector', 'results_dir'):
+            self.results_dir = config.get('connector', 'results_dir')
+
+        if plugin_opts and 'date_mode' in plugin_opts:
+            self.date_mode = plugin_opts['date_mode']
+        elif config.has_option('connector', 'date_mode'):
+            self.date_mode = config.getboolean('connector', 'date_mode')
+
+        if plugin_opts and 'date_format' in plugin_opts:
+            self.date_format = plugin_opts['date_format']
+        elif config.has_option('connector', 'date_format'):
+            self.date_format = config.get('connector', 'date_format')
+
+        if plugin_opts and 'archive_dir' in plugin_opts:
+            self.archive_dir = plugin_opts['archive_dir']
+        elif config.has_option('archiver', 'archive_dir'):
+            self.archive_dir = config.get('archiver', 'archive_dir')
+
+        if plugin_opts and 'use_sha' in plugin_opts:
+            self.use_sha = plugin_opts['use_sha']
+        elif config.has_option('archiver', 'use_sha'):
+            self.use_sha = config.getboolean('archiver', 'use_sha')
 
     def ingest(self, queue: Queue) -> None:
         """
         Ingest files from a directory
 
         """
+        if not self.source_dir:
+            raise StoqPluginException('Source directory not defined')
         if os.path.isdir(self.source_dir):
             if self.recursive:
                 for root_path, subdirs, files in os.walk(self.source_dir):
@@ -70,6 +102,10 @@ class FileDirPlugin(ProviderPlugin):
             self._queue(path, queue)
 
     def _queue(self, path: str, queue: Queue) -> None:
+        """
+        Publish payload to stoQ queue
+
+        """
         meta = PayloadMeta(
             extra_data={
                 'filename': os.path.basename(path),
@@ -78,3 +114,50 @@ class FileDirPlugin(ProviderPlugin):
         )
         with open(path, "rb") as f:
             queue.put(Payload(f.read(), meta))
+
+    def save(self, response: StoqResponse) -> None:
+        """
+        Save results to disk
+
+        """
+
+        path = self.results_dir
+        filename = response.scan_id
+        if self.date_mode:
+            now = datetime.now().strftime(self.date_format)
+            path = f'{path}/{now}'
+        path = os.path.abspath(path)
+        Path(path).mkdir(parents=True, exist_ok=True)
+        with open(f'{path}/{filename}', 'x') as outfile:
+            outfile.write(str(response))
+
+    def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
+        """
+        Archive payload to disk
+
+        """
+        path = self.archive_dir
+        if self.use_sha:
+            filename = hashlib.sha1(payload.content).hexdigest()
+            path = f'{path}/{"/".join(list(filename[:5]))}'
+        else:
+            filename = payload.payload_id
+        path = os.path.abspath(path)
+        Path(path).mkdir(parents=True, exist_ok=True)
+        with open(f'{path}/{filename}', 'xb') as outfile:
+            outfile.write(payload.content)
+        return ArchiverResponse({'path': path, 'filename': filename})
+
+    def get(self, task: str) -> Payload:
+        """
+        Retrieve archived payload from disk
+
+        """
+        meta = PayloadMeta(
+            extra_data={
+                'filename': os.path.basename(task),
+                'source_dir': os.path.dirname(task),
+            }
+        )
+        with open(os.path.abspath(task), 'rb') as f:
+            return Payload(f.read(), meta)
