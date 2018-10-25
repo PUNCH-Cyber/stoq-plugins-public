@@ -1,0 +1,2 @@
+olefile==0.46
+oletools==0.53.1
