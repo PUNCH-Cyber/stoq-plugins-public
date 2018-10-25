@@ -32,7 +32,6 @@ from configparser import ConfigParser
 from inspect import currentframe, getframeinfo
 
 from stoq.plugins import WorkerPlugin
-from stoq.exceptions import StoqPluginException
 from stoq import Payload, RequestMeta, WorkerResponse
 
 
@@ -58,8 +57,6 @@ class PeinfoPlugin(WorkerPlugin):
         """
 
         pe = pefile.PE(data=payload.content)
-
-        # Let's create our results if pefile was successful
         results = {}
         results['imphash'] = self.get_imphash(pe)
         results['compile_time'] = self.get_compiletime(pe)
@@ -76,9 +73,6 @@ class PeinfoPlugin(WorkerPlugin):
         results['sections'] = self.get_sections(pe)
         results['imports'] = self.get_imports(pe)
         results['rich_header'] = self.get_rich_header(pe)
-
-        # pe must be closed when done otherwise you may be in store
-        # for an unpleasant memory leak.
         pe.close()
 
         return WorkerResponse(results)
