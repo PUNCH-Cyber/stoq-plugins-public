@@ -20,7 +20,7 @@ Module = filedir
 Author = Marcus LaFerrera
 Version = 2.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Ingest a file or directory for processing
+Description = Handle file and directory interactions
 
 [provider]
 # Should directories be scanned recursively?

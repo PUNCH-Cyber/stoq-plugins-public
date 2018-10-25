@@ -16,7 +16,7 @@
 Overview
 ========
 
-Ingest a file or directory for processing
+Handle file and directory interactions
 
 """
 

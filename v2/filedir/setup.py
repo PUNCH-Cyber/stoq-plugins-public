@@ -6,7 +6,7 @@ setup(
     author="Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
-    description="Ingest a file or directory for processing",
+    description="Handle file and directory interactions ",
     packages=find_packages(),
     include_package_data=True,
 )
