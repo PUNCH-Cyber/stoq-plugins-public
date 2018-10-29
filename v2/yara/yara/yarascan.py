@@ -52,7 +52,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
             dispatch_ruleset = os.path.join(parent, dispatch_ruleset)
         self.dispatch_rules = self.compile_rules(dispatch_ruleset)
 
-        if plugin_opts and "yararules" in plugin_opts:
+        if plugin_opts and "worker_rules" in plugin_opts:
             worker_ruleset = plugin_opts["worker_rules"]
         elif config.has_option("options", "worker_rules"):
             worker_ruleset = config.get("options", "worker_rules")
