@@ -8,6 +8,7 @@ setup(
     license="Apache License 2.0",
     description="Gather relevant information about an executable using pefile",
     packages=find_packages(),
-    package_data={'peinfo': ['peinfo.stoq', 'userdb.txt']},
+    package_data={'peinfo': ['*.stoq', 'userdb.txt']},
     include_package_data=True,
+    install_requires=['pefile>=2018.8.8'],
 )

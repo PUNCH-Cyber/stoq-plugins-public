@@ -9,5 +9,6 @@ setup(
     description="Process a payload using yara",
     packages=find_packages(),
     include_package_data=True,
-    package_data={'yara': ['rules/*.yar', 'yarascan.stoq']},
+    install_requires=['yara-python>=3.8.1'],
+    package_data={'yara': ['rules/*.yar', '*.stoq']},
 )

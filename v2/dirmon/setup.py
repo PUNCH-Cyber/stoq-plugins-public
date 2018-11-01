@@ -9,4 +9,6 @@ setup(
     description="Monitor a directory for newly created files for processing",
     packages=find_packages(),
     include_package_data=True,
+    install_requires=['watchdog>=0.9.0'],
+    package_data={'dirmon': ['*.stoq']},
 )

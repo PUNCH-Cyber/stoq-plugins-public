@@ -9,4 +9,6 @@ setup(
     description="SMTP Parser Worker",
     packages=find_packages(),
     include_package_data=True,
+    install_requires=['pyzmail36>=1.0.3', 'beautifulsoup4>=4.6.3'],
+    package_data={'smtp': ['*.stoq']},
 )

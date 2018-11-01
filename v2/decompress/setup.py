@@ -9,4 +9,6 @@ setup(
     description="Extract content from a multitude of archive formats",
     packages=find_packages(),
     include_package_data=True,
+    install_requires=['python-magic>=0.4.15'],
+    package_data={'decompress': ['*.stoq']},
 )

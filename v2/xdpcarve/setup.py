@@ -9,4 +9,5 @@ setup(
     description="Carve and decode elements from XDP objects",
     packages=find_packages(),
     include_package_data=True,
+    package_data={'xdpcarve': ['*.stoq']},
 )

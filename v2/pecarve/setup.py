@@ -9,4 +9,6 @@ setup(
     description="Carve portable executable files from a data stream",
     packages=find_packages(),
     include_package_data=True,
+    install_requires=['pefile>=2018.8.8'],
+    package_data={'pecarve': ['*.stoq']},
 )
