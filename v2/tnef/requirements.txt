@@ -1,2 +1,2 @@
-beautifulsoup4>=4.6.3
+beautifulsoup4~=4.6.3
 git+https://github.com/koodaamo/tnefparse

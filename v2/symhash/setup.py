@@ -9,5 +9,4 @@ setup(
     description="Calculate symhash of payload",
     packages=find_packages(),
     include_package_data=True,
-    package_data={'symhash': ['*.stoq']},
 )

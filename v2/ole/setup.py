@@ -9,6 +9,4 @@ setup(
     description="Extract objects from OLE payloads",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['olefile>=0.46', 'oletools>=0.53.1'],
-    package_data={'ole': ['*.stoq']},
 )

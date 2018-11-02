@@ -9,6 +9,5 @@ setup(
     description="Sends content to STDOUT",
     packages=find_packages(),
     include_package_data=True,
-    package_data={'stdout': ['*.stoq']},
 )
 

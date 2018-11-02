@@ -9,6 +9,4 @@ setup(
     description="Extract objects from RTF payloads",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['oletools>=0.53.1'],
-    package_data={'rtf': ['*.stoq']},
 )

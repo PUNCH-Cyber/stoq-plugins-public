@@ -9,5 +9,4 @@ setup(
     description="Processes a payload using ExifTool",
     packages=find_packages(),
     include_package_data=True,
-    package_data={'exif': ['*.stoq']},
 )

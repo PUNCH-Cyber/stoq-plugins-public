@@ -9,5 +9,4 @@ setup(
     description="Handle file and directory interactions ",
     packages=find_packages(),
     include_package_data=True,
-    package_data={'filedir': ['*.stoq']},
 )

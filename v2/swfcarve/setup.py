@@ -9,6 +9,4 @@ setup(
     description="Carve and decompress SWF files from a data stream",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['pylzma>=0.5.0'],
-    package_data={'swfcarve': ['*.stoq']},
 )

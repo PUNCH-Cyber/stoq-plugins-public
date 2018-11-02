@@ -9,6 +9,4 @@ setup(
     description="Regex routines to extract and normalize IOC's from a payload",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['requests>=2.20.0'],
-    package_data={'iocextract': ['*.stoq']},
 )

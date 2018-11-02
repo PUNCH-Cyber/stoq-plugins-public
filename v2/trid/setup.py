@@ -9,5 +9,4 @@ setup(
     description="Identify file types from their TrID signatur",
     packages=find_packages(),
     include_package_data=True,
-    package_data={'trid': ['*.stoq']},
 )
