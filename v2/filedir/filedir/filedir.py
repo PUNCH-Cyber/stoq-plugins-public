@@ -55,8 +55,8 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         elif config.has_option('provider', 'recursive'):
             self.recursive = config.getboolean('provider', 'recursive')
 
-        if plugin_opts and 'result_dir' in plugin_opts:
-            self.results_dir = plugin_opts['result_dir']
+        if plugin_opts and 'results_dir' in plugin_opts:
+            self.results_dir = plugin_opts['results_dir']
         elif config.has_option('connector', 'results_dir'):
             self.results_dir = config.get('connector', 'results_dir')
 
