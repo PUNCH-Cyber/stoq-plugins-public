@@ -27,7 +27,7 @@ import requests
 from pathlib import Path
 from urllib.parse import urlsplit
 from configparser import ConfigParser
-from typing import Dict, Bool, Set, Optional
+from typing import Dict, Set, Optional
 from ipaddress import ip_address, ip_network
 from inspect import currentframe, getframeinfo
 
@@ -171,7 +171,7 @@ class IOCExtract(WorkerPlugin):
 
         return normalized_results
 
-    def _validate_ipv6(self, address: str) -> Bool:
+    def _validate_ipv6(self, address: str) -> bool:
         """
         Validate whether a result is a valid ipv6 address
 
@@ -208,7 +208,7 @@ class IOCExtract(WorkerPlugin):
                     except KeyError:
                         print("Unknown indicator type: {}".format(indicator_type))
 
-    def _check_whitelist(self, indicator: str, indicator_type: str) -> Bool:
+    def _check_whitelist(self, indicator: str, indicator_type: str) -> bool:
 
         # Set to False so we can use only domain: in the whitelist_file
         is_url = False
