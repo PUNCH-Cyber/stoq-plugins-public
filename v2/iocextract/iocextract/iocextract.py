@@ -27,7 +27,7 @@ import requests
 from pathlib import Path
 from urllib.parse import urlsplit
 from configparser import ConfigParser
-from typing import Dict, Set, Optional
+from typing import Dict, Set, Optional, List
 from ipaddress import ip_address, ip_network
 from inspect import currentframe, getframeinfo
 
