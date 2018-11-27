@@ -1,2 +1,0 @@
-pyzmail36
-git+https://github.com/koodaamo/tnefparse
