@@ -2,6 +2,9 @@
 <img src="http://stoq.punchcyber.com/i/stoq.png" width="300"><br />
 </p>
 
+[![Documentation Status](https://readthedocs.org/projects/stoq-framework/badge/?version=v2)](https://stoq-framework.readthedocs.io/en/v2/)
+[![License](https://img.shields.io/pypi/l/stoq-framework.svg)](https://pypi.org/project/stoq-framework/)
+
 # Overview
 
 stoQ is a automation framework that helps to simplify the mundane and repetitive
