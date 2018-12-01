@@ -22,7 +22,7 @@ own plugins, checkout the [full documentation](https://stoq-framework.readthedoc
 This git repository contains publicly available plugins that have been created
 for use with stoQ. The core stoQ repository can be found [here](https://github.com/PUNCH-Cyber/stoq).
 
-## Installation
+# Installation
 
 Details on how to install these plugins can be found [here](https://stoq-framework.readthedocs.io/en/latest/installation.html#installing-plugins).
 
