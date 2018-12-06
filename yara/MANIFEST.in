@@ -1,1 +1,1 @@
-include yara/*.stoq yara/rule/*.yar
+include yarascan/*.stoq yarascan/rules/*.yar
