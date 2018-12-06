@@ -9,7 +9,7 @@ before_install:
   - sudo apt-get -yq install software-properties-common
   - sudo apt-add-repository -y multiverse
   - sudo apt-get -yq update
-  - sudo apt-get -yq install automake build-essential libyaml-dev
+  - sudo apt-get -yq install automake build-essential libyaml-dev libmagic-dev cython autoconf libffi-dev libfuzzy-dev
   - pip install stoq-framework
 
 install:
