@@ -13,8 +13,8 @@ before_install:
   - pip install stoq-framework
   - wget -O /tmp/xorsearch.zip https://didierstevens.com/files/software/XORSearch_V1_11_1.zip
   - unzip /tmp/xorsearch.zip -d /tmp
-  - sudo mv /tmp/Linux/xorsearch /home/travis/build/PUNCH-Cyber/stoq-plugins-public/xorsearch/xorsearch/xorsearch
-  - sudo chmod +x /home/travis/build/PUNCH-Cyber/stoq-plugins-public/xorsearch/xorsearch/xorsearch
+  - sudo gcc -o /usr/local/bin/xorsearch /tmp/XORSearch.c
+  - sed -i "s@bin_path = xorsearch@bin_path = /usr/local/bin/xorsearch@" /home/travis/build/PUNCH-Cyber/stoq-plugins-public/xorsearch/xorsearch/xorsearch.stoq
 
 install:
   - pip install -r hash_ssdeep/requirements.txt
