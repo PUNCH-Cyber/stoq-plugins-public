@@ -7,7 +7,7 @@
 - [Worker](https://stoq-framework.readthedocs.io/en/v2/dev/workers.html)
 - [Dispatcher](https://stoq-framework.readthedocs.io/en/v2/dev/dispatchers.html)
 
-## Configuration and Options
+## Configuration
 
 All options below may be set by:
 
@@ -15,8 +15,10 @@ All options below may be set by:
 - [`stoq` command](https://stoq-framework.readthedocs.io/en/v2/gettingstarted.html#plugin-options)
 - [`Stoq` class](https://stoq-framework.readthedocs.io/en/v2/dev/core.html?highlight=plugin_opts#using-providers)
 
-`worker_rules`: Path to yara rules for the scanning of a `Payload`
+### Options
 
-`dispatch_rules`: Path to yara rules for dispatching a `Payload`
+- `worker_rules`: Path to yara rules for the scanning of a `Payload`
+
+- `dispatch_rules`: Path to yara rules for dispatching a `Payload`
 
 > Paths may be relative to the module, or a full path.
