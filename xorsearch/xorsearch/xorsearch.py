@@ -71,7 +71,6 @@ class XorSearchPlugin(WorkerPlugin):
             temp_file.flush()
             cmd = [self.bin_path, '-f', self.terms, temp_file.name]
             process_results = check_output(cmd).splitlines()
-            print(process_results)
 
         result = {}
         for line in process_results:

@@ -18,6 +18,8 @@ import os
 import logging
 import unittest
 
+from pathlib import Path
+
 from stoq import RequestMeta, Stoq, Payload
 from stoq.data_classes import WorkerResponse
 
@@ -25,12 +27,13 @@ from stoq.data_classes import WorkerResponse
 class TestCore(unittest.TestCase):
     def setUp(self) -> None:
         self.plugin_name = 'hash_ssdeep'
-        self.plugin_dir = os.path.join(os.getcwd(), self.plugin_name)
+        self.base_dir = Path(os.path.realpath(__file__)).parent
+        self.data_dir = os.path.join(self.base_dir, 'data')
+        self.plugin_dir = os.path.join(self.base_dir.parent, self.plugin_name)
         self.generic_data = b'This is a payload to hash'
-        logging.disable(logging.CRITICAL)
 
     def tearDown(self) -> None:
-        logging.disable(logging.NOTSET)
+        pass
 
     def test_scan(self) -> None:
         s = Stoq(plugin_dir_list=[self.plugin_dir])

@@ -18,16 +18,19 @@ import os
 import logging
 import unittest
 
-from operator import xor
+from pathlib import Path
 
 from stoq import RequestMeta, Stoq, Payload
 from stoq.data_classes import WorkerResponse
+import stoq.tests.utils as utils
 
 
 class TestCore(unittest.TestCase):
     def setUp(self) -> None:
         self.plugin_name = 'xorsearch'
-        self.plugin_dir = os.path.join(os.getcwd(), self.plugin_name)
+        self.base_dir = Path(os.path.realpath(__file__)).parent
+        self.data_dir = os.path.join(self.base_dir, 'data')
+        self.plugin_dir = os.path.join(self.base_dir.parent, self.plugin_name)
         self.generic_data = b'MZAdjustTokenPrivileges CurrentVersion'
 
     def tearDown(self) -> None:
