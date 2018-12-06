@@ -25,5 +25,5 @@ Description = Scan a payload using xorsearch
 [options]
 # Minimum version of stoQ required to work
 min_stoq_version = 2.0.0
-bin_path = /Users/mal/bin/xorsearch
+bin_path = xorsearch
 terms = terms.txt
