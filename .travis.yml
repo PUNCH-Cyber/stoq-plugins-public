@@ -1,0 +1,27 @@
+sudo: required
+dist: xenial
+language: python
+python:
+  - 3.6
+  - 3.7
+
+before_install:
+  - sudo apt-get -yq install software-properties-common
+  - sudo apt-add-repository -y multiverse
+  - sudo apt-get -yq update
+  - sudo apt-get -yq install automake build-essential libyaml-dev
+  - pip install stoq-framework
+
+install:
+  - pip install -r hash_ssdeep/requirements.txt
+  - pip install -r javaclass/requirements.txt
+  - pip install -r mimetype/requirements.txt
+  - pip install -r yara/requirements.txt
+
+script:
+  - python hash/setup.py test
+  - python hash_ssdeep/setup.py test
+  - python javaclass/setup.py test
+  - python mimetype/setup.py test
+  - python xorsearch/setup.py test
+  - python yara/setup.py test
