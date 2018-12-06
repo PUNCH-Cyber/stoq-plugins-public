@@ -9,4 +9,5 @@ setup(
     description="Decodes and extracts information from Java Class files",
     packages=find_packages(),
     include_package_data=True,
+    test_suite='tests',
 )
