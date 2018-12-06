@@ -18,6 +18,8 @@ import os
 import logging
 import unittest
 
+from pathlib import Path
+
 from stoq import RequestMeta, Stoq, Payload
 from stoq.data_classes import WorkerResponse
 from stoq.exceptions import StoqPluginException
@@ -26,12 +28,12 @@ from stoq.exceptions import StoqPluginException
 class TestCore(unittest.TestCase):
     def setUp(self) -> None:
         self.plugin_name = 'javaclass'
-        self.plugin_dir = os.path.join(os.getcwd(), self.plugin_name)
-        self.data_dir = os.path.join(os.getcwd(), 'tests', 'data')
-        logging.disable(logging.CRITICAL)
+        self.base_dir = Path(os.path.realpath(__file__)).parent
+        self.data_dir = os.path.join(self.base_dir, 'data')
+        self.plugin_dir = os.path.join(self.base_dir.parent, self.plugin_name)
 
     def tearDown(self) -> None:
-        logging.disable(logging.NOTSET)
+        pass
 
     def test_scan(self) -> None:
         s = Stoq(plugin_dir_list=[self.plugin_dir])
