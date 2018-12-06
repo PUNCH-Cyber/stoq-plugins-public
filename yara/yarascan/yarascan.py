@@ -48,9 +48,10 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
             dispatch_ruleset = config.get("options", "dispatch_rules")
         else:
             dispatch_ruleset = None
-        if not os.path.isabs(dispatch_ruleset):
-            dispatch_ruleset = os.path.join(parent, dispatch_ruleset)
-        self.dispatch_rules = self.compile_rules(dispatch_ruleset)
+        if dispatch_ruleset:
+            if not os.path.isabs(dispatch_ruleset):
+                dispatch_ruleset = os.path.join(parent, dispatch_ruleset)
+            self.dispatch_rules = self.compile_rules(dispatch_ruleset)
 
         if plugin_opts and "worker_rules" in plugin_opts:
             worker_ruleset = plugin_opts["worker_rules"]
@@ -58,9 +59,10 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
             worker_ruleset = config.get("options", "worker_rules")
         else:
             worker_ruleset = None
-        if not os.path.isabs(worker_ruleset):
-            worker_ruleset = os.path.join(parent, worker_ruleset)
-        self.worker_rules = self.compile_rules(worker_ruleset)
+        if worker_ruleset:
+            if not os.path.isabs(worker_ruleset):
+                worker_ruleset = os.path.join(parent, worker_ruleset)
+            self.worker_rules = self.compile_rules(worker_ruleset)
 
     def compile_rules(self, filepath: str) -> None:
         filepath = os.path.realpath(filepath)

@@ -41,7 +41,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | peinfo       | Gather relevant information about an executable using pefile | Worker                             |
 | javaclass    | Decodes and extracts information from Java Class files       | Worker                             |
 | filedir      | Ingest a file or directory for processing                    | Provider, Connector, Archiver      |
-| yara         | Process a payload using yara                                 | Worker, Dispatcher                 |
+| yarascan     | Process a payload using yara                                 | Worker, Dispatcher                 |
 | decompress   | Extract content from a multitude of archive formats          | Worker                             |
 | ole          | Carve OLE streams within Microsoft Office Documents          | Worker                             |
 | iocextract   | Regex routines to extract and normalize IOC's from a payload | Worker                             |

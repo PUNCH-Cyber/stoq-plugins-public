@@ -9,4 +9,5 @@ setup(
     description="Process a payload using yara",
     packages=find_packages(),
     include_package_data=True,
+    test_suite='tests',
 )
