@@ -27,8 +27,10 @@ from stoq.data_classes import WorkerResponse, DispatcherResponse
 
 class TestCore(unittest.TestCase):
     def setUp(self) -> None:
+        self.plugin_name = 'yara'
         self.plugin_dir = os.path.join(os.getcwd(), 'yarascan')
         self.data_dir = os.path.join(os.getcwd(), 'tests', 'data')
+        self.generic_data = b'testtesttest'
         logging.disable(logging.CRITICAL)
 
     def tearDown(self) -> None:
@@ -37,10 +39,12 @@ class TestCore(unittest.TestCase):
     def test_scan(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
-            plugin_opts={'yara': {'worker_rules': f'{self.data_dir}/scan_rules.yar'}},
+            plugin_opts={
+                self.plugin_name: {'worker_rules': f'{self.data_dir}/scan_rules.yar'}
+            },
         )
-        plugin = s.load_plugin('yara')
-        payload = Payload(b'testtesttest')
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(self.generic_data)
         request_meta = RequestMeta(archive_payloads=False)
         response = plugin.scan(payload, request_meta)
         self.assertIsInstance(response, WorkerResponse)
@@ -49,9 +53,11 @@ class TestCore(unittest.TestCase):
     def test_scan_meta_bytes(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
-            plugin_opts={'yara': {'worker_rules': f'{self.data_dir}/scan_rules.yar'}},
+            plugin_opts={
+                self.plugin_name: {'worker_rules': f'{self.data_dir}/scan_rules.yar'}
+            },
         )
-        plugin = s.load_plugin('yara')
+        plugin = s.load_plugin(self.plugin_name)
         payload = Payload(b'meta_bytes')
         request_meta = RequestMeta(archive_payloads=False)
         response = plugin.scan(payload, request_meta)
@@ -68,30 +74,34 @@ class TestCore(unittest.TestCase):
     def test_scan_invalid_rule_file(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
-            plugin_opts={'yara': {'worker_rules': f'{self.data_dir}/nonexistent.yar'}},
+            plugin_opts={
+                self.plugin_name: {'worker_rules': f'{self.data_dir}/nonexistent.yar'}
+            },
         )
         with self.assertRaises(StoqPluginException):
-            s.load_plugin('yara')
+            s.load_plugin(self.plugin_name)
 
     def test_scan_invalid_rules(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
             plugin_opts={
-                'yara': {'worker_rules': f'{self.data_dir}/invalid_rules.yar'}
+                self.plugin_name: {'worker_rules': f'{self.data_dir}/invalid_rules.yar'}
             },
         )
         with self.assertRaises(yara.SyntaxError):
-            s.load_plugin('yara')
+            s.load_plugin(self.plugin_name)
 
     def test_dispatcher(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
             plugin_opts={
-                'yara': {'dispatch_rules': f'{self.data_dir}/dispatch_rules.yar'}
+                self.plugin_name: {
+                    'dispatch_rules': f'{self.data_dir}/dispatch_rules.yar'
+                }
             },
         )
-        plugin = s.load_plugin('yara')
-        payload = Payload(b'testtesttest')
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(self.generic_data)
         request_meta = RequestMeta(archive_payloads=False)
         response = plugin.get_dispatches(payload, request_meta)
         self.assertIsInstance(response, DispatcherResponse)
@@ -112,10 +122,12 @@ class TestCore(unittest.TestCase):
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
             plugin_opts={
-                'yara': {'dispatch_rules': f'{self.data_dir}/dispatch_rules.yar'}
+                self.plugin_name: {
+                    'dispatch_rules': f'{self.data_dir}/dispatch_rules.yar'
+                }
             },
         )
-        plugin = s.load_plugin('yara')
+        plugin = s.load_plugin(self.plugin_name)
         payload = Payload(b'save_false')
         request_meta = RequestMeta(archive_payloads=False)
         response = plugin.get_dispatches(payload, request_meta)
