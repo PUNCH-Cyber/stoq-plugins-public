@@ -1,1 +1,1 @@
-include hash/*.stoq
+include hash_ssdeep/*.stoq
