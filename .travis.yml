@@ -14,6 +14,7 @@ before_install:
   - wget -O /tmp/xorsearch.zip https://didierstevens.com/files/software/XORSearch_V1_11_1.zip
   - unzip /tmp/xorsearch.zip -d /tmp
   - sudo mv /tmp/Linux/xorsearch /home/travis/build/PUNCH-Cyber/stoq-plugins-public/xorsearch/xorsearch/xorsearch
+  - sudo chmod +x /home/travis/build/PUNCH-Cyber/stoq-plugins-public/xorsearch/xorsearch/xorsearch
 
 install:
   - pip install -r hash_ssdeep/requirements.txt
