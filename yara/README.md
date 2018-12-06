@@ -12,7 +12,7 @@ All options below may be set by:
 
 ## Plugin Classes
 
-- [Worker](<(https://stoq-framework.readthedocs.io/en/v2/dev/workers.html)>)
+- [Worker](https://stoq-framework.readthedocs.io/en/v2/dev/workers.html)
 - [Dispatcher](https://stoq-framework.readthedocs.io/en/v2/dev/dispatchers.html)
 
 ## Options
