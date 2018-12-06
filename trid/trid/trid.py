@@ -80,4 +80,4 @@ class TridPlugin(WorkerPlugin):
                 ext = line[1].strip('(.)')
                 results[ext] = {'likely': line[0], 'type': ' '.join(line[2:])}
 
-        return WorkerResponse(result)
+        return WorkerResponse(results)
