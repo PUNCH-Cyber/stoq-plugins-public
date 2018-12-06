@@ -16,11 +16,11 @@
 
 import os
 import yara
-import logging
 import unittest
-from unittest.mock import create_autospec, Mock
 
-from stoq import PayloadMeta, RequestMeta, Stoq, Payload
+from pathlib import Path
+
+from stoq import RequestMeta, Stoq, Payload
 from stoq.exceptions import StoqPluginException
 from stoq.data_classes import WorkerResponse, DispatcherResponse
 
@@ -28,13 +28,13 @@ from stoq.data_classes import WorkerResponse, DispatcherResponse
 class TestCore(unittest.TestCase):
     def setUp(self) -> None:
         self.plugin_name = 'yara'
-        self.plugin_dir = os.path.join(os.getcwd(), 'yarascan')
-        self.data_dir = os.path.join(os.getcwd(), 'tests', 'data')
+        self.base_dir = Path(os.path.realpath(__file__)).parent
+        self.data_dir = os.path.join(self.base_dir, 'data')
+        self.plugin_dir = os.path.join(self.base_dir.parent, 'yarascan')
         self.generic_data = b'testtesttest'
-        logging.disable(logging.CRITICAL)
 
     def tearDown(self) -> None:
-        logging.disable(logging.NOTSET)
+        pass
 
     def test_scan(self) -> None:
         s = Stoq(
