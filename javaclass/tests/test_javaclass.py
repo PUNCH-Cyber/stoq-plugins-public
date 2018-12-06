@@ -15,22 +15,19 @@
 #   limitations under the License.
 
 import os
-import yara
 import logging
 import unittest
-from unittest.mock import create_autospec, Mock
 
-from stoq import PayloadMeta, RequestMeta, Stoq, Payload
+from stoq import RequestMeta, Stoq, Payload
+from stoq.data_classes import WorkerResponse
 from stoq.exceptions import StoqPluginException
-from stoq.data_classes import WorkerResponse, DispatcherResponse
 
 
 class TestCore(unittest.TestCase):
     def setUp(self) -> None:
         self.plugin_name = 'javaclass'
-        self.plugin_dir = os.path.join(os.getcwd(), 'javaclass')
+        self.plugin_dir = os.path.join(os.getcwd(), self.plugin_name)
         self.data_dir = os.path.join(os.getcwd(), 'tests', 'data')
-        self.generic_data = b''
         logging.disable(logging.CRITICAL)
 
     def tearDown(self) -> None:
@@ -43,7 +40,6 @@ class TestCore(unittest.TestCase):
             payload = Payload(f.read())
         request_meta = RequestMeta(archive_payloads=False)
         response = plugin.scan(payload, request_meta)
-        print(response)
         self.assertIsInstance(response, WorkerResponse)
         self.assertIn('TestJavaClass', response.results['provided'])
         self.assertGreaterEqual(len(response.results['provided']), 4)
