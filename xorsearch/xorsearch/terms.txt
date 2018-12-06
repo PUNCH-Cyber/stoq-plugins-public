@@ -1,0 +1,13 @@
+AdjustTokenPrivileges
+CreateFile
+CreateProcess
+CurrentVersion
+GetCommandLine
+GetFile
+GetTempPath
+GetTickCount
+GetVersion
+LoadResource
+RegSetValue
+ShellExecute
+program cannot
