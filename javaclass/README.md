@@ -2,12 +2,10 @@
 
 [stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) that decodes and extracts information from Java Class files for [scanning](https://stoq-framework.readthedocs.io/en/v2/dev/workers.html).
 
-## Configuration
-
 ## Plugin Classes
 
 - [Worker](https://stoq-framework.readthedocs.io/en/v2/dev/workers.html)
 
-## Options
+## Configuration and Options
 
 No configuration options are required.
