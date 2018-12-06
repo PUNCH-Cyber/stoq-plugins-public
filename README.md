@@ -30,24 +30,28 @@ Details on how to install these plugins can be found [here](https://stoq-framewo
 
 Below is a listing of all public stoQ plugins, a description, and thier respective plugin class.
 
-| Plugin Name  | Type                                                         | Description                        |
-| ------------ | ------------------------------------------------------------ | ---------------------------------- |
-| xdpcarve     | Carve and decode streams from XDP documents                  | Worker                             |
-| stdout       | Sends results to STDOUT                                      | Connector                          |
-| rtf          | Extract objects from RTF payloads                            | Worker                             |
-| hash         | Hash content                                                 | Worker                             |
-| dirmon       | Monitor a directory for newly created files for processing   | Provider                           |
-| vtmis-search | Search VTMIS API                                             | Worker, Dispatcher, DeepDispatcher |
-| peinfo       | Gather relevant information about an executable using pefile | Worker                             |
-| javaclass    | Decodes and extracts information from Java Class files       | Worker                             |
-| filedir      | Ingest a file or directory for processing                    | Provider, Connector, Archiver      |
-| yara         | Process a payload using yara                                 | Worker, Dispatcher                 |
-| decompress   | Extract content from a multitude of archive formats          | Worker                             |
-| ole          | Carve OLE streams within Microsoft Office Documents          | Worker                             |
-| iocextract   | Regex routines to extract and normalize IOC's from a payload | Worker                             |
-| mraptor      | Port of mraptor3 from oletools                               | Worker                             |
-| trid         | Identify file types from their TrID signature                | Worker                             |
-| smtp         | SMTP Parser Worker                                           | Worker                             |
-| exif         | Processes a payload using ExifTool                           | Worker                             |
-| pecarve      | Carve portable executable files from a data stream           | Worker                             |
-| swfcarve     | Carve and decompress SWF files from a data stream            | Worker                             |
+| Plugin Name | Type                                                         | Description                   |
+| ----------- | ------------------------------------------------------------ | ----------------------------- |
+| decompress  | Extract content from a multitude of archive formats          | Worker                        |
+| dirmon      | Monitor a directory for newly created files for processing   | Provider                      |
+| exif        | Processes a payload using ExifTool                           | Worker                        |
+| filedir     | Ingest a file or directory for processing                    | Provider, Connector, Archiver |
+| hash        | Hash content                                                 | Worker                        |
+| hash_ssdeep | Generate a ssdeep hash of payloads                           | Worker                        |
+| iocextract  | Regex routines to extract and normalize IOC's from a payload | Worker                        |
+| javaclass   | Decodes and extracts information from Java Class files       | Worker                        |
+| mimetype    | Determine mimetype of a payload                              | Worker                        |
+| mraptor     | Port of mraptor3 from oletools                               | Worker                        |
+| ole         | Carve OLE streams within Microsoft Office Documents          | Worker                        |
+| pecarve     | Carve portable executable files from a data stream           | Worker                        |
+| peinfo      | Gather relevant information about an executable using pefile | Worker                        |
+| rtf         | Extract objects from RTF payloads                            | Worker                        |
+| smtp        | SMTP Parser Worker                                           | Worker                        |
+| stdout      | Sends results to STDOUT                                      | Connector                     |
+| swfcarve    | Carve and decompress SWF files from a data stream            | Worker                        |
+| symhash     | Calculate symhash of payload                                 | Worker                        |
+| tnef        | TNEF File Extractor                                          | Worker                        |
+| trid        | Identify file types from their TrID signature                | Worker                        |
+| xdpcarve    | Carve and decode streams from XDP documents                  | Worker                        |
+| xorsearch   | Scan a payload using xorsearch                               | Worker                        |
+| yara        | Process a payload using yara                                 | Worker, Dispatcher            |
