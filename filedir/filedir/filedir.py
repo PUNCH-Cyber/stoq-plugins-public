@@ -99,7 +99,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
                         path = os.path.join(self.source_dir, entry.name)
                         self._queue(path, queue)
         elif os.path.isfile(self.source_dir):
-            self._queue(path, queue)
+            self._queue(self.source_dir, queue)
 
     def _queue(self, path: str, queue: Queue) -> None:
         """
@@ -112,6 +112,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
                 'source_dir': os.path.dirname(path),
             }
         )
+        print(f'Adding {path} to queue')
         with open(path, "rb") as f:
             queue.put(Payload(f.read(), meta))
 

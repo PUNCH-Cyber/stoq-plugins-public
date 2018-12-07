@@ -46,6 +46,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | ole         | Carve OLE streams within Microsoft Office Documents          | Worker                        |
 | pecarve     | Carve portable executable files from a data stream           | Worker                        |
 | peinfo      | Gather relevant information about an executable using pefile | Worker                        |
+| redis-queue | Interact with Redis server for queuing                       | Archiver, Connector, Provider |
 | rtf         | Extract objects from RTF payloads                            | Worker                        |
 | smtp        | SMTP Parser Worker                                           | Worker                        |
 | stdout      | Sends results to STDOUT                                      | Connector                     |
