@@ -1,6 +1,6 @@
-# ole
+# pecarve
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that carves executables from payloads.
+[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that carves PE executables from payloads.
 
 ## Plugin Classes
 
