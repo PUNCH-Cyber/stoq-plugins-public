@@ -18,7 +18,7 @@
 Overview
 ========
 
-Calculate symhash of payload
+Calculate symbol table hashes of a Mach-O executable file
 
 """
 

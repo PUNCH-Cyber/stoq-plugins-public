@@ -6,7 +6,7 @@ setup(
     author="Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public/v2",
     license="Apache License 2.0",
-    description="Calculate symhash of payload",
+    description="Calculate symbol table hashes of a Mach-O executable file",
     packages=find_packages(),
     include_package_data=True,
 )

@@ -20,4 +20,4 @@ Module = symhash
 Author = Marcus LaFerrera
 Version = 2.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public/v2
-Description = Calculate symhash of payload
+Description = Calculate symbol table hashes of a Mach-O executable file

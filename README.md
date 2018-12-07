@@ -51,7 +51,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | smtp        | SMTP Parser Worker                                           | Worker                        |
 | stdout      | Sends results to STDOUT                                      | Connector                     |
 | swfcarve    | Carve and decompress SWF files from payloads                 | Worker                        |
-| symhash     | Calculate symhash of payload                                 | Worker                        |
+| symhash     | Calculate symbol table hashes of a Mach-O executable file    | Worker                        |
 | tnef        | TNEF File Extractor                                          | Worker                        |
 | trid        | Identify file types from their TrID signature                | Worker                        |
 | xdpcarve    | Carve and decode streams from XDP documents                  | Worker                        |
