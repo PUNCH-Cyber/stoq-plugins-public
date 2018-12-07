@@ -7,7 +7,6 @@
 - [Archiver](https://stoq-framework.readthedocs.io/en/v2/dev/archivers.html)
 - [Connector](https://stoq-framework.readthedocs.io/en/v2/dev/connectors.html)
 - [Provider](https://stoq-framework.readthedocs.io/en/v2/dev/providers.html)
-- [Worker](https://stoq-framework.readthedocs.io/en/v2/dev/workers.html)
 
 ## Configuration
 
