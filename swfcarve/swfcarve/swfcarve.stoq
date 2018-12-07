@@ -20,7 +20,7 @@ Module = swfcarve
 Author = Marcus LaFerrera
 Version = 2.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Carve and decompress SWF files from a data stream
+Description = Carve and decompress SWF files from payloads
 
 [options]
 swf_headers = CWS|ZWS|FWS

@@ -18,7 +18,7 @@
 Overview
 ========
 
-Carve and decompress SWF files from a data stream
+Carve and decompress SWF files from payloads
 
 """
 
@@ -45,7 +45,7 @@ class PeCarve(WorkerPlugin):
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
-        Carve and decompress SWF streams
+        Carve and decompress SWF files from payloads
 
         """
 

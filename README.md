@@ -50,7 +50,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | rtf         | Extract objects from RTF payloads                            | Worker                        |
 | smtp        | SMTP Parser Worker                                           | Worker                        |
 | stdout      | Sends results to STDOUT                                      | Connector                     |
-| swfcarve    | Carve and decompress SWF files from a data stream            | Worker                        |
+| swfcarve    | Carve and decompress SWF files from payloads                 | Worker                        |
 | symhash     | Calculate symhash of payload                                 | Worker                        |
 | tnef        | TNEF File Extractor                                          | Worker                        |
 | trid        | Identify file types from their TrID signature                | Worker                        |
