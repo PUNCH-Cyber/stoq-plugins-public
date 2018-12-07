@@ -48,13 +48,13 @@ class TridPlugin(WorkerPlugin):
             trid_defs = os.path.join(parent, trid_defs)
         self.trid_defs = trid_defs
 
-        if plugin_opts and 'trid_bin' in plugin_opts:
-            trid_bin = plugin_opts['trid_bin']
-        elif config.has_option('options', 'trid_bin'):
-            trid_bin = config.get('options', 'trid_bin')
-        if not os.path.isabs(trid_bin):
-            trid_bin = os.path.join(parent, trid_bin)
-        self.trid_bin = trid_bin
+        if plugin_opts and 'bin_path' in plugin_opts:
+            bin_path = plugin_opts['bin_path']
+        elif config.has_option('options', 'bin_path'):
+            bin_path = config.get('options', 'bin_path')
+        if not os.path.isabs(bin_path):
+            bin_path = os.path.join(parent, bin_path)
+        self.bin_path = bin_path
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
@@ -67,7 +67,7 @@ class TridPlugin(WorkerPlugin):
             temp_file.write(payload.content)
             temp_file.flush()
             try:
-                cmd = [self.trid_bin, f"-d:{self.trid_defs}", temp_file.name]
+                cmd = [self.bin_path, f"-d:{self.trid_defs}", temp_file.name]
                 trid_results = check_output(cmd).splitlines()
             except Exception as err:
                 raise StoqPluginException('Failed gathering TRiD data')
