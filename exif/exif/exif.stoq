@@ -23,4 +23,4 @@ Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Processes a payload using ExifTool
 
 [options]
-exiftool = exiftool
+bin_path = exiftool

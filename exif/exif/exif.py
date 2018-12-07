@@ -34,22 +34,21 @@ class ExifToolPlugin(WorkerPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
-        if plugin_opts and 'exiftool' in plugin_opts:
-            self.exiftool = plugin_opts['exiftool']
-        elif config.has_option('options', 'exiftool'):
-            self.exiftool = config.get('options', 'exiftool')
+        if plugin_opts and 'bin_path' in plugin_opts:
+            self.bin_path = plugin_opts['bin_path']
+        elif config.has_option('options', 'bin_path'):
+            self.bin_path = config.get('options', 'bin_path')
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
         Scan a payload using Exiftool
 
         """
-
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(payload.content)
             temp_file.flush()
             try:
-                cmd = [self.exiftool, '-j', '-n', temp_file.name]
+                cmd = [self.bin_path, '-j', '-n', temp_file.name]
                 results = json.loads(check_output(cmd))[0]
             except Exception as err:
                 raise StoqPluginException(f'Failed gathering exif data: {err}')
