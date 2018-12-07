@@ -1,6 +1,6 @@
 # ExifTool
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html plugin that scans a payload using [ExifTool](https://www.sno.phy.queensu.ca/~phil/exiftool/)
+[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that scans a payload using [ExifTool](https://www.sno.phy.queensu.ca/~phil/exiftool/)
 
 > Note: ExifTool binary needs to be installed for this plugin to operate properly.
 

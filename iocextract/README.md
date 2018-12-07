@@ -1,6 +1,6 @@
 # IOCExtract
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html plugin extract IOCs (hashes, email, domains, urls, ips, mac addresses) from a payload
+[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin extract IOCs (hashes, email, domains, urls, ips, mac addresses) from a payload
 
 ## Plugin Classes
 

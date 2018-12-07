@@ -1,8 +1,6 @@
 # SMTP
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html plugin parses SMTP sessions and extracts attachments.
-
-> Note: TRiD binary and definitions need to be installed for this plugin to operate properly.
+[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin parses SMTP sessions and extracts attachments.
 
 ## Plugin Classes
 
