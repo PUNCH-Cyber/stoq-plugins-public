@@ -45,8 +45,7 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(self.generic_data)
-        request_meta = RequestMeta(archive_payloads=False)
-        response = plugin.scan(payload, request_meta)
+        response = plugin.scan(payload, RequestMeta())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual('test_scan_rule', response.results['matches'][0]['rule'])
 
@@ -59,8 +58,7 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(b'meta_bytes')
-        request_meta = RequestMeta(archive_payloads=False)
-        response = plugin.scan(payload, request_meta)
+        response = plugin.scan(payload, RequestMeta())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual(
             'test_scan_metadata_bytes', response.results['matches'][0]['rule']
@@ -102,8 +100,7 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(self.generic_data)
-        request_meta = RequestMeta(archive_payloads=False)
-        response = plugin.get_dispatches(payload, request_meta)
+        response = plugin.get_dispatches(payload, RequestMeta())
         self.assertIsInstance(response, DispatcherResponse)
         self.assertIn('test_dispatch_plugin', response.plugin_names)
         self.assertEqual(
@@ -129,7 +126,6 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(b'save_false')
-        request_meta = RequestMeta(archive_payloads=False)
-        response = plugin.get_dispatches(payload, request_meta)
+        response = plugin.get_dispatches(payload, RequestMeta())
         self.assertIsInstance(response, DispatcherResponse)
         self.assertIn('False', response.meta['save_false']['meta']['save'])

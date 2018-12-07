@@ -40,8 +40,7 @@ class TestCore(unittest.TestCase):
         plugin = s.load_plugin(self.plugin_name)
         with open(f'{self.data_dir}/TestJavaClass.class', 'rb') as f:
             payload = Payload(f.read())
-        request_meta = RequestMeta(archive_payloads=False)
-        response = plugin.scan(payload, request_meta)
+        response = plugin.scan(payload, RequestMeta())
         self.assertIsInstance(response, WorkerResponse)
         self.assertIn('TestJavaClass', response.results['provided'])
         self.assertGreaterEqual(len(response.results['provided']), 4)
@@ -52,6 +51,5 @@ class TestCore(unittest.TestCase):
         s = Stoq(plugin_dir_list=[self.plugin_dir])
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(b'definitely not a javaclass payload')
-        request_meta = RequestMeta(archive_payloads=False)
         with self.assertRaises(StoqPluginException):
-            response = plugin.scan(payload, request_meta)
+            response = plugin.scan(payload, RequestMeta())

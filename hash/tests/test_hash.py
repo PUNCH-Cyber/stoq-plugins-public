@@ -38,9 +38,8 @@ class TestCore(unittest.TestCase):
     def test_scan(self) -> None:
         s = Stoq(plugin_dir_list=[self.plugin_dir])
         plugin = s.load_plugin(self.plugin_name)
-        request_meta = RequestMeta(archive_payloads=False)
         payload = Payload(self.generic_data)
-        response = plugin.scan(payload, request_meta)
+        response = plugin.scan(payload, RequestMeta())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual('cfe671457bc475ef2f51cf12b1457475', response.results['md5'])
         self.assertEqual(
