@@ -16,9 +16,9 @@ All options below may be set by:
 
 ### Options
 
-- `passwords`: Ordered comma separated list of passwords used for brute forcing compressed payload (if supported)
+- `passwords` [str]: Ordered comma separated list of passwords used for brute forcing compressed payload (if supported)
 
-- `maximum_size`: Maximum size of compressed file
+- `maximum_size` [int]: Maximum size of compressed file
 
 ### Use
 

@@ -18,11 +18,11 @@ All options below may be set by:
 
 ### Options
 
-- `redis_host`: Redis hostname or ip
+- `redis_host` [str]: Redis hostname or ip
 
-- `redis_port`: Redis port
+- `redis_port` [int]: Redis port
 
-- `redis_queue`: Queue name for sending and receiving messages
+- `redis_queue` [str]: Queue name for sending and receiving messages
 
 ## Usage
 

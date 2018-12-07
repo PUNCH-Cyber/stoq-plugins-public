@@ -16,4 +16,4 @@ All options below may be set by:
 
 ### Options
 
-- `source_dir`: Directory to monitor new files for
+- `source_dir` [str]: Directory to monitor new files for

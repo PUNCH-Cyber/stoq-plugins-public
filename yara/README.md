@@ -17,8 +17,8 @@ All options below may be set by:
 
 ### Options
 
-- `worker_rules`: Path to yara rules for the scanning of a `Payload`
+- `worker_rules` [str]: Path to yara rules for the scanning of a `Payload`
 
-- `dispatch_rules`: Path to yara rules for dispatching a `Payload`
+- `dispatch_rules` [str]: Path to yara rules for dispatching a `Payload`
 
 > Paths may be relative to the module, or a full path.
