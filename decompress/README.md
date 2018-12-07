@@ -20,7 +20,7 @@ All options below may be set by:
 
 - `maximum_size`: Maximum size of compressed file
 
-### Supported Compression algorithms
+### Use
 
 Multiple compression algorithms are currently supported. Due to the limitations of python compression libraries, `stoQ` leverages command line tools instead. `ARCHIVE_MAGIC` and `ARCHIVE_CMDS` can be found in `decompress.py`.
 
