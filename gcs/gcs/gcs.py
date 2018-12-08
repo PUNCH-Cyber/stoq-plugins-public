@@ -25,7 +25,7 @@ import hashlib
 from io import BytesIO
 from configparser import ConfigParser
 from google.cloud.storage import Blob, Client
-from typing import Optional, Dict, Union
+from typing import Optional, Dict
 
 from stoq.plugins import ConnectorPlugin, ArchiverPlugin
 from stoq.data_classes import (
@@ -96,9 +96,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         content.seek(0)
         return Payload(content.read(), meta)
 
-    def _upload(
-        self, payload: Union[bytes, StoqResponse], filename: str, bucket: str
-    ) -> None:
+    def _upload(self, payload: bytes, filename: str, bucket: str) -> None:
         client = Client(project=self.project_id)
         bucket = client.get_bucket(bucket)
         content = BytesIO(payload)
