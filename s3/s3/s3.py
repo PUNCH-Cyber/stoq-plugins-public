@@ -1,0 +1,118 @@
+#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+"""
+Overview
+========
+
+Read and write data to Amazon S3
+
+"""
+
+import hashlib
+import boto3
+
+from io import BytesIO
+from configparser import ConfigParser
+from typing import Optional, Dict
+
+from stoq.plugins import ConnectorPlugin, ArchiverPlugin
+from stoq.data_classes import (
+    StoqResponse,
+    Payload,
+    ArchiverResponse,
+    RequestMeta,
+    PayloadMeta,
+)
+
+
+class S3Plugin(ArchiverPlugin, ConnectorPlugin):
+    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
+        super().__init__(config, plugin_opts)
+
+        self.client = None
+        self.access_key = None
+        self.secret_key = None
+        self.archive_bucket = None
+        self.connector_bucket = None
+        self.use_sha = True
+
+        if plugin_opts and 'access_key' in plugin_opts:
+            self.access_key = plugin_opts['access_key']
+        elif config.has_option('options', 'access_key'):
+            self.access_key = config.get('options', 'access_key')
+
+        if plugin_opts and 'secret_key' in plugin_opts:
+            self.secret_key = plugin_opts['secret_key']
+        elif config.has_option('options', 'secret_key'):
+            self.secret_key = config.get('options', 'secret_key')
+
+        if plugin_opts and 'archive_bucket' in plugin_opts:
+            self.archive_bucket = plugin_opts['archive_bucket']
+        elif config.has_option('options', 'archive_bucket'):
+            self.archive_bucket = config.get('options', 'archive_bucket')
+
+        if plugin_opts and 'connector_bucket' in plugin_opts:
+            self.connector_bucket = plugin_opts['connector_bucket']
+        elif config.has_option('options', 'connector_bucket'):
+            self.connector_bucket = config.get('options', 'connector_bucket')
+
+        if plugin_opts and 'use_sha' in plugin_opts:
+            self.use_sha = plugin_opts['use_sha']
+        elif config.has_option('archiver', 'use_sha'):
+            self.use_sha = config.getboolean('archiver', 'use_sha')
+
+    def save(self, response: StoqResponse) -> None:
+        """
+        Save results to S3
+
+        """
+        self._upload(str(response).encode(), response.scan_id, self.connector_bucket)
+
+    def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
+        """
+        Archive payload to S3
+
+        """
+        if self.use_sha:
+            filename = hashlib.sha1(payload.content).hexdigest()
+            filename = f'{"/".join(list(filename[:5]))}/{filename}'
+        else:
+            filename = payload.payload_id
+        self._upload(payload.content, filename, self.archive_bucket)
+        return ArchiverResponse({'bucket': self.archive_bucket, 'path': filename})
+
+    def get(self, task: str) -> Payload:
+        """
+        Retrieve archived payload from S3
+
+        """
+        if not self.client:
+            self._get_client()
+        meta = PayloadMeta(extra_data={'bucket': self.archive_bucket, 'path': task})
+        content = self.client.get_object(Bucket=self.archive_bucket, Key=task)['Body']
+        return Payload(content.read(), meta)
+
+    def _upload(self, payload: bytes, filename: str, bucket: str) -> None:
+        if not self.client:
+            self._get_client()
+        content = BytesIO(payload)
+        self.client.upload_fileobj(content, bucket, filename)
+
+    def _get_client(self):
+        self.client = boto3.client(
+            's3',
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+        )
