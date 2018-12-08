@@ -1,6 +1,6 @@
 # GCS
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) Read and write data to Google Cloud Storage
+[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugins that reads and writes data to Google Cloud Storage buckets.
 
 ## Plugin Classes
 
