@@ -24,11 +24,17 @@ import hashlib
 
 from io import BytesIO
 from configparser import ConfigParser
-from google.cloud.storage import Blob
+from google.cloud.storage import Blob, Client
 from typing import Optional, Dict, Union
 
 from stoq.plugins import ConnectorPlugin, ArchiverPlugin
-from stoq.data_classes import StoqResponse, Payload, ArchiverResponse, RequestMeta
+from stoq.data_classes import (
+    StoqResponse,
+    Payload,
+    ArchiverResponse,
+    RequestMeta,
+    PayloadMeta,
+)
 
 
 class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
@@ -65,7 +71,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         Save results to Google Cloud Storage
 
         """
-        self._upload(response, response.scan_id, self.connector_bucket)
+        self._upload(str(response).encode(), response.scan_id, self.connector_bucket)
 
     def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
         if self.use_sha:
@@ -82,19 +88,19 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
 
         """
         meta = PayloadMeta(extra_data={'bucket': self.archive_bucket, 'path': task})
-        client = storage.Client(project=self.project_id)
+        client = Client(project=self.project_id)
         bucket = client.get_bucket(self.archive_bucket)
         blob = Blob(task, bucket)
         content = BytesIO()
         blob.download_to_file(content)
+        content.seek(0)
         return Payload(content.read(), meta)
 
     def _upload(
         self, payload: Union[bytes, StoqResponse], filename: str, bucket: str
     ) -> None:
-        client = storage.Client(project=self.project_id)
+        client = Client(project=self.project_id)
         bucket = client.get_bucket(bucket)
         content = BytesIO(payload)
         blob = Blob(filename, bucket)
         blob.upload_from_file(content)
-
