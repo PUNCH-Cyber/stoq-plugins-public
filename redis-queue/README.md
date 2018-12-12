@@ -32,6 +32,6 @@ Start `stoq` using `redis-queue` as the provider plugin, `filedir` as the source
 
     $ stoq run -P redis-queue -S filedir -a hash -C stdout
 
-In another terminal, load files from `/tmp/test-files` using the `filedir` provider plugin, then archive the payloads with `filedir` archive plugin, and send a message to the redis queue for processing:
+In another terminal, load files from `/tmp/test-files` using the `filedir` provider plugin, then archive the payloads with `filedir` archive plugin, and send a message to the `redis-queue` queue for processing:
 
     $ stoq run -P filedir -A filedir -C redis-queue --plugin-opts filedir:source_dir=/tmp/test-files
