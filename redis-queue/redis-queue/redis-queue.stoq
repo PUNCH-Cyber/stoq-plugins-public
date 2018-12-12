@@ -26,3 +26,8 @@ Description = Interact with Redis server for queuing
 redis_host = 127.0.0.1
 redis_port = 6379
 redis_queue = stoq
+
+# When used as a Connector plugin, should the ArchiveResponses be saved, or StoqResponse?
+# Useful for sending archived payload metadata to topic.
+# Default: True
+publish_archive = True

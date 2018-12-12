@@ -112,7 +112,6 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
                 'source_dir': os.path.dirname(path),
             }
         )
-        print(f'Adding {path} to queue')
         with open(path, "rb") as f:
             queue.put(Payload(f.read(), meta))
 
@@ -147,18 +146,14 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         Path(path).mkdir(parents=True, exist_ok=True)
         with open(f'{path}/{filename}', 'xb') as outfile:
             outfile.write(payload.content)
-        return ArchiverResponse({'path': path, 'filename': filename})
+        return ArchiverResponse({'path': f'{path}/{filename}'})
 
-    def get(self, task: str) -> Payload:
+    def get(self, task: ArchiverResponse) -> Payload:
         """
         Retrieve archived payload from disk
 
         """
-        meta = PayloadMeta(
-            extra_data={
-                'filename': os.path.basename(task),
-                'source_dir': os.path.dirname(task),
-            }
-        )
-        with open(os.path.abspath(task), 'rb') as f:
+        path = os.path.abs(task.results['path'])
+        meta = PayloadMeta(extra_data={'path': path})
+        with open(path, 'rb') as f:
             return Payload(f.read(), meta)

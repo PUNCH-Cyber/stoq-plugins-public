@@ -28,12 +28,10 @@ All options below may be set by:
 
 ### Redis Queuing Example
 
-Start `stoq` using Redis as a queue:
+Start `stoq` using `redis-queue` as the queue, `filedir` as the source archiver, then scan the payload with the `hash`, and send results to `stdout` connector:
 
-    $ stoq run -P redis-queue -a hash -C stdout
+    $ stoq run -P redis-queue -A filedir -a hash -C stdout
 
-In another terminal, send payloads to the redis queue for processing:
+In another terminal, load files from `/tmp/test-files` using the `filedir` plugin, then archive the payloads and send a message to the redis queue for processing:
 
-    $ stoq run -P filedir -A redis-queue --plugin-opts filedir:source_dir=/tmp/test-files
-
-All files in `/tmp/test-files` should be sent to the redis queue, sent to the `hash` worker for scanning, and then the results sent to the `stdout` connector plugin.
+    $ stoq run -P filedir -A filedir -C redis-queue --plugin-opts filedir:source_dir=/tmp/test-files

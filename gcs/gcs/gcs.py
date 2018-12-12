@@ -80,17 +80,29 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         else:
             filename = payload.payload_id
         self._upload(payload.content, filename, self.archive_bucket)
-        return ArchiverResponse({'bucket': self.archive_bucket, 'path': filename})
+        return ArchiverResponse(
+            {
+                'bucket': self.archive_bucket,
+                'path': filename,
+                'project_id': self.project_id,
+            }
+        )
 
-    def get(self, task: str) -> Payload:
+    def get(self, task: ArchiverResponse) -> Payload:
         """
         Retrieve archived payload from gcs
 
         """
-        meta = PayloadMeta(extra_data={'bucket': self.archive_bucket, 'path': task})
-        client = Client(project=self.project_id)
-        bucket = client.get_bucket(self.archive_bucket)
-        blob = Blob(task, bucket)
+        meta = PayloadMeta(
+            extra_data={
+                'bucket': task.results['archive_bucket'],
+                'path': task.results['path'],
+                'project_id': task.results['project_id'],
+            }
+        )
+        client = Client(project=task.results['project_id'])
+        bucket = client.get_bucket(task.results['archive_bucket'])
+        blob = Blob(task.results['path'], bucket)
         content = BytesIO()
         blob.download_to_file(content)
         content.seek(0)

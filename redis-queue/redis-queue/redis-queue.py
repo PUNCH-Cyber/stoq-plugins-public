@@ -43,7 +43,13 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self.redis_host = '127.0.0.1'
         self.redis_port = 6379
         self.redis_queue = 'stoq'
+        self.publish_archive = True
         self.conn = None
+
+        if plugin_opts and "publish_archive" in plugin_opts:
+            self.publish_archive = bool(plugin_opts["publish_archive"])
+        elif config.has_option("options", "publish_archive"):
+            self.publish_archive = bool(config.get("options", "publish_archive"))
 
         if plugin_opts and "redis_host" in plugin_opts:
             self.redis_host = plugin_opts["redis_host"]
@@ -72,25 +78,32 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
 
     def save(self, response: StoqResponse) -> None:
         """
-        Save results to redis
+        Save results or ArchiverResponse to redis
 
         """
-        self.conn.set(response.scan_id, str(response))
+        if self.publish_archive:
+            msgs: List[str] = []
+            for result in response.results:
+                msgs = [{k: v} for k, v in result.archivers.items()]
+            for msg in msgs:
+                self.conn.rpush(self.redis_queue, json.dumps(msg))
+        else:
+            self.conn.set(response.scan_id, str(response))
 
     def ingest(self, queue: Queue) -> None:
         print(f'Monitoring redis queue {self.redis_queue}')
         while True:
             msg = self.conn.blpop(self.redis_queue, timeout=0)[1].decode()
-            print(f'Got msg {msg}')
+            print(f"GOT: {msg}")
             payload = self.conn.get(f'{msg}_buf')
             meta = self.conn.get(f'{msg}_meta')
             if meta and payload:
                 meta = json.loads(meta.decode())
                 queue.put(Payload(payload, payload_meta=PayloadMeta(extra_data=meta)))
-                self.conn.delete("{}_buf".format(msg))
-                self.conn.delete("{}_meta".format(msg))
+                self.conn.delete(f'{meta}_buf')
+                self.conn.delete(f'{meta}_meta')
             else:
-                queue.put(msg)
+                queue.put(json.dumps(msg))
 
     def _connect(self):
         self.conn = redis.Redis(host=self.redis_host, port=self.redis_port)

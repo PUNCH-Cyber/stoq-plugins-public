@@ -93,15 +93,19 @@ class S3Plugin(ArchiverPlugin, ConnectorPlugin):
         self._upload(payload.content, filename, self.archive_bucket)
         return ArchiverResponse({'bucket': self.archive_bucket, 'path': filename})
 
-    def get(self, task: str) -> Payload:
+    def get(self, task: ArchiverResponse) -> Payload:
         """
         Retrieve archived payload from S3
 
         """
         if not self.client:
             self._get_client()
-        meta = PayloadMeta(extra_data={'bucket': self.archive_bucket, 'path': task})
-        content = self.client.get_object(Bucket=self.archive_bucket, Key=task)['Body']
+        meta = PayloadMeta(
+            extra_data={'bucket': task.results['bucket'], 'path': task.results['path']}
+        )
+        content = self.client.get_object(
+            Bucket=task.results['bucket'], Key=task.results['path']
+        )['Body']
         return Payload(content.read(), meta)
 
     def _upload(self, payload: bytes, filename: str, bucket: str) -> None:
