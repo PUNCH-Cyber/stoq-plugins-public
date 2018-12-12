@@ -153,7 +153,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         Retrieve archived payload from disk
 
         """
-        path = os.path.abs(task.results['path'])
-        meta = PayloadMeta(extra_data={'path': path})
+        path = os.path.abspath(task.results['path'])
+        meta = PayloadMeta(extra_data=task.results)
         with open(path, 'rb') as f:
             return Payload(f.read(), meta)
