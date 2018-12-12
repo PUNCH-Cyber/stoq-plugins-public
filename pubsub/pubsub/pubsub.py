@@ -23,7 +23,7 @@ Interact with Google Cloud Pub/Sub
 import json
 from queue import Queue
 from google.cloud import pubsub
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from configparser import ConfigParser
 from google.api_core.exceptions import AlreadyExists
 
@@ -38,9 +38,8 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self.project_id = None
         self.max_messages = 10
         self.publish_archive = True
-        self.archiver_topic = None
-        self.provider_topic = None
-        self.connector_topic = None
+        self.topic = None
+        self.subscription = None
         self.publish_client = None
         self.ingest_client = None
 
@@ -59,32 +58,24 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         elif config.has_option("options", "publish_archive"):
             self.publish_archive = bool(config.get("options", "publish_archive"))
 
-        if plugin_opts and "archiver_topic" in plugin_opts:
-            self.archiver_topic = plugin_opts["archiver_topic"]
-        elif config.has_option("options", "archiver_topic"):
-            self.archiver_topic = config.get("options", "archiver_topic")
+        if plugin_opts and "topic" in plugin_opts:
+            self.topic = plugin_opts["topic"]
+        elif config.has_option("options", "topic"):
+            self.topic = config.get("options", "topic")
 
-        if plugin_opts and "provider_topic" in plugin_opts:
-            self.provider_topic = plugin_opts["provider_topic"]
-        elif config.has_option("options", "provider_topic"):
-            self.provider_topic = config.get("options", "provider_topic")
-
-        if plugin_opts and "provider_subscription" in plugin_opts:
-            self.provider_subscription = plugin_opts["provider_subscription"]
-        elif config.has_option("options", "connector_subscription"):
-            self.provider_subscription = config.get("options", "provider_subscription")
-
-        if plugin_opts and "connector_topic" in plugin_opts:
-            self.connector_topic = plugin_opts["connector_topic"]
-        elif config.has_option("options", "connector_topic"):
-            self.connector_topic = config.get("options", "connector_topic")
+        if plugin_opts and "subscription" in plugin_opts:
+            self.subscription = plugin_opts["subscription"]
+        elif config.has_option("options", "subscription"):
+            self.subscription = config.get("options", "subscription")
 
     def archive(
         self, payload: Payload, request_meta: RequestMeta
     ) -> Optional[ArchiverResponse]:
-        topic = f'projects/{self.project_id}/topics/{self.archiver_topic}'
+        topic = f'projects/{self.project_id}/topics/{self.topic}'
         self._publish_connect(topic)
-        future = self.publish_client.publish(topic, str(payload.payload_meta).encode())
+        future = self.publish_client.publish(
+            topic, payload.content, meta=payload.payload_meta
+        )
         return ArchiverResponse({'msg_id': future.result()})
 
     def save(self, response: StoqResponse) -> None:
@@ -92,20 +83,20 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         Save results or ArchiverResponse to Pub/Sub
 
         """
-        topic = f'projects/{self.project_id}/topics/{self.connector_topic}'
+        topic = f'projects/{self.project_id}/topics/{self.topic}'
         self._publish_connect(topic)
         if self.publish_archive:
-            msgs = [{k: v} for k, v in response.results.archivers.items()]
+            msgs: List[str] = []
+            for result in response.results:
+                msgs = [{k: v} for k, v in result.archivers.items()]
             for msg in msgs:
                 self.publish_client.publish(topic, json.dumps(msg).encode())
         else:
             self.publish_client.publish(topic, str(response).encode())
 
     def ingest(self, queue: Queue) -> None:
-        topic = f'projects/{self.project_id}/topics/{self.provider_topic}'
-        subscription = (
-            f'projects/{self.project_id}/subscriptions/{self.provider_subscription}'
-        )
+        topic = f'projects/{self.project_id}/topics/{self.topic}'
+        subscription = f'projects/{self.project_id}/subscriptions/{self.subscription}'
         self._ingest_connect(subscription, topic)
         print(f'Monitoring {subscription} subscription for messages...')
         while True:
@@ -113,7 +104,9 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
                 subscription, max_messages=self.max_messages, return_immediately=False
             )
             for msg in messages.received_messages:
+                print(json.loads(msg.message.data.decode()))
                 queue.put(json.loads(msg.message.data.decode()))
+                print(dir(msg))
                 msg.ack_id
 
     def _publish_connect(self, topic: str) -> None:

@@ -26,17 +26,11 @@ Description = Interact with Google Cloud Pub/Sub
 # Google Cloud Project id
 project_id =
 
-# Pub/Sub Topic for archiver to bind to
-archiver_topic =
-
-# Pub/Sub Topic for provider to bind to
-provider_topic =
+# Pub/Sub Topic for to bind to
+topic =
 
 # Pub/Sub Subscription to monitor for messages
-provider_subscription = stoq-feed
-
-# Pub/Sub Topic for connector to bind to
-connector_topic =
+subscription = stoq-feed
 
 # When used as a Connector plugin, should the ArchiveResponses be saved, or StoqResponse?
 # Useful for sending archived payload metadata to topic.
