@@ -94,7 +94,6 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         print(f'Monitoring redis queue {self.redis_queue}')
         while True:
             msg = self.conn.blpop(self.redis_queue, timeout=0)[1].decode()
-            print(f"GOT: {msg}")
             payload = self.conn.get(f'{msg}_buf')
             meta = self.conn.get(f'{msg}_meta')
             if meta and payload:
