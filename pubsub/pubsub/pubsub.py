@@ -104,10 +104,8 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
                 subscription, max_messages=self.max_messages, return_immediately=False
             )
             for msg in messages.received_messages:
-                print(json.loads(msg.message.data.decode()))
                 queue.put(json.loads(msg.message.data.decode()))
-                print(dir(msg))
-                msg.ack_id
+                self.ingest_client.acknowledge(subscription, [msg.ack_id])
 
     def _publish_connect(self, topic: str) -> None:
         if not self.publish_client:
