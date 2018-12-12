@@ -20,7 +20,9 @@ All options below may be set by:
 
 - `project_id` [str]: Google Cloud project ID
 
-- `pubsub_topic` [str]: Pub/Sub Topic to bind to
+- `topic` [str]: Pub/Sub Topic to bind to
+
+- `subscription` [str]: Pub/Sub Subscription to monitor for messages
 
 - `max_messages` [int]: Maximum number of messages to pull at once
 
@@ -28,12 +30,10 @@ All options below may be set by:
 
 ### Pub/Sub Queuing Example
 
-Start `stoq` using Pub/Sub as a queue:
+Start `stoq` using `pubsub` as the provider plugin, `filedir` as the source archiver, then scan the payload with the `hash`, and send results to `stdout` connector:
 
-    $ stoq run -P pubsub -a hash -C stdout
+    $ stoq run -P pubsub -S filedir -a hash -C stdout
 
-In another terminal, send payloads to the redis queue for processing:
+In another terminal, load files from `/tmp/test-files` using the `filedir` provider plugin, then archive the payloads with `filedir` archive plugin, and send a message to the `pubsub` queue for processing:
 
-    $ stoq run -P filedir -A pubsub --plugin-opts filedir:source_dir=/tmp/test-files
-
-Metadata for the files in `/tmp/test-files` should be sent to the pubsub queue, sent to the `hash` worker for scanning, and then the results sent to the `stdout` connector plugin.
+    $ stoq run -P filedir -A filedir -C pubsub --plugin-opts filedir:source_dir=/tmp/test-files
