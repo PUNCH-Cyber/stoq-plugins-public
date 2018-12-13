@@ -1,6 +1,6 @@
 # VTMIS Search
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that searches [VTMIS](https://www.virustotal.com) for sha1 hash of a payload
+[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that searches [VTMIS](https://www.virustotal.com) for sha1 hash of a payload or from results of `iocextract` plugin.
 
 ## Plugin Classes
 
