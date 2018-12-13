@@ -26,7 +26,7 @@ from configparser import ConfigParser
 from typing import Dict, List, Optional
 
 from stoq.helpers import get_sha1
-from stoq.exceptions import StoqException
+from stoq.exceptions import StoqPluginException
 from stoq.plugins import WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin
 from stoq import Payload, RequestMeta, WorkerResponse, DispatcherResponse, DeepDispatcherResponse
 
@@ -52,7 +52,7 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
             self.apikey = config.get('options', 'apikey')
 
         if not self.apikey:
-            raise StoqException("VTMIS API Key does not exist")
+            raise StoqPluginException("VTMIS API Key does not exist")
 
     def scan(
             self,
