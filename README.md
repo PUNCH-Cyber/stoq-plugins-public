@@ -58,6 +58,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | [tika](tika/)        | Upload content to a Tika server for automated text extraction | Worker                        |
 | [tnef](tnef/)        | TNEF File Extractor                                           | Worker                        |
 | [trid](trid/)        | Identify file types from their TrID signature                 | Worker                        |
+| [vtmis-search](vtmis-search/) | Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin | Worker, Dispatcher, Deep Dispatcher |
 | [xdpcarve](xdpcarve)    | Carve and decode streams from XDP documents                   | Worker                        |
 | [xorsearch](xorsearch/)   | Scan a payload using xorsearch                                | Worker                        |
 | [yara](yara/)        | Process a payload using yara                                  | Worker, Dispatcher            |
