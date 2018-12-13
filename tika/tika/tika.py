@@ -34,12 +34,12 @@ class TikaPlugin(WorkerPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
-        self.tika_url = '127.0.0.1'
+        self.tika_url = None
 
-        if plugin_opts and "tika_url" in plugin_opts:
-            self.tika_url = bool(plugin_opts["tika_url"])
-        elif config.has_option("options", "tika_url"):
-            self.tika_url = bool(config.get("options", "tika_url"))
+        if plugin_opts and 'tika_url' in plugin_opts:
+            self.tika_url = plugin_opts['tika_url']
+        elif config.has_option('options', 'tika_url'):
+            self.tika_url = config.get('options', 'tika_url')
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
