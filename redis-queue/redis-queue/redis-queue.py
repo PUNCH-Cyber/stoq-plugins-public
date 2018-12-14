@@ -102,7 +102,7 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
                 self.conn.delete(f'{meta}_buf')
                 self.conn.delete(f'{meta}_meta')
             else:
-                queue.put(json.dumps(msg))
+                queue.put(json.loads(msg))
 
     def _connect(self):
         self.conn = redis.Redis(host=self.redis_host, port=self.redis_port)
