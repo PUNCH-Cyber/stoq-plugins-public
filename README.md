@@ -35,6 +35,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | ----------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
 | [decompress](decompress/)     | Extract content from a multitude of archive formats                            | Worker                              |
 | [dirmon](dirmon/)             | Monitor a directory for newly created files for processing                     | Provider                            |
+| [es-search](es-search/)       | Saves results to ElasticSearch                                                 | Connector                           |
 | [exif](exif/)                 | Processes a payload using ExifTool                                             | Worker                              |
 | [filedir](filedir/)           | Ingest a file or directory for processing                                      | Provider, Connector, Archiver       |
 | [gcs](gcs/)                   | Read and write data to Google Cloud Storage                                    | Archiver, Connector                 |
