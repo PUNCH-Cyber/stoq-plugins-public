@@ -42,7 +42,8 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | [hash_ssdeep](hash_ssdeep/)   | Generate a ssdeep hash of payloads                                             | Worker                              |
 | [iocextract](iocextract/)     | Regex routines to extract and normalize IOC's from a payload                   | Worker                              |
 | [javaclass](javaclass/)       | Decodes and extracts information from Java Class files                         | Worker                              |
-| [mimetype](mimetype)          | Determine mimetype of a payload                                                | Worker                              |
+| [mimetype](mimetype/)         | Determine mimetype of a payload                                                | Worker                              |
+| [mongodb](mongodb/)           | Save results and archive payloads to/from mongodb                              | Archiver, Connector                 |
 | [mraptor](mraptor/)           | Port of mraptor3 from oletools                                                 | Worker                              |
 | [ole](ole/)                   | Carve OLE streams within Microsoft Office Documents                            | Worker                              |
 | [opswat](opswat/)             | Scan payloads using OPSWAT MetaDefender                                        | Worker                              |
