@@ -26,6 +26,7 @@ from queue import Queue
 from configparser import ConfigParser
 from typing import Dict, List, Optional
 
+from stoq import helpers
 from stoq.plugins import ConnectorPlugin, ProviderPlugin, ArchiverPlugin
 from stoq.data_classes import (
     StoqResponse,
@@ -86,7 +87,7 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
             for result in response.results:
                 msgs = [{k: v} for k, v in result.archivers.items()]
             for msg in msgs:
-                self.conn.rpush(self.redis_queue, json.dumps(msg))
+                self.conn.rpush(self.redis_queue, helpers.dumps(msg))
         else:
             self.conn.set(response.scan_id, str(response))
 
