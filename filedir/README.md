@@ -32,6 +32,8 @@ All options below may be set by:
 
 - `date_format` [str]: Append the defined datetime formatter to the output path if requested. Defaults to `%%Y/%%m/%%d`
 
+- `compactly` [`True`/`False`]: Save results compacted (without newlines or indents)
+
 #### Provider
 
 - `source_dir` [str]: Directory to ingest files from

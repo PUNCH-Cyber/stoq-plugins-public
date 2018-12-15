@@ -28,6 +28,7 @@ from datetime import datetime
 from typing import Dict, Optional
 from configparser import ConfigParser
 
+from stoq import helpers
 from stoq.exceptions import StoqPluginException
 from stoq import Payload, PayloadMeta, ArchiverResponse, StoqResponse, RequestMeta
 from stoq.plugins import ProviderPlugin, ConnectorPlugin, ArchiverPlugin
@@ -39,11 +40,12 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
 
         self.source_dir = None
         self.recursive = False
-        self.results_dir = None
+        self.results_dir = os.getcwd()
         self.date_mode = False
         self.date_format = '%Y/%m/%d'
         self.archive_dir = None
         self.use_sha = True
+        self.compactly = True
 
         if plugin_opts and 'source_dir' in plugin_opts:
             self.source_dir = plugin_opts['source_dir']
@@ -69,6 +71,11 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
             self.date_format = plugin_opts['date_format']
         elif config.has_option('connector', 'date_format'):
             self.date_format = config.get('connector', 'date_format')
+
+        if plugin_opts and 'compactly' in plugin_opts:
+            self.compactly = plugin_opts['compactly']
+        elif config.has_option('connector', 'compactly'):
+            self.compactly = config.getboolean('connector', 'compactly')
 
         if plugin_opts and 'archive_dir' in plugin_opts:
             self.archive_dir = plugin_opts['archive_dir']
@@ -129,7 +136,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         path = os.path.abspath(path)
         Path(path).mkdir(parents=True, exist_ok=True)
         with open(f'{path}/{filename}', 'x') as outfile:
-            outfile.write(str(response))
+            outfile.write(helpers.dumps(response, compactly=self.compactly))
 
     def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
         """

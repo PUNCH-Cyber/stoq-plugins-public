@@ -18,7 +18,7 @@ Module = filedir
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 2.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Handle file and directory interactions
 
@@ -31,13 +31,17 @@ recursive = False
 
 [connector]
 # Where should results be saved to?
-# results_dir = /tmp
+results_dir = /tmp
 
 # Save results to a directory structure using date_format
 date_mode = False
 
 # Append the below datetime formatter to the output path if requested
 date_format = %%Y/%%m/%%d
+
+# Save results compacted (without newlines or indents)
+# Default: True
+compactly = True
 
 [archiver]
 # Where should archived files be saved/read from?
