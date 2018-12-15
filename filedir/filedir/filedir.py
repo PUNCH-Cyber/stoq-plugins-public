@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-2018 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         path = os.path.abspath(path)
         Path(path).mkdir(parents=True, exist_ok=True)
         with open(f'{path}/{filename}', 'x') as outfile:
-            outfile.write(helpers.dumps(response, compactly=self.compactly))
+            outfile.write(f'{helpers.dumps(response, compactly=self.compactly)}\n')
 
     def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
         """
