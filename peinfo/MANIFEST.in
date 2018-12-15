@@ -1,1 +1,2 @@
-include peinfo/*.stoq peinfo/userdb.txt
+include peinfo/*.stoq
+include peinfo/userdb.txt
