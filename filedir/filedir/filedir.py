@@ -40,10 +40,10 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
 
         self.source_dir = None
         self.recursive = False
-        self.results_dir = os.getcwd()
+        self.results_dir = os.path.join(os.getcwd(), 'results')
         self.date_mode = False
         self.date_format = '%Y/%m/%d'
-        self.archive_dir = None
+        self.archive_dir = os.path.join(os.getcwd(), 'archive')
         self.use_sha = True
         self.compactly = True
 
@@ -151,8 +151,11 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
             filename = payload.payload_id
         path = os.path.abspath(path)
         Path(path).mkdir(parents=True, exist_ok=True)
-        with open(f'{path}/{filename}', 'xb') as outfile:
-            outfile.write(payload.content)
+        try:
+            with open(f'{path}/{filename}', 'xb') as outfile:
+                outfile.write(payload.content)
+        except FileExistsError:
+            pass
         return ArchiverResponse({'path': f'{path}/{filename}'})
 
     def get(self, task: ArchiverResponse) -> Payload:
