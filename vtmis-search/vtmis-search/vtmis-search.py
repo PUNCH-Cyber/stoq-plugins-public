@@ -28,7 +28,13 @@ from typing import Dict, List, Optional
 from stoq.helpers import get_sha1
 from stoq.exceptions import StoqPluginException
 from stoq.plugins import WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin
-from stoq import Payload, RequestMeta, WorkerResponse, DispatcherResponse, DeepDispatcherResponse
+from stoq import (
+    Payload,
+    RequestMeta,
+    WorkerResponse,
+    DispatcherResponse,
+    DeepDispatcherResponse,
+)
 
 
 class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
@@ -37,11 +43,10 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
         'ipv4': ('ip', '/ip-address/report'),
         'url': ('resource', '/url/report'),
         'domain': ('domain', '/domain/report'),
-        'sha1': ('resource', '/file/report')
+        'sha1': ('resource', '/file/report'),
     }
 
-    def __init__(self, config: ConfigParser,
-                 plugin_opts: Optional[Dict]) -> None:
+    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
         self.apikey = None
@@ -54,16 +59,12 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
         if not self.apikey:
             raise StoqPluginException("VTMIS API Key does not exist")
 
-    def scan(
-            self,
-            payload: Payload,
-            request_meta: RequestMeta,
-    ) -> WorkerResponse:
+    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
         Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin
 
         """
-        results: Dict[str, Dict] = {}
+        results: List[Dict] = []
         seen: List[str] = []
 
         for worker_result in payload.worker_results:
@@ -73,26 +74,24 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
                         if key in self.ENDPOINTS and ioc not in seen:
                             response = self._query_api(ioc, key)
                             seen.append(ioc)
-                            results.update({ioc: response})
+                            results.append(response)
         if not results:
             sha1 = get_sha1(payload.content)
             response = self._query_api(sha1, 'sha1')
-            results = {sha1: response}
+            results = [response]
 
         return WorkerResponse(results=results)
 
     def _query_api(self, query: str, endpoint: str) -> Dict:
         key, endpoint = self.ENDPOINTS[endpoint]
         url = f'{self.API_URL}{endpoint}'
-        params = {
-            'apikey': self.apikey,
-            key: query
-        }
+        params = {'apikey': self.apikey, key: query}
         response = requests.get(url, params=params)
         return response.json()
 
-    def get_dispatches(self, payload: Payload,
-                       request_meta: RequestMeta) -> DispatcherResponse:
+    def get_dispatches(
+        self, payload: Payload, request_meta: RequestMeta
+    ) -> DispatcherResponse:
         """
         Check if `iocextract` plugin has results, if so, dispatch to `vtmis-search` worker
 
@@ -102,13 +101,17 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
             dr.plugin_names.append('vtmis-search')
         return dr
 
-    def get_deep_dispatches(self, payload: Payload,
-                            request_meta: RequestMeta) -> DeepDispatcherResponse:
+    def get_deep_dispatches(
+        self, payload: Payload, request_meta: RequestMeta
+    ) -> DeepDispatcherResponse:
         """
         Check if `iocextract` plugin has results, if so, deep dispatch to `vtmis-search` worker
 
         """
         deepdr = DeepDispatcherResponse()
-        if 'iocextract' in payload.worker_results and 'vtmis-search' not in payload.worker_results:
+        if (
+            'iocextract' in payload.worker_results
+            and 'vtmis-search' not in payload.worker_results
+        ):
             deepdr.plugin_names.append('vtmis-search')
         return deepdr
