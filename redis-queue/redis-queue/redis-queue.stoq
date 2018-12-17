@@ -18,7 +18,7 @@ Module = redis-queue
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 2.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Interact with Redis server for queuing
 
