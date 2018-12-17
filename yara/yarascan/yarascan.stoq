@@ -23,7 +23,5 @@ Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Process a payload using yara
 
 [options]
-# Minimum version of stoQ required to work
-min_stoq_version = 2.0.0
 worker_rules = rules/stoq.yar
 dispatch_rules = rules/dispatcher.yar

@@ -10,4 +10,5 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     test_suite='tests',
+    package_data={'yarascan': ['yarascan.stoq', 'rules/*']},
 )
