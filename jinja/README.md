@@ -7,12 +7,6 @@
 - [Connector](https://stoq-framework.readthedocs.io/en/v2/dev/connectors.html)
 - [Decorator](https://stoq-framework.readthedocs.io/en/v2/dev/decorators.html)
 
-# Plugin Classes
-
-- [Archiver](https://stoq-framework.readthedocs.io/en/v2/dev/archivers.html)
-- [Connector](https://stoq-framework.readthedocs.io/en/v2/dev/connectors.html)
-- [Provider](https://stoq-framework.readthedocs.io/en/v2/dev/providers.html)
-
 ## Configuration
 
 All options below may be set by:
