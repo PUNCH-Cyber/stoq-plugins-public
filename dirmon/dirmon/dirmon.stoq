@@ -18,7 +18,7 @@ Module = dirmon
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 2.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Monitor a directory for newly created files for processing
 

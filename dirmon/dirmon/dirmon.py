@@ -30,21 +30,25 @@ from watchdog.events import FileSystemEventHandler
 
 from stoq.plugins import ProviderPlugin
 from stoq import Payload, PayloadMeta
+from stoq.exceptions import StoqPluginException
 
 
 class DirmonPlugin(ProviderPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
+        self.source_dir = None
+
         if plugin_opts and 'source_dir' in plugin_opts:
             self.source_dir = plugin_opts['source_dir']
         elif config.has_option('options', 'source_dir'):
             self.source_dir = config.get('options', 'source_dir')
-        else:
-            self.source_dir = None
 
-        if not self.source_dir:
-            raise StoqPluginException('Source directory not defined')
+        if not self.source_dir or not os.path.exists(self.source_dir):
+            raise StoqPluginException(
+                f"Source directory not defined or doesn't exist: '{self.source_dir}'"
+            )
+        self.source_dir = os.path.abspath(self.source_dir)
 
     def ingest(self, queue: Queue) -> None:
         """
@@ -56,6 +60,7 @@ class DirmonPlugin(ProviderPlugin):
         observer = Observer()
         observer.schedule(handler, self.source_dir, recursive=False)
         observer.start()
+        print(f'Monitoring {self.source_dir} for newly created files...')
         try:
             while True:
                 sleep(2)
