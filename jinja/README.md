@@ -44,7 +44,7 @@ Scan a payload and display results using default template
     Metadata:
         - Archive Payload:
         - Dispatch To:
-        - filename: b'03.exe'
+        - filename: b'badfile.exe'
     Archivers:
     Worker Results:
         hash:
