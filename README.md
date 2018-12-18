@@ -2,8 +2,8 @@
 <img src="http://stoq.punchcyber.com/i/stoq.png" width="300"><br />
 </p>
 
-[![Build Status](https://travis-ci.org/PUNCH-Cyber/stoq-plugins-public.svg?branch=v2)](https://travis-ci.org/PUNCH-Cyber/stoq-plugins-public)
-[![Documentation Status](https://readthedocs.org/projects/stoq-framework/badge/?version=v2)](https://stoq-framework.readthedocs.io/en/v2/)
+[![Build Status](https://travis-ci.org/PUNCH-Cyber/stoq-plugins-public.svg?branch=master)](https://travis-ci.org/PUNCH-Cyber/stoq-plugins-public)
+[![Documentation Status](https://readthedocs.org/projects/stoq-framework/badge/?version=latest)](https://stoq-framework.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/pypi/l/stoq-framework.svg)](https://pypi.org/project/stoq-framework/)
 
 # Overview

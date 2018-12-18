@@ -1,19 +1,19 @@
 # Mongodb
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that saves results and archives payloads to/from MongoDB.
+[stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html) plugin that saves results and archives payloads to/from MongoDB.
 
 ## Plugin Classes
 
-- [Archiver](https://stoq-framework.readthedocs.io/en/v2/dev/archivers.html)
-- [Connector](https://stoq-framework.readthedocs.io/en/v2/dev/connectors.html)
+- [Archiver](https://stoq-framework.readthedocs.io/en/latest/dev/archivers.html)
+- [Connector](https://stoq-framework.readthedocs.io/en/latest/dev/connectors.html)
 
 ## Configuration
 
 All options below may be set by:
 
-- [plugin configuration file](https://stoq-framework.readthedocs.io/en/v2/dev/plugin_overview.html#configuration)
-- [`stoq` command](https://stoq-framework.readthedocs.io/en/v2/gettingstarted.html#plugin-options)
-- [`Stoq` class](https://stoq-framework.readthedocs.io/en/v2/dev/core.html?highlight=plugin_opts#using-providers)
+- [plugin configuration file](https://stoq-framework.readthedocs.io/en/latest/dev/plugin_overview.html#configuration)
+- [`stoq` command](https://stoq-framework.readthedocs.io/en/latest/gettingstarted.html#plugin-options)
+- [`Stoq` class](https://stoq-framework.readthedocs.io/en/latest/dev/core.html?highlight=plugin_opts#using-providers)
 
 ### Options
 

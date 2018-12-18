@@ -1,10 +1,10 @@
 # SSDeep Hash
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that generates an ssdeep hash of a payload.
+[stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html) plugin that generates an ssdeep hash of a payload.
 
 ## Plugin Classes
 
-- [Worker](https://stoq-framework.readthedocs.io/en/v2/dev/workers.html)
+- [Worker](https://stoq-framework.readthedocs.io/en/latest/dev/workers.html)
 
 ## Configuration and Options
 

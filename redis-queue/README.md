@@ -1,20 +1,20 @@
 # Redis Queue
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that leverages Redis for queuing and saving results
+[stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html) plugin that leverages Redis for queuing and saving results
 
 ## Plugin Classes
 
-- [Archiver](https://stoq-framework.readthedocs.io/en/v2/dev/archivers.html)
-- [Connector](https://stoq-framework.readthedocs.io/en/v2/dev/connectors.html)
-- [Provider](https://stoq-framework.readthedocs.io/en/v2/dev/providers.html)
+- [Archiver](https://stoq-framework.readthedocs.io/en/latest/dev/archivers.html)
+- [Connector](https://stoq-framework.readthedocs.io/en/latest/dev/connectors.html)
+- [Provider](https://stoq-framework.readthedocs.io/en/latest/dev/providers.html)
 
 ## Configuration
 
 All options below may be set by:
 
-- [plugin configuration file](https://stoq-framework.readthedocs.io/en/v2/dev/plugin_overview.html#configuration)
-- [`stoq` command](https://stoq-framework.readthedocs.io/en/v2/gettingstarted.html#plugin-options)
-- [`Stoq` class](https://stoq-framework.readthedocs.io/en/v2/dev/core.html?highlight=plugin_opts#using-providers)
+- [plugin configuration file](https://stoq-framework.readthedocs.io/en/latest/dev/plugin_overview.html#configuration)
+- [`stoq` command](https://stoq-framework.readthedocs.io/en/latest/gettingstarted.html#plugin-options)
+- [`Stoq` class](https://stoq-framework.readthedocs.io/en/latest/dev/core.html?highlight=plugin_opts#using-providers)
 
 ### Options
 
