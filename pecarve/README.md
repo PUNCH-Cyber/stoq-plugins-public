@@ -17,5 +17,3 @@ All options below may be set by:
 ### Options
 
 - `pe_headers` [str]: Regex pattern to match for PE headers (i.e., MZ or ZM)
-
-> Paths may be relative to the module, or a full path.

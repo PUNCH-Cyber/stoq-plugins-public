@@ -22,7 +22,8 @@ All options below may be set by:
 
 - `archive_dir` [str]: Directory to read/save archived files from/to
 
-- `use_sha` [`True`/`False`]: When archiving files, should archived files be saved in a directory structure based on the first five characters of the sha1 hash. For example, if the sha1 hash of the payload is `da39a3ee5e6b4b0d3255bfef95601890afd80709`, the payload will be archived to `$archive_dir/d/a/3/9/a/da39a3ee5e6b4b0d3255bfef95601890afd80709`.
+- `use_sha` [`True`/`False`]: When archiving files, should archived files be saved in a directory structure based on the first five characters of the sha1 hash.
+  > For example, if the sha1 hash of the payload is `da39a3ee5e6b4b0d3255bfef95601890afd80709`, the payload will be archived to `$archive_dir/d/a/3/9/a/da39a3ee5e6b4b0d3255bfef95601890afd80709`.
 
 #### Connector
 

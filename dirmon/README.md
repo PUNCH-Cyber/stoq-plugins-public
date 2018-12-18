@@ -4,7 +4,7 @@
 
 ## Plugin Classes
 
-- [Worker](https://stoq-framework.readthedocs.io/en/v2/dev/workers.html)
+- [Provider](https://stoq-framework.readthedocs.io/en/v2/dev/providers.html)
 
 ## Configuration
 
@@ -16,4 +16,6 @@ All options below may be set by:
 
 ### Options
 
-- `source_dir` [str]: Directory to monitor new files for
+- `source_dir` [str]: Directory to monitor for new files
+
+> Paths may be relative to the module, or a full path.
