@@ -31,7 +31,7 @@ Details on how to install these plugins can be found [here](https://stoq-framewo
 
 Below is a listing of all public stoQ plugins, a description, and thier respective plugin class.
 
-| Plugin Name                   | Type                                                                           | Description                         |
+| Plugin Name                   | Description                                                                    | Plugin Type                         |
 | ----------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
 | [decompress](decompress/)     | Extract content from a multitude of archive formats                            | Worker                              |
 | [dirmon](dirmon/)             | Monitor a directory for newly created files for processing                     | Provider                            |
