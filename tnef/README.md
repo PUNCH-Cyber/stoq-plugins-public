@@ -1,10 +1,10 @@
 # TNEFParse
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that extracts objects from TNEF payloads
+[stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html) plugin that extracts objects from TNEF payloads
 
 ## Plugin Classes
 
-- [Worker](https://stoq-framework.readthedocs.io/en/v2/dev/workers.html)
+- [Worker](https://stoq-framework.readthedocs.io/en/latest/dev/workers.html)
 
 ## Configuration and Options
 

@@ -1,10 +1,10 @@
 # STDOUT
 
-[stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that prints results to stdout.
+[stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html) plugin that prints results to stdout.
 
 ## Plugin Classes
 
-- [Connector](https://stoq-framework.readthedocs.io/en/v2/dev/connectors.html)
+- [Connector](https://stoq-framework.readthedocs.io/en/latest/dev/connectors.html)
 
 ## Configuration and Options
 
