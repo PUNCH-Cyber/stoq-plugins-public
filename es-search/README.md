@@ -2,6 +2,8 @@
 
 [stoQ](https://stoq-framework.readthedocs.io/en/v2/index.html) plugin that saves results to [ElasticSearch](https://www.elastic.co/products/elasticsearch)
 
+> Note: For larger deployments, it is highly recommended that the [`filedir`](../filedir/) plugin and [Filebeat](https://www.elastic.co/products/beats/filebeat) be used instead of this plugin.
+
 ## Plugin Classes
 
 - [Connector](https://stoq-framework.readthedocs.io/en/v2/dev/connectors.html)
@@ -15,14 +17,6 @@ All options below may be set by:
 - [`Stoq` class](https://stoq-framework.readthedocs.io/en/v2/dev/core.html?highlight=plugin_opts#using-providers)
 
 ### Options
-
-- `mongodb_uri` [str]: MongoDB URI
-
-> Must be formatted as described in the [MongoDB documentation](https://docs.mongodb.com/manual/reference/connection-string/)
-
-- `mongodb_collection` [str]: MongoDB Collection name when saving results.
-
-> Defaults to `stoq`.
 
 - `es_host` [str]: Comma separated list of ElasticSearch nodes
 
