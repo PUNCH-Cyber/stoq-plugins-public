@@ -20,6 +20,7 @@ Interact with Redis server for queuing
 
 """
 
+import time
 import json
 import redis
 from queue import Queue
@@ -73,7 +74,7 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self._connect()
         self.conn.set(f'{payload.payload_id}_meta', str(payload.payload_meta))
         self.conn.set(f'{payload.payload_id}_buf', payload.content)
-        self.conn.publish(self.redis_queue, payload.payload_id)
+        self.conn.rpush(self.redis_queue, payload.payload_id)
         return ArchiverResponse({'msg_id': payload.payload_id})
 
     def save(self, response: StoqResponse) -> None:
@@ -87,17 +88,17 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
             for result in response.results:
                 msgs = [{k: v} for k, v in result.archivers.items()]
             for msg in msgs:
-                self.conn.publish(self.redis_queue, helpers.dumps(msg))
+                self.conn.rpush(self.redis_queue, helpers.dumps(msg))
         else:
             self.conn.set(response.scan_id, str(response))
 
     def ingest(self, queue: Queue) -> None:
         self._connect()
-        pubsub = self.conn.pubsub(ignore_subscribe_messages=True)
-        pubsub.subscribe(self.redis_queue)
         print(f'Monitoring redis queue {self.redis_queue}')
-        for msg in pubsub.listen():
-            data = msg['data'].decode()
+        while True:
+            # for msg in pubsub.listen():
+            msg = self.conn.blpop(self.redis_queue, timeout=0)
+            data = msg[1].decode()
             payload = self.conn.get(f'{data}_buf')
             meta = self.conn.get(f'{data}_meta')
             if meta and payload:
@@ -106,7 +107,8 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
                 self.conn.delete(f'{meta}_buf')
                 self.conn.delete(f'{meta}_meta')
             else:
-                queue.put(json.loads(msg['data']))
+                queue.put(json.loads(data))
+            time.sleep(0.3)
 
     def _connect(self):
         if not self.conn:
