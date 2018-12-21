@@ -18,7 +18,7 @@ All options below may be set by:
 
 - `sandbox_url` [str]: URL for Falcon Sandbox
 
-- `apikey` [str]: Metadefender API key
+- `apikey` [str]: Falcon Sandbox API key
 
 - `useragent` [str]: User Agent to use for request
 
