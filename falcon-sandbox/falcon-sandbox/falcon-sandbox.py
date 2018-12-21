@@ -27,12 +27,13 @@ from json import JSONDecodeError
 from configparser import ConfigParser
 from typing import Dict, Optional, Union, Tuple, List
 
+from stoq import helpers
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
 from stoq import Payload, RequestMeta, WorkerResponse
 
 
-class MetadefenderPlugin(WorkerPlugin):
+class FalconSandboxPlugin(WorkerPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
@@ -100,7 +101,12 @@ class MetadefenderPlugin(WorkerPlugin):
         errors = None
         url = f'{self.sandbox_url}/submit/file'
         headers = {'api-key': self.apikey, 'user-agent': self.useragent}
-        files = {'file': payload.content}
+        filename = payload.payload_meta.extra_data.get(
+            'filename', helpers.get_sha1(payload.content)
+        )
+        if isinstance(filename, bytes):
+            filename = filename.decode()
+        files = {'file': (filename, payload.content)}
         data = {'environment_id': self.environment_id}
         response = requests.post(url, data=data, files=files, headers=headers)
         response.raise_for_status()
@@ -118,8 +124,8 @@ class MetadefenderPlugin(WorkerPlugin):
         """
         count = 0
         err = None
-        sleep(self.delay)
         while count < self.max_attempts:
+            sleep(self.delay)
             try:
                 url = f'{self.sandbox_url}/report/{job_id}/summary'
                 headers = {'api-key': self.apikey, 'user-agent': self.useragent}
@@ -128,10 +134,8 @@ class MetadefenderPlugin(WorkerPlugin):
                 result = response.json()
                 if result['state'] not in ('IN_QUEUE', 'IN_PROGRESS'):
                     return result, None
-                sleep(self.delay)
             except (JSONDecodeError, KeyError) as err:
                 err = str(err)
-                sleep(self.delay)
             finally:
                 count += 1
                 if count >= self.max_attempts:
