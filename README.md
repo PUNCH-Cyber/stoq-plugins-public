@@ -31,38 +31,39 @@ Details on how to install these plugins can be found [here](https://stoq-framewo
 
 Below is a listing of all public stoQ plugins, a description, and thier respective plugin class.
 
-| Plugin Name                   | Description                                                                    | Plugin Type                         |
-| ----------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
-| [decompress](decompress/)     | Extract content from a multitude of archive formats                            | Worker                              |
-| [dirmon](dirmon/)             | Monitor a directory for newly created files for processing                     | Provider                            |
-| [es-search](es-search/)       | Saves results to ElasticSearch                                                 | Connector                           |
-| [exif](exif/)                 | Processes a payload using ExifTool                                             | Worker                              |
-| [filedir](filedir/)           | Ingest a file or directory for processing                                      | Provider, Connector, Archiver       |
-| [gcs](gcs/)                   | Read and write data to Google Cloud Storage                                    | Archiver, Connector                 |
-| [hash](hash/)                 | Hash content                                                                   | Worker                              |
-| [hash_ssdeep](hash_ssdeep/)   | Generate a ssdeep hash of payloads                                             | Worker                              |
-| [iocextract](iocextract/)     | Regex routines to extract and normalize IOC's from a payload                   | Worker                              |
-| [javaclass](javaclass/)       | Decodes and extracts information from Java Class files                         | Worker                              |
-| [jinja](jinja/)               | Decorate results using a template                                              | Connector, Decorator                |
-| [mimetype](mimetype/)         | Determine mimetype of a payload                                                | Worker                              |
-| [mongodb](mongodb/)           | Save results and archive payloads to/from mongodb                              | Archiver, Connector                 |
-| [mraptor](mraptor/)           | Port of mraptor3 from oletools                                                 | Worker                              |
-| [ole](ole/)                   | Carve OLE streams within Microsoft Office Documents                            | Worker                              |
-| [opswat](opswat/)             | Scan payloads using OPSWAT MetaDefender                                        | Worker                              |
-| [pecarve](pecarve/)           | Carve portable executable files from a data stream                             | Worker                              |
-| [peinfo](peinfo/)             | Gather relevant information about an executable using pefile                   | Worker                              |
-| [pubsub](pubsub/)             | Interact with Google Cloud Pub/Sub                                             | Archiver, Connector, Provider       |
-| [redis-queue](redis-queue/)   | Interact with Redis server                                                     | Archiver, Connector, Provider       |
-| [rtf](rtf/)                   | Extract objects from RTF payloads                                              | Worker                              |
-| [s3](s3/)                     | Read and write data to Amazon S3 buckets                                       | Archiver, Connector                 |
-| [smtp](smtp/)                 | SMTP Parser Worker                                                             | Worker                              |
-| [stdout](stdout/)             | Sends results to STDOUT                                                        | Connector                           |
-| [swfcarve](swfcarve/)         | Carve and decompress SWF files from payloads                                   | Worker                              |
-| [symhash](symhash/)           | Calculate symbol table hashes of a Mach-O executable file                      | Worker                              |
-| [tika](tika/)                 | Upload content to a Tika server for automated text extraction                  | Worker                              |
-| [tnef](tnef/)                 | TNEF File Extractor                                                            | Worker                              |
-| [trid](trid/)                 | Identify file types from their TrID signature                                  | Worker                              |
-| [vtmis-search](vtmis-search/) | Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin | Worker, Dispatcher, Deep Dispatcher |
-| [xdpcarve](xdpcarve)          | Carve and decode streams from XDP documents                                    | Worker                              |
-| [xorsearch](xorsearch/)       | Scan a payload using xorsearch                                                 | Worker                              |
-| [yara](yara/)                 | Process a payload using yara                                                   | Worker, Dispatcher                  |
+| Plugin Name                       | Description                                                                    | Plugin Type                         |
+| --------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
+| [decompress](decompress/)         | Extract content from a multitude of archive formats                            | Worker                              |
+| [dirmon](dirmon/)                 | Monitor a directory for newly created files for processing                     | Provider                            |
+| [es-search](es-search/)           | Saves results to ElasticSearch                                                 | Connector                           |
+| [exif](exif/)                     | Processes a payload using ExifTool                                             | Worker                              |
+| [falcon-sandbox](falcon-sandbox/) | Scan payloads using Falcon Sandbox                                             | Worker                              |
+| [filedir](filedir/)               | Ingest a file or directory for processing                                      | Provider, Connector, Archiver       |
+| [gcs](gcs/)                       | Read and write data to Google Cloud Storage                                    | Archiver, Connector                 |
+| [hash](hash/)                     | Hash content                                                                   | Worker                              |
+| [hash_ssdeep](hash_ssdeep/)       | Generate a ssdeep hash of payloads                                             | Worker                              |
+| [iocextract](iocextract/)         | Regex routines to extract and normalize IOC's from a payload                   | Worker                              |
+| [javaclass](javaclass/)           | Decodes and extracts information from Java Class files                         | Worker                              |
+| [jinja](jinja/)                   | Decorate results using a template                                              | Connector, Decorator                |
+| [mimetype](mimetype/)             | Determine mimetype of a payload                                                | Worker                              |
+| [mongodb](mongodb/)               | Save results and archive payloads to/from mongodb                              | Archiver, Connector                 |
+| [mraptor](mraptor/)               | Port of mraptor3 from oletools                                                 | Worker                              |
+| [ole](ole/)                       | Carve OLE streams within Microsoft Office Documents                            | Worker                              |
+| [opswat](opswat/)                 | Scan payloads using OPSWAT MetaDefender                                        | Worker                              |
+| [pecarve](pecarve/)               | Carve portable executable files from a data stream                             | Worker                              |
+| [peinfo](peinfo/)                 | Gather relevant information about an executable using pefile                   | Worker                              |
+| [pubsub](pubsub/)                 | Interact with Google Cloud Pub/Sub                                             | Archiver, Connector, Provider       |
+| [redis-queue](redis-queue/)       | Interact with Redis server                                                     | Archiver, Connector, Provider       |
+| [rtf](rtf/)                       | Extract objects from RTF payloads                                              | Worker                              |
+| [s3](s3/)                         | Read and write data to Amazon S3 buckets                                       | Archiver, Connector                 |
+| [smtp](smtp/)                     | SMTP Parser Worker                                                             | Worker                              |
+| [stdout](stdout/)                 | Sends results to STDOUT                                                        | Connector                           |
+| [swfcarve](swfcarve/)             | Carve and decompress SWF files from payloads                                   | Worker                              |
+| [symhash](symhash/)               | Calculate symbol table hashes of a Mach-O executable file                      | Worker                              |
+| [tika](tika/)                     | Upload content to a Tika server for automated text extraction                  | Worker                              |
+| [tnef](tnef/)                     | TNEF File Extractor                                                            | Worker                              |
+| [trid](trid/)                     | Identify file types from their TrID signature                                  | Worker                              |
+| [vtmis-search](vtmis-search/)     | Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin | Worker, Dispatcher, Deep Dispatcher |
+| [xdpcarve](xdpcarve)              | Carve and decode streams from XDP documents                                    | Worker                              |
+| [xorsearch](xorsearch/)           | Scan a payload using xorsearch                                                 | Worker                              |
+| [yara](yara/)                     | Process a payload using yara                                                   | Worker, Dispatcher                  |
