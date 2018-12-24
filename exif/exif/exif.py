@@ -24,7 +24,7 @@ import json
 import tempfile
 from typing import Dict, Optional
 from configparser import ConfigParser
-from subprocess import run
+from subprocess import run, PIPE
 
 from stoq.plugins import WorkerPlugin
 
@@ -51,7 +51,7 @@ class ExifToolPlugin(WorkerPlugin):
             temp_file.flush()
             try:
                 cmd = [self.bin_path, '-j', '-n', temp_file.name]
-                output = run(cmd, capture_output=True)
+                output = run(cmd, stdout=PIPE)
                 results = json.loads(output.stdout)[0]
             except Exception as err:
                 raise StoqPluginException(f'Failed gathering exif data: {err}')
