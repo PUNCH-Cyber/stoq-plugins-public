@@ -108,9 +108,12 @@ class Decompress(WorkerPlugin):
         """
 
         if len(payload.content) > int(self.maximum_size):
-            raise StoqPluginException('Compressed file too large')
+            raise StoqPluginException(
+                f'Compressed file too large: {len(payload.content)} > {self.maximum_size}'
+            )
 
         archiver = None
+        mimetype = None
         results = {}
         errors = []
         extracted = []
@@ -137,7 +140,9 @@ class Decompress(WorkerPlugin):
                 else:
                     raise StoqPluginException(f'Unknown archive type of {archive_type}')
         if not archiver:
-            raise StoqPluginException('Unable to determine archive type')
+            raise StoqPluginException(
+                f'Unable to determine archive type, mimetype: {mimetype}'
+            )
 
         with tempfile.TemporaryDirectory() as extract_dir:
             fd, archive_file = tempfile.mkstemp(dir=extract_dir)
