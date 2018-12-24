@@ -27,6 +27,8 @@ from configparser import ConfigParser
 from subprocess import check_output
 
 from stoq.plugins import WorkerPlugin
+
+from stoq.exceptions import StoqPluginException
 from stoq import Payload, RequestMeta, WorkerResponse
 
 
