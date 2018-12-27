@@ -1,4 +1,4 @@
-# OPSWAT Metascan
+# CrowdStrike Falcon Sandbox
 
 [stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html) plugin that scans payloads using [Falcon Sandbox](https://www.crowdstrike.com/products/falcon-sandbox/)
 
