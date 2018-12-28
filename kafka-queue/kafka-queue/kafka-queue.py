@@ -81,6 +81,7 @@ class KafkaPlugin(ConnectorPlugin, ProviderPlugin):
                 self.producer.send(self.topic, helpers.dumps(msg).encode())
         else:
             self.producer.send(self.topic, str(response).encode())
+        self.producer.flush()
 
     def ingest(self, queue: Queue) -> None:
         consumer = KafkaConsumer(
