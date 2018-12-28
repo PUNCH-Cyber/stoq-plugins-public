@@ -18,7 +18,7 @@ Module = redis-queue
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.1
+Version = 2.0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Interact with Redis server for queuing
 
@@ -31,3 +31,6 @@ redis_queue = stoq
 # Useful for sending archived payload metadata to topic.
 # Default: True
 publish_archive = True
+
+# Max connections permitted in redis connection pool
+max_connections = 15

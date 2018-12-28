@@ -24,6 +24,10 @@ All options below may be set by:
 
 - `redis_queue` [str]: Queue name for sending and receiving messages
 
+- `publish_archive` [`True`/`False`]: When used as a Connector plugin, should the ArchiveResponses be saved, or StoqResponse? Useful for sending archived payload metadata to topic.
+
+- `max_connections` [int]: Max connections permitted in redis connection pool
+
 ## Usage
 
 ### Redis Queuing Example

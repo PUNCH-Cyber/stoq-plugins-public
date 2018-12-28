@@ -46,6 +46,7 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self.redis_port = 6379
         self.redis_queue = 'stoq'
         self.publish_archive = True
+        self.max_connections = 15
         self.conn = None
 
         if plugin_opts and "publish_archive" in plugin_opts:
@@ -61,10 +62,15 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         if plugin_opts and "redis_port" in plugin_opts:
             self.redis_port = int(plugin_opts["redis_port"])
         elif config.has_option("options", "redis_port"):
-            self.redis_port = config.get("options", "redis_port")
+            self.redis_port = config.getint("options", "redis_port")
+
+        if plugin_opts and "max_connections" in plugin_opts:
+            self.max_connections = int(plugin_opts["max_connections"])
+        elif config.has_option("options", "max_connections"):
+            self.max_connections = config.getint("options", "max_connections")
 
         if plugin_opts and "redis_queue" in plugin_opts:
-            self.redis_queue = int(plugin_opts["redis_queue"])
+            self.redis_queue = plugin_opts["redis_queue"]
         elif config.has_option("options", "redis_port"):
             self.redis_queue = config.get("options", "redis_queue")
 
@@ -96,8 +102,10 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self._connect()
         print(f'Monitoring redis queue {self.redis_queue}')
         while True:
-            # for msg in pubsub.listen():
             msg = self.conn.blpop(self.redis_queue, timeout=0)
+            if not msg:
+                time.sleep(0.1)
+                continue
             data = msg[1].decode()
             payload = self.conn.get(f'{data}_buf')
             meta = self.conn.get(f'{data}_meta')
@@ -108,8 +116,15 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
                 self.conn.delete(f'{meta}_meta')
             else:
                 queue.put(json.loads(data))
-            time.sleep(0.3)
 
     def _connect(self):
         if not self.conn:
-            self.conn = redis.Redis(host=self.redis_host, port=self.redis_port)
+            self.conn = redis.Redis(
+                host=self.redis_host,
+                port=self.redis_port,
+                socket_keepalive=True,
+                socket_timeout=300,
+                connection_pool=redis.BlockingConnectionPool(
+                    max_connections=self.max_connections
+                ),
+            )
