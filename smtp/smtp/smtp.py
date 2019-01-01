@@ -129,28 +129,43 @@ class SMTPPlugin(WorkerPlugin):
             if mailpart.is_body:
                 if self.extract_iocs:
                     ioc_content += UnicodeDammit(mailpart.get_payload()).unicode_markup
-                continue
-            try:
-                if mailpart.filename:
+            elif mailpart.type.startswith('message/'):
+                for part in mailpart.part.get_payload():
+                    try:
+                        attachment_meta = PayloadMeta(
+                            should_archive=self.archive_attachments,
+                            extra_data={'attached_msg': True},
+                            dispatch_to=['smtp'],
+                        )
+                        attachment = ExtractedPayload(part.as_bytes(), attachment_meta)
+                        attachments.append(attachment)
+                    except Exception as err:
+                        errors.append(f'Failed extracting attachment: {err}')
+            else:
+                try:
                     att_filename = mailpart.filename
-                else:
-                    att_filename = mailpart.sanitized_filename
-                attachment_meta = PayloadMeta(
-                    should_archive=self.archive_attachments,
-                    extra_data={
-                        'charset': mailpart.charset,
-                        'content-description': mailpart.part.get('Content-Description'),
-                        'content-id': mailpart.content_id,
-                        'disposition': mailpart.disposition,
-                        'filename': att_filename,
-                        'type': mailpart.type,
-                    },
-                    dispatch_to=self.always_dispatch,
-                )
-                attachment = ExtractedPayload(mailpart.get_payload(), attachment_meta)
-                attachments.append(attachment)
-            except Exception as err:
-                errors.append(f'Failed extracting attachment: {err}')
+                    if not att_filename:
+                        att_filename = mailpart.sanitized_filename
+                    attachment_meta = PayloadMeta(
+                        should_archive=self.archive_attachments,
+                        extra_data={
+                            'charset': mailpart.charset,
+                            'content-description': mailpart.part.get(
+                                'Content-Description'
+                            ),
+                            'content-id': mailpart.content_id,
+                            'disposition': mailpart.disposition,
+                            'filename': att_filename,
+                            'type': mailpart.type,
+                        },
+                        dispatch_to=self.always_dispatch,
+                    )
+                    attachment = ExtractedPayload(
+                        mailpart.get_payload(), attachment_meta
+                    )
+                    attachments.append(attachment)
+                except Exception as err:
+                    errors.append(f'Failed extracting attachment: {err}')
 
         if self.extract_iocs:
             ioc_meta = PayloadMeta(should_archive=False, dispatch_to=['iocextract'])
