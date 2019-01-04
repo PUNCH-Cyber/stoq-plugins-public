@@ -22,21 +22,20 @@ Process VTMIS File Feed
 """
 
 import json
+import logging
 import tarfile
 import requests
 from io import BytesIO
 from queue import Queue
-from typing import Dict, Optional
 from configparser import ConfigParser
 from datetime import datetime, timedelta
+from typing import Dict, List, Union, Optional
 
 from stoq.exceptions import StoqPluginException
 from stoq.plugins import ProviderPlugin, WorkerPlugin
-from stoq import (
-    Payload,
-    RequestMeta,
-    WorkerResponse,
-)
+from stoq import Payload, ExtractedPayload, RequestMeta, WorkerResponse
+
+log = logging.getLogger('stoq')
 
 
 class VTMISFileFeedPlugin(ProviderPlugin, WorkerPlugin):
@@ -47,6 +46,7 @@ class VTMISFileFeedPlugin(ProviderPlugin, WorkerPlugin):
 
         self.apikey = None
         self.time_slice = '1m'
+        self.download = False
 
         if plugin_opts and 'apikey' in plugin_opts:
             self.apikey = plugin_opts['apikey']
@@ -57,6 +57,11 @@ class VTMISFileFeedPlugin(ProviderPlugin, WorkerPlugin):
             self.time_since = plugin_opts['time_since']
         elif config.has_option('options', 'time_since'):
             self.time_since = config.get('options', 'time_since')
+
+        if plugin_opts and 'download' in plugin_opts:
+            self.download = plugin_opts['download']
+        elif config.has_option('options', 'download'):
+            self.download = config.get('options', 'download')
 
         if not self.apikey:
             raise StoqPluginException("VTMIS API Key does not exist")
@@ -102,4 +107,15 @@ class VTMISFileFeedPlugin(ProviderPlugin, WorkerPlugin):
         Return individual result from vtmis-filefeed provider
 
         """
-        return WorkerResponse(results=json.loads(payload.content))
+        extracted: Union[List[ExtractedPayload], None] = None
+        errors: Union[List[str], None] = None
+        results = json.loads(payload.content)
+        if self.download:
+            log.info(f'Downloading VTMIS sample sha1: {results["sha1"]}')
+            try:
+                response = requests.get(results['link'])
+                response.raise_for_status()
+                extracted = [ExtractedPayload(response.content)]
+            except Exception as err:
+                errors = [f'Unable to download sample {results["sha1"]}: {err}']
+        return WorkerResponse(results=results, errors=errors, extracted=extracted)

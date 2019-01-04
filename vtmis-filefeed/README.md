@@ -21,6 +21,8 @@ All options below may be set by:
 
 - `time_since` [str]: Time since `now` to pull from file feed. May be represented in either minutes (e.g. 1m), hours (e.g 1h) or as outlined in the [VTMIS Private API documentation](https://www.virustotal.com/en/documentation/private-api/#file-feed) (e.g. %Y%m%dT%H%M (e.g. 20190104T0900) or %Y%m%dT%H (e.g. 20190104T09)). Defaults to `1m`.
 
+- `download` [`True`/`False]: Should each sample be downloaded and processed as an extracted file
+
 ## Usage
 
 ### Save file feed to disk
