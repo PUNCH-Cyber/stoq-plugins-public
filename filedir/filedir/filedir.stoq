@@ -18,7 +18,7 @@ Module = filedir
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.2
+Version = 2.0.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Handle file and directory interactions
 

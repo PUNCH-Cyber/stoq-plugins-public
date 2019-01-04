@@ -144,11 +144,13 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
 
         """
         path = self.archive_dir
+        filename = payload.payload_id
         if self.use_sha:
             filename = hashlib.sha1(payload.content).hexdigest()
             path = f'{path}/{"/".join(list(filename[:5]))}'
-        else:
-            filename = payload.payload_id
+        elif self.date_mode:
+            now = datetime.now().strftime(self.date_format)
+            path = f'{path}/{now}'
         path = os.path.abspath(path)
         Path(path).mkdir(parents=True, exist_ok=True)
         try:
