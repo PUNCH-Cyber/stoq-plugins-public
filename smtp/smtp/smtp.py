@@ -21,10 +21,10 @@ Parse SMTP sessions
 
 """
 
-import pyzmail
-from bs4 import UnicodeDammit
-from typing import Dict, Optional
+from email import policy
+from email.parser import BytesParser
 from configparser import ConfigParser
+from typing import List, Dict, Optional
 
 from stoq.plugins import WorkerPlugin
 from stoq import Payload, RequestMeta, WorkerResponse, ExtractedPayload, PayloadMeta
@@ -34,11 +34,11 @@ class SMTPPlugin(WorkerPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
-        self.omit_body = False
-        self.always_dispatch = None
-        self.archive_attachments = True
-        self.extract_iocs = False
-        self.ioc_keys = [
+        self.omit_body: bool = False
+        self.always_dispatch: List[str] = []
+        self.archive_attachments: bool = True
+        self.extract_iocs: bool = False
+        self.ioc_keys: List[str] = [
             'received',
             'x-orig-ip',
             'x-originating-ip',
@@ -88,53 +88,43 @@ class SMTPPlugin(WorkerPlugin):
             ]
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
-
-        message_json = {}
-        attachments = []
-        errors = []
-        ioc_content = ''
-        email_session = UnicodeDammit(payload.content).unicode_markup
-        message = pyzmail.message_from_string(email_session)
+        message_json: Dict[str, str] = {}
+        attachments: List[ExtractedPayload] = []
+        errors: List[str] = []
+        ioc_content: str = ''
+        message = BytesParser(policy=policy.default).parsebytes(payload.content)
 
         # Create a dict of the SMTP headers
-        for header in message.keys():
+        for header, value in message.items():
             curr_header = header.lower()
             if curr_header in message_json:
-                # If the header key already exists, let's join them
-                message_json[curr_header] += f'\n{message.get_decoded_header(header)}'
+                message_json[curr_header] += f'\n{value}'
             else:
-                message_json[curr_header] = message.get_decoded_header(header)
+                message_json[curr_header] = value
 
         if not self.omit_body:
             # Extract the e-mail body, to include HTML if available
-            message_json['body'] = (
-                ''
-                if message.text_part is None
-                else UnicodeDammit(message.text_part.get_payload()).unicode_markup
-            )
-            message_json['body_html'] = (
-                ''
-                if message.html_part is None
-                else UnicodeDammit(message.html_part.get_payload()).unicode_markup
-            )
+            message_json['body'] = str(message.get_body(preferencelist=('plain')))
+            message_json['body_html'] = str(message.get_body(preferencelist=('html')))
 
         if self.extract_iocs:
             for k in self.ioc_keys:
                 if k in message_json:
-                    ioc_content += f'{message_json[k]}\n'
+                    ioc_content += f'\n{message_json[k]}'
 
-        # Handle attachments
-        for mailpart in message.mailparts:
-            # Skip if the attachment is a body part
-            if mailpart.is_body:
-                if self.extract_iocs:
-                    ioc_content += UnicodeDammit(mailpart.get_payload()).unicode_markup
-            elif mailpart.type.startswith('message/'):
-                for part in mailpart.part.get_payload():
+        for mailpart in message.iter_attachments():
+            if mailpart.get_content_type() == 'message/rfc822':
+                for part in mailpart.get_payload():
                     try:
                         attachment_meta = PayloadMeta(
                             should_archive=self.archive_attachments,
-                            extra_data={'attached_msg': True},
+                            extra_data={
+                                'charset': part.get_content_charset(),
+                                'content-description': part.get('Content-Description'),
+                                'disposition': part.get_content_disposition(),
+                                'filename': part.get_filename(),
+                                'type': part.get_content_type(),
+                            },
                             dispatch_to=['smtp'],
                         )
                         attachment = ExtractedPayload(part.as_bytes(), attachment_meta)
@@ -143,32 +133,24 @@ class SMTPPlugin(WorkerPlugin):
                         errors.append(f'Failed extracting attachment: {err}')
             else:
                 try:
-                    att_filename = mailpart.filename
-                    if not att_filename:
-                        att_filename = mailpart.sanitized_filename
                     attachment_meta = PayloadMeta(
                         should_archive=self.archive_attachments,
                         extra_data={
-                            'charset': mailpart.charset,
-                            'content-description': mailpart.part.get(
-                                'Content-Description'
-                            ),
-                            'content-id': mailpart.content_id,
-                            'disposition': mailpart.disposition,
-                            'filename': att_filename,
-                            'type': mailpart.type,
+                            'charset': mailpart.get_content_charset(),
+                            'content-description': mailpart.get('Content-Description'),
+                            'disposition': mailpart.get_content_disposition(),
+                            'filename': mailpart.get_filename(),
+                            'type': mailpart.get_content_type(),
                         },
                         dispatch_to=self.always_dispatch,
                     )
                     attachment = ExtractedPayload(
-                        mailpart.get_payload(), attachment_meta
+                        mailpart.get_content(), attachment_meta
                     )
                     attachments.append(attachment)
                 except Exception as err:
                     errors.append(f'Failed extracting attachment: {err}')
-
         if self.extract_iocs:
             ioc_meta = PayloadMeta(should_archive=False, dispatch_to=['iocextract'])
             attachments.append(ExtractedPayload(ioc_content.encode(), ioc_meta))
-
         return WorkerResponse(message_json, errors=errors, extracted=attachments)

@@ -1,2 +1,0 @@
-pyzmail36>=1.0.3
-beautifulsoup4~=4.6.3
