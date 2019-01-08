@@ -9,7 +9,7 @@ before_install:
   - sudo apt-get -yq install software-properties-common
   - sudo apt-add-repository -y multiverse
   - sudo apt-get -yq update
-  - sudo apt-get -yq install automake build-essential libyaml-dev libmagic-dev cython autoconf libffi-dev libfuzzy-dev unzip
+  - sudo apt-get -yq install automake build-essential libyaml-dev libmagic-dev cython autoconf libffi-dev libfuzzy-dev unzip libimage-exiftool-perl
   - pip install stoq-framework
   - wget -O /tmp/xorsearch.zip https://didierstevens.com/files/software/XORSearch_V1_11_1.zip
   - unzip /tmp/xorsearch.zip -d /tmp
@@ -23,6 +23,7 @@ install:
   - pip install -r yara/requirements.txt
 
 script:
+  - python exif/setup.py test
   - python hash/setup.py test
   - python hash_ssdeep/setup.py test
   - python javaclass/setup.py test

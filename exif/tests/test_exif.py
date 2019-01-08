@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-2019 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ from stoq.data_classes import WorkerResponse
 
 class TestCore(unittest.TestCase):
     def setUp(self) -> None:
-        self.plugin_name = 'xorsearch'
+        self.plugin_name = 'exif'
         self.base_dir = Path(os.path.realpath(__file__)).parent
         self.data_dir = os.path.join(self.base_dir, 'data')
         self.plugin_dir = os.path.join(self.base_dir.parent, self.plugin_name)
-        self.generic_data = b'MZAdjustTokenPrivileges CurrentVersion'
 
     def tearDown(self) -> None:
         pass
@@ -37,12 +36,10 @@ class TestCore(unittest.TestCase):
     def test_scan(self) -> None:
         s = Stoq(plugin_dir_list=[self.plugin_dir])
         plugin = s.load_plugin(self.plugin_name)
-        xord = bytes(x ^ 92 for x in self.generic_data)
-        payload = Payload(xord)
+        with open(f'{self.data_dir}/sample.pdf', 'rb') as f:
+            payload = Payload(f.read())
         response = plugin.scan(payload, RequestMeta())
         self.assertIsInstance(response, WorkerResponse)
-        self.assertIn('0x5C', response.results)
-        self.assertEqual(
-            'AdjustTokenPrivileges CurrentVersion', response.results['0x5C'][0]['match']
-        )
-        self.assertEqual('CurrentVersion', response.results['0x5C'][1]['match'])
+        self.assertIn('FileType', response.results)
+        self.assertEqual('PDF', response.results['FileType'])
+        self.assertEqual(6, response.results['PageCount'])
