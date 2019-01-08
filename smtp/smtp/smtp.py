@@ -22,7 +22,8 @@ Parse SMTP sessions
 """
 
 from email import policy
-from email.parser import BytesParser
+from bs4 import UnicodeDammit
+from email.parser import Parser
 from configparser import ConfigParser
 from typing import List, Dict, Optional
 
@@ -92,7 +93,8 @@ class SMTPPlugin(WorkerPlugin):
         attachments: List[ExtractedPayload] = []
         errors: List[str] = []
         ioc_content: str = ''
-        message = BytesParser(policy=policy.default).parsebytes(payload.content)
+        session = UnicodeDammit(payload.content).unicode_markup
+        message = Parser(policy=policy.default).parsestr(session)
 
         # Create a dict of the SMTP headers
         for header, value in message.items():
@@ -130,7 +132,7 @@ class SMTPPlugin(WorkerPlugin):
                         attachment = ExtractedPayload(part.as_bytes(), attachment_meta)
                         attachments.append(attachment)
                     except Exception as err:
-                        errors.append(f'Failed extracting attachment: {err}')
+                        errors.append(f'Failed rfc822 attachment: {err}')
             else:
                 try:
                     attachment_meta = PayloadMeta(
