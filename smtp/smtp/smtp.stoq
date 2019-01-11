@@ -9,8 +9,7 @@ Website = https://github.com/PUNCH-Cyber/stoq
 Description = SMTP Parser Worker
 
 [options]
-# Save body of e-mail (text or html) to the results. If set
-# to `False`, IOCs cannnot be extracted from the body of the e-mail.
+# Save body of e-mail (text or html) to the results.
 omit_body = False
 
 # Always send extracted attachments to these plugins
