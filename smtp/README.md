@@ -16,7 +16,7 @@ All options below may be set by:
 
 ### Options
 
-- `omit_body` [`True`/`False`]: Save body of e-mail (text or html) to the results. If set to `False`, IOCs cannnot be extracted from the body of the e-mail.
+- `omit_body` [`True`/`False`]: Save body of e-mail (text or html) to the results.
 
 - `always_dispatch` [str] = Comma separated list of stoQ plugins to always send extracted attachments to
 

@@ -113,6 +113,10 @@ class SMTPPlugin(WorkerPlugin):
             for k in self.ioc_keys:
                 if k in message_json:
                     ioc_content += f'\n{message_json[k]}'
+                elif k == 'body' and k not in message_json:
+                    ioc_content += str(message.get_body(preferencelist=('plain')))
+                elif k == 'body_html' and k not in message_json:
+                    ioc_content += str(message.get_body(preferencelist=('html')))
 
         for mailpart in message.iter_attachments():
             if mailpart.get_content_type() == 'message/rfc822':
