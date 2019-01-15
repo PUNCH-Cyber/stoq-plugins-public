@@ -93,7 +93,7 @@ class Decompress(WorkerPlugin):
 
         if plugin_opts and 'maximum_size' in plugin_opts:
             self.maximum_size = int(plugin_opts['maximum_size'])
-        elif config.has_option('options', 'passwords'):
+        elif config.has_option('options', 'maximum_size'):
             self.maximum_size = int(config.get('options', 'maximum_size'))
         else:
             self.maximum_size = 50_000_000
