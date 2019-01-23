@@ -1,6 +1,6 @@
 # TRiD
 
-[stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html plugin that scans a payload using [TRiD](http://mark0.net/soft-trid-e.html)
+[stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html) plugin that scans a payload using [TRiD](http://mark0.net/soft-trid-e.html)
 
 > Note: TRiD binary and definitions need to be installed for this plugin to operate properly.
 
