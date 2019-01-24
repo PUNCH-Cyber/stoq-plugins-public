@@ -44,6 +44,13 @@ The `ARCHIVE_MAGIC` dictionary requires a `key`/`value` pair. The `key` is the m
         'application/x-bzip2': '7z',
         'application/octet-stream': '7z',
         'application/x-dosexec': 'upx',
+        'application/vnd.debian.binary-package': '7z',
+        'application/vnd.ms-cab-compressed': '7z',
+        'application/x-arj': '7z',
+        'application/x-lha': '7z',
+        'application/x-lzma': '7z',
+        'application/x-rpm': '7z',
+        'application/x-xz': '7z',
     }
 
 The `ARCHIVE_CMDS` dictionary requires a `key`/`value` pair. The `key` should be a `value` from `ARCHIVE_MAGIC`. The `value` is the command that should be executed to decompress the payload.

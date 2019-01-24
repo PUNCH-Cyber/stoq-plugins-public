@@ -69,6 +69,13 @@ class Decompress(WorkerPlugin):
         'application/x-bzip2': '7z',
         'application/octet-stream': '7z',
         'application/x-dosexec': 'upx',
+        'application/vnd.debian.binary-package': '7z',
+        'application/vnd.ms-cab-compressed': '7z',
+        'application/x-arj': '7z',
+        'application/x-lha': '7z',
+        'application/x-lzma': '7z',
+        'application/x-rpm': '7z',
+        'application/x-xz': '7z',
     }
 
     ARCHIVE_CMDS = {
