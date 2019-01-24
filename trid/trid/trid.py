@@ -20,10 +20,13 @@ Identify file types from their TrID signature
 
 """
 
+import os
 import tempfile
+from pathlib import Path
 from typing import Dict, Optional
-from subprocess import check_output
+from subprocess import Popen, PIPE
 from configparser import ConfigParser
+from inspect import currentframe, getframeinfo
 
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
@@ -34,17 +37,26 @@ class TridPlugin(WorkerPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
+        self.trid_defs = 'triddefs.trd'
+        self.bin_path = 'trid'
+        filename = getframeinfo(currentframe()).filename
+        parent = Path(filename).resolve().parent
+
         if plugin_opts and 'trid_defs' in plugin_opts:
-            trid_defs = plugin_opts['trid_defs']
+            self.trid_defs = plugin_opts['trid_defs']
         elif config.has_option('options', 'trid_defs'):
-            trid_defs = config.get('options', 'trid_defs')
-        self.trid_defs = trid_defs
+            self.trid_defs = config.get('options', 'trid_defs')
+        if not os.path.isabs(self.trid_defs) and self.trid_defs:
+            self.trid_defs = os.path.join(parent, self.trid_defs)
+        if not self.trid_defs or not os.path.isfile(self.trid_defs):
+            raise StoqPluginException(
+                f'TrID definitions do not exist at {self.trid_defs}'
+            )
 
         if plugin_opts and 'bin_path' in plugin_opts:
-            bin_path = plugin_opts['bin_path']
+            self.bin_path = plugin_opts['bin_path']
         elif config.has_option('options', 'bin_path'):
-            bin_path = config.get('options', 'bin_path')
-        self.bin_path = bin_path
+            self.bin_path = config.get('options', 'bin_path')
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
@@ -56,18 +68,21 @@ class TridPlugin(WorkerPlugin):
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(payload.content)
             temp_file.flush()
-            try:
-                cmd = [self.bin_path, f"-d:{self.trid_defs}", temp_file.name]
-                trid_results = check_output(cmd).splitlines()
-            except Exception as err:
-                raise StoqPluginException(f'Failed gathering TRiD data: {err}')
+            p = Popen(
+                [self.bin_path, f"-d:{self.trid_defs}", temp_file.name],
+                stdout=PIPE,
+                stderr=PIPE,
+                universal_newlines=True,
+            )
+            trid_results, err = p.communicate()
+            errors = [err] if err else None
 
-        for line in trid_results[6:]:
-            if line.startswith('Warning'.encode()):
+        for line in trid_results.splitlines()[6:]:
+            if line.startswith('Warning'):
                 break
-            line = line.decode().split()
+            line = line.split()
             if line:
                 ext = line[1].strip('(.)')
                 results[ext] = {'likely': line[0], 'type': ' '.join(line[2:])}
 
-        return WorkerResponse(results)
+        return WorkerResponse(results, errors=errors)
