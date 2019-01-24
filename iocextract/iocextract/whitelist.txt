@@ -16,16 +16,19 @@
 # Whitelisted indicators
 # Format: indicator_type:pattern
 # Valid Indicator Types:
-#   - ipv4 - Can be an IP address or CIDR notation
-#   - ipv6 - Can be an IP address or CIDR notation
-#   - domain - Matches a domain/url that ends with or exactly matches pattern.
-#              Pattern must begin with '.' to match against subdomains.
-#   - email - Exact matches only
-#   - url - Matches the domain only. Pattern is identical to domain
-#   - md5 - Exact matches only
-#   - sha1 - Exact matches only
-#   - sha256 - Exact matches only
-#   - sha512 - Exact matches only
+# | indicator type | example                                               | note                                                                                                              |
+# | -------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+# | `ipv4`         | ipv4:10.0.0.0/8                                       | Can be an IP address or CIDR notation                                                                             |
+# | `ipv6`         | ipv6:A::                                              | Can be an IP address or CIDR notation                                                                             |
+# | `domain`       | domain:.google.com                                    | Matches a domain or hostname portion of a url. Pattern must begin with '.' to match against wildcard subdomains. |
+# | `email`        | email:goodguy@gmail.com                               | Exact matches only                                                                                                |
+# | `url`          | url:.google.com                                       | Matches the hostname portion of a url only. Pattern must begin with '.' to match against wildcard subdomains.     |
+# | `md5`          | md5:4648968f6cd94b6dd242ffd1f0019152                  | Exact matches only                                                                                                |
+# | `sha1`         | sha1:a0979561fa753a7f8c930d70d78d8e5762dfda1e         | Exact matches only                                                                                                |
+# | `sha256`       | sha256:d74fef91b3f07e68113adaf2c2ecc06e598040209[...] | Exact matches only                                                                                                |
+# | `sha512`       | 0cb8d71065af160590d3b05b729acebac410a42a5f4ff44c[...] | Exact matches only                                                                                                |
+#
+# > `sha256` and `sha512` are truncated for formatting purposes. They much be exact matches to work properly.
 ##
 
 # IP addresses
