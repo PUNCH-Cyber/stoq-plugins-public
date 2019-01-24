@@ -40,10 +40,10 @@ from stoq import (
 class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
     API_URL = 'https://www.virustotal.com/vtapi/v2'
     ENDPOINTS = {
-        'ipv4': ('ip', '/ip-address/report'),
-        'url': ('resource', '/url/report'),
-        'domain': ('domain', '/domain/report'),
-        'sha1': ('resource', '/file/report'),
+        'ipv4': ('ip', '/ip-address/report', False),
+        'url': ('resource', '/url/report', True),
+        'domain': ('domain', '/domain/report', False),
+        'sha1': ('resource', '/file/report', True),
     }
 
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
@@ -83,9 +83,11 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
         return WorkerResponse(results=results)
 
     def _query_api(self, query: str, endpoint: str) -> Dict:
-        key, endpoint = self.ENDPOINTS[endpoint]
+        key, endpoint, allinfo = self.ENDPOINTS[endpoint]
         url = f'{self.API_URL}{endpoint}'
         params = {'apikey': self.apikey, key: query}
+        if allinfo:
+            params['allinfo'] = 1
         response = requests.get(url, params=params)
         return response.json()
 
