@@ -20,7 +20,9 @@ All options below may be set by:
 
 - `passwords` [str]: Ordered comma separated list of passwords used for brute forcing compressed payload (if supported)
 
-- `maximum_size` [int]: Maximum size of compressed file
+- `maximum_size` [int]: Maximum size of payloads to process (original compressed file and extracted files)
+
+- `timeout` [int]: How long (in seconds) to wait for decompression to finish
 
 ### Use
 

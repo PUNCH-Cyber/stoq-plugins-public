@@ -89,21 +89,26 @@ class Decompress(WorkerPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
+        self.password = ['-']
+        self.maximum_size = 50_000_000
+        self.timeout = 45
+
         if plugin_opts and 'passwords' in plugin_opts:
             self.passwords = [p.strip() for p in plugin_opts['passwords'].split(',')]
         elif config.has_option('options', 'passwords'):
             self.passwords = [
                 p.strip() for p in config.get('options', 'passwords').split(',')
             ]
-        else:
-            self.passwords = []
 
         if plugin_opts and 'maximum_size' in plugin_opts:
             self.maximum_size = int(plugin_opts['maximum_size'])
         elif config.has_option('options', 'maximum_size'):
-            self.maximum_size = int(config.get('options', 'maximum_size'))
-        else:
-            self.maximum_size = 50_000_000
+            self.maximum_size = config.getint('options', 'maximum_size')
+
+        if plugin_opts and 'timeout' in plugin_opts:
+            self.timeout = int(plugin_opts['timeout'])
+        elif config.has_option('options', 'timeout'):
+            self.timeout = config.getint('options', 'timeout')
 
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
@@ -114,7 +119,7 @@ class Decompress(WorkerPlugin):
             - archiver
         """
 
-        if len(payload.content) > int(self.maximum_size):
+        if len(payload.content) > self.maximum_size:
             raise StoqPluginException(
                 f'Compressed file too large: {len(payload.content)} > {self.maximum_size}'
             )
@@ -164,7 +169,7 @@ class Decompress(WorkerPlugin):
                 cmd = cmd.split(" ")
                 p = Popen(cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True)
                 try:
-                    outs, errs = p.communicate(timeout=45)
+                    outs, errs = p.communicate(timeout=self.timeout)
                 except TimeoutExpired:
                     p.kill()
                     raise StoqPluginException('Timed out decompressing payload')
@@ -174,15 +179,17 @@ class Decompress(WorkerPlugin):
             for root, dirs, files in os.walk(archive_outdir):
                 for f in files:
                     path = os.path.join(extract_dir, root, f)
-                    try:
-                        with open(path, "rb") as extracted_file:
-                            meta = PayloadMeta(
-                                extra_data={'filename': os.path.basename(path)}
-                            )
-                            extracted.append(
-                                ExtractedPayload(extracted_file.read(), meta)
-                            )
-                    except Exception as err:
-                        errors.append(f'Unable to access extracted content: {err}')
-
+                    if os.path.getsize(path) > self.maximum_size:
+                        errors.append(
+                            f'Extracted object is too large ({os.path.getsize(path)} > {self.maximum_size})'
+                        )
+                        continue
+                    with open(path, "rb") as extracted_file:
+                        meta = PayloadMeta(extra_data={'filename': f})
+                        try:
+                            data = extracted_file.read()
+                        except OSError as err:
+                            errors.append(f'Unable to access extracted content: {err}')
+                            continue
+                        extracted.append(ExtractedPayload(data, meta))
         return WorkerResponse(results, errors=errors, extracted=extracted)
