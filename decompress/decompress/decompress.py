@@ -176,6 +176,6 @@ class Decompress(WorkerPlugin):
                                 ExtractedPayload(extracted_file.read(), meta)
                             )
                     except Exception as err:
-                        errors.append('Unable to access extracted content')
+                        errors.append(f'Unable to access extracted content: {err}')
 
         return WorkerResponse(results, errors=errors, extracted=extracted)
