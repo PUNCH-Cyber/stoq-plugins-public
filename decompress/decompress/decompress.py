@@ -54,16 +54,16 @@ from stoq import Payload, RequestMeta, WorkerResponse, ExtractedPayload, Payload
 
 class Decompress(WorkerPlugin):
     ARCHIVE_MAGIC = {
-        'application/gzip': 'gzip',
+        'application/gzip': '7z',
         'application/jar': '7z',
         'application/java-archive': '7z',
         'application/rar': '7z',
         'application/x-7z-compressed': '7z',
         'application/x-lzma': '7z',
         'application/x-ace': 'unace',
-        'application/x-gzip': 'gzip',
+        'application/x-gzip': '7z',
         'application/x-rar': '7z',
-        'application/x-tar': 'tar',
+        'application/x-tar': '7z',
         'application/x-zip-compressed': '7z',
         'application/zip': '7z',
         'application/x-bzip2': '7z',

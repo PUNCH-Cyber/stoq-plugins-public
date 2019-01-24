@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="decompress",
-    version="2.0.1",
+    version="2.0.2",
     author="Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",

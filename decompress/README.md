@@ -2,6 +2,8 @@
 
 [stoQ](https://stoq-framework.readthedocs.io/en/latest/index.html) plugin that decompresses payloads.
 
+> Note: This plugin requires additional executables to be available, namely 7zip, unace, and upx.
+
 ## Plugin Classes
 
 - [Worker](https://stoq-framework.readthedocs.io/en/latest/dev/workers.html)
@@ -27,16 +29,16 @@ Multiple compression algorithms are currently supported. Due to the limitations 
 The `ARCHIVE_MAGIC` dictionary requires a `key`/`value` pair. The `key` is the mime-type of a compressed file. The `value` is the `key` located in `ARCHIVE_CMDS`.
 
     ARCHIVE_MAGIC = {
-        'application/gzip': 'gzip',
+        'application/gzip': '7z',
         'application/jar': '7z',
         'application/java-archive': '7z',
         'application/rar': '7z',
         'application/x-7z-compressed': '7z',
         'application/x-lzma': '7z',
         'application/x-ace': 'unace',
-        'application/x-gzip': 'gzip',
+        'application/x-gzip': '7z',
         'application/x-rar': '7z',
-        'application/x-tar': 'tar',
+        'application/x-tar': '7z',
         'application/x-zip-compressed': '7z',
         'application/zip': '7z',
         'application/x-bzip2': '7z',
