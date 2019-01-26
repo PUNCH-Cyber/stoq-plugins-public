@@ -46,6 +46,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | [javaclass](javaclass/)           | Decodes and extracts information from Java Class files                         | Worker                              |
 | [jinja](jinja/)                   | Decorate results using a template                                              | Connector, Decorator                |
 | [kafka-queue](kafka-queue/)       | Publish and consume messages from a Kafka server                               | Connector, Provider                 |
+| [lief](lief/)                     | Parse and abstract PE, ELF and MachO files using LIEF                          | Worker                              |
 | [mimetype](mimetype/)             | Determine mimetype of a payload                                                | Worker                              |
 | [mongodb](mongodb/)               | Save results and archive payloads to/from mongodb                              | Archiver, Connector                 |
 | [mraptor](mraptor/)               | Port of mraptor3 from oletools                                                 | Worker                              |
