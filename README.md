@@ -35,6 +35,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | --------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
 | [decompress](decompress/)         | Extract content from a multitude of archive formats                            | Worker                              |
 | [dirmon](dirmon/)                 | Monitor a directory for newly created files for processing                     | Provider                            |
+| [entropy](entropy/)               | Calculate shannon entropy of a payload                                         | Worker                              |
 | [es-search](es-search/)           | Saves results to ElasticSearch                                                 | Connector                           |
 | [exif](exif/)                     | Processes a payload using ExifTool                                             | Worker                              |
 | [falcon-sandbox](falcon-sandbox/) | Scan payloads using Falcon Sandbox                                             | Worker                              |

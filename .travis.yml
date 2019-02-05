@@ -23,6 +23,7 @@ install:
   - pip install -r yara/requirements.txt
 
 script:
+  - python entropy/setup.py test
   - python exif/setup.py test
   - python hash/setup.py test
   - python hash_ssdeep/setup.py test
