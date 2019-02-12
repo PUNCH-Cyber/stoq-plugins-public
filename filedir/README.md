@@ -18,28 +18,19 @@ All options below may be set by:
 
 ### Options
 
-#### Archiver
-
 - `archive_dir` [str]: Directory to read/save archived files from/to
 
-- `date_mode` [`True`/`False`]: Save results to a directory structure using `date_format`
-
-- `date_format` [str]: Append the defined datetime formatter to the output path if requested. Defaults to `%%Y/%%m/%%d`
-
 - `use_sha` [`True`/`False`]: When archiving files, should archived files be saved in a directory structure based on the first five characters of the sha1 hash.
-  > For example, if the sha1 hash of the payload is `da39a3ee5e6b4b0d3255bfef95601890afd80709`, the payload will be archived to `$archive_dir/d/a/3/9/a/da39a3ee5e6b4b0d3255bfef95601890afd80709`.
 
-#### Connector
+  > For example, if the sha1 hash of the payload is `da39a3ee5e6b4b0d3255bfef95601890afd80709`, the payload will be archived to `$archive_dir/d/a/3/9/a/da39a3ee5e6b4b0d3255bfef95601890afd80709`.
 
 - `results_dir` [str]: Directory where results will be saved to
 
-- `date_mode` [`True`/`False`]: Save results to a directory structure using `date_format`
-
-- `date_format` [str]: Append the defined datetime formatter to the output path if requested. Defaults to `%%Y/%%m/%%d`
-
 - `compactly` [`True`/`False`]: Save results compacted (without newlines or indents)
 
-#### Provider
+- `date_mode` [`True`/`False`]: Save results/archive payloads to a directory structure using `date_format`
+
+- `date_format` [str]: If date_mode is True, use this datetime formatter in the path. Defaults to `%%Y/%%m/%%d`
 
 - `source_dir` [str]: Directory to ingest files from
 

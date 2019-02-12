@@ -49,43 +49,43 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
 
         if plugin_opts and 'source_dir' in plugin_opts:
             self.source_dir = plugin_opts['source_dir']
-        elif config.has_option('provider', 'source_dir'):
-            self.source_dir = config.get('provider', 'source_dir')
+        elif config.has_option('options', 'source_dir'):
+            self.source_dir = config.get('options', 'source_dir')
 
         if plugin_opts and 'recursive' in plugin_opts:
             self.recursive = plugin_opts['recursive']
-        elif config.has_option('provider', 'recursive'):
-            self.recursive = config.getboolean('provider', 'recursive')
+        elif config.has_option('options', 'recursive'):
+            self.recursive = config.getboolean('options', 'recursive')
 
         if plugin_opts and 'results_dir' in plugin_opts:
             self.results_dir = plugin_opts['results_dir']
-        elif config.has_option('connector', 'results_dir'):
-            self.results_dir = config.get('connector', 'results_dir')
+        elif config.has_option('options', 'results_dir'):
+            self.results_dir = config.get('options', 'results_dir')
 
         if plugin_opts and 'date_mode' in plugin_opts:
             self.date_mode = plugin_opts['date_mode']
-        elif config.has_option('connector', 'date_mode'):
-            self.date_mode = config.getboolean('connector', 'date_mode')
+        elif config.has_option('options', 'date_mode'):
+            self.date_mode = config.getboolean('options', 'date_mode')
 
         if plugin_opts and 'date_format' in plugin_opts:
             self.date_format = plugin_opts['date_format']
-        elif config.has_option('connector', 'date_format'):
-            self.date_format = config.get('connector', 'date_format')
+        elif config.has_option('options', 'date_format'):
+            self.date_format = config.get('options', 'date_format')
 
         if plugin_opts and 'compactly' in plugin_opts:
             self.compactly = plugin_opts['compactly']
-        elif config.has_option('connector', 'compactly'):
-            self.compactly = config.getboolean('connector', 'compactly')
+        elif config.has_option('options', 'compactly'):
+            self.compactly = config.getboolean('options', 'compactly')
 
         if plugin_opts and 'archive_dir' in plugin_opts:
             self.archive_dir = plugin_opts['archive_dir']
-        elif config.has_option('archiver', 'archive_dir'):
-            self.archive_dir = config.get('archiver', 'archive_dir')
+        elif config.has_option('options', 'archive_dir'):
+            self.archive_dir = config.get('options', 'archive_dir')
 
         if plugin_opts and 'use_sha' in plugin_opts:
             self.use_sha = plugin_opts['use_sha']
-        elif config.has_option('archiver', 'use_sha'):
-            self.use_sha = config.getboolean('archiver', 'use_sha')
+        elif config.has_option('options', 'use_sha'):
+            self.use_sha = config.getboolean('options', 'use_sha')
 
     def ingest(self, queue: Queue) -> None:
         """

@@ -18,35 +18,33 @@ Module = filedir
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.3
+Version = 2.1.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Handle file and directory interactions
 
-[provider]
+[options]
 # Should directories be scanned recursively?
-recursive = False
+# recursive = False
 
 # Default directory for ingesting content
 # source_dir =
 
-[connector]
 # Where should results be saved to?
-results_dir = /tmp
+# results_dir = ./results
 
-# Save results to a directory structure using date_format
-date_mode = False
+# Save results/archive files to a directory structure using date_format
+# date_mode = False
 
-# Append the below datetime formatter to the output path if requested
-date_format = %%Y/%%m/%%d
+# If date_mode is True, use this datetime formatter in the path
+# date_format = %%Y/%%m/%%d
 
 # Save results compacted (without newlines or indents)
 # Default: True
-compactly = True
+# compactly = True
 
-[archiver]
 # Where should archived files be saved/read from?
-# archive_dir =
+# archive_dir = ./archive
 
 # Should archived files be saved in a directory structure
 # based on the first 5 characters of the sha1 hash?
-use_sha = True
+# use_sha = True
