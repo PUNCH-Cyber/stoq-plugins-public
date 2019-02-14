@@ -21,4 +21,6 @@ All options below may be set by:
 
 - `dispatch_rules` [str]: Path to yara rules for dispatching a `Payload`
 
+- `strings_limit` [int]: Limit the strings results in yara matches
+
 > Paths may be relative to the module, or a full path.
