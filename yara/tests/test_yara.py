@@ -49,6 +49,23 @@ class TestCore(unittest.TestCase):
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual('test_scan_rule', response.results['matches'][0]['rule'])
 
+    def test_scan_strings_limit(self) -> None:
+        s = Stoq(
+            plugin_dir_list=[self.plugin_dir],
+            plugin_opts={
+                self.plugin_name: {
+                    'worker_rules': f'{self.data_dir}/scan_rules.yar',
+                    'strings_limit': 5,
+                }
+            },
+        )
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(self.generic_data * 10)
+        response = plugin.scan(payload, RequestMeta())
+        self.assertIsInstance(response, WorkerResponse)
+        self.assertEqual('test_scan_rule', response.results['matches'][0]['rule'])
+        self.assertEqual(5, len(response.results['matches'][0]['strings']))
+
     def test_scan_meta_bytes(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],

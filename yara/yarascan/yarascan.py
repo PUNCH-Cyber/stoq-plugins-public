@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-2019 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -39,8 +39,14 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
 
         self.dispatch_rules = None
         self.worker_rules = None
+        self.strings_limit = None
         filename = getframeinfo(currentframe()).filename
         parent = Path(filename).resolve().parent
+
+        if plugin_opts and "strings_limit" in plugin_opts:
+            self.strings_limit = int(plugin_opts["strings_limit"])
+        elif config.has_option("options", "strings_limit"):
+            self.strings_limit = config.getint("options", "strings_limit")
 
         if plugin_opts and "dispatch_rules" in plugin_opts:
             dispatch_ruleset = plugin_opts["dispatch_rules"]
@@ -83,7 +89,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
                     'namespace': match.namespace,
                     'rule': match.rule,
                     'meta': match.meta,
-                    'strings': match.strings,
+                    'strings': match.strings[: self.strings_limit],
                 }
             )
         results = {"matches": dict_matches}

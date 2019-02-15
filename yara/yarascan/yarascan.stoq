@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-2019 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,10 +18,17 @@ Module = yarascan
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 2.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Process a payload using yara
 
 [options]
+# Worker rules file
 worker_rules = rules/stoq.yar
+
+# Dispatcher rules file
 dispatch_rules = rules/dispatcher.yar
+
+# Limit the strings results in yara matches
+# Default: None
+# strings_limit = 10
