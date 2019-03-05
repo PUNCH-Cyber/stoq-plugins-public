@@ -23,10 +23,11 @@ Identify file types from their TrID signature
 import os
 import tempfile
 from pathlib import Path
-from typing import Dict, Optional
 from subprocess import Popen, PIPE
+from collections import defaultdict
 from configparser import ConfigParser
 from inspect import currentframe, getframeinfo
+from typing import DefaultDict, Dict, Optional
 
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
@@ -63,7 +64,7 @@ class TridPlugin(WorkerPlugin):
         Scan a payload using TRiD
 
         """
-        results = {}
+        results: DefaultDict = defaultdict(list)
 
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(payload.content)
@@ -72,6 +73,7 @@ class TridPlugin(WorkerPlugin):
                 [self.bin_path, f"-d:{self.trid_defs}", temp_file.name],
                 stdout=PIPE,
                 stderr=PIPE,
+                env={'LC_ALL': 'C'},
                 universal_newlines=True,
             )
             trid_results, err = p.communicate()
@@ -83,6 +85,6 @@ class TridPlugin(WorkerPlugin):
             line = line.split()
             if line:
                 ext = line[1].strip('(.)')
-                results[ext] = {'likely': line[0], 'type': ' '.join(line[2:])}
+                results[ext].append({'likely': line[0], 'type': ' '.join(line[2:])})
 
         return WorkerResponse(results, errors=errors)
