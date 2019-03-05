@@ -99,8 +99,10 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
 
         """
         dr = DispatcherResponse()
-        if 'iocextract' in payload.worker_results:
-            dr.plugin_names.append('vtmis-search')
+        for worker_result in payload.worker_results:
+            if 'iocextract' in worker_result:
+                dr.plugin_names.append('vtmis-search')
+                break
         return dr
 
     def get_deep_dispatches(
@@ -111,9 +113,9 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
 
         """
         deepdr = DeepDispatcherResponse()
-        if (
-            'iocextract' in payload.worker_results
-            and 'vtmis-search' not in payload.worker_results
-        ):
-            deepdr.plugin_names.append('vtmis-search')
+        for worker_result in payload.worker_results:
+            if (
+                'iocextract' in worker_result
+            ):  # and 'vtmis-search' not in worker_result:
+                deepdr.plugin_names.append('vtmis-search')
         return deepdr

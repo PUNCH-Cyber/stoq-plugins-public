@@ -18,7 +18,7 @@ Module = vtmis-search
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.1
+Version = 2.0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin
 
