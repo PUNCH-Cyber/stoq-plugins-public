@@ -114,8 +114,6 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
         """
         deepdr = DeepDispatcherResponse()
         for worker_result in payload.worker_results:
-            if (
-                'iocextract' in worker_result
-            ):  # and 'vtmis-search' not in worker_result:
+            if 'iocextract' in worker_result and 'vtmis-search' not in worker_result:
                 deepdr.plugin_names.append('vtmis-search')
         return deepdr
