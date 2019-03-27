@@ -27,7 +27,13 @@ from kafka import KafkaConsumer, KafkaProducer
 
 from stoq import helpers
 from stoq.plugins import ArchiverPlugin, ConnectorPlugin, ProviderPlugin
-from stoq.data_classes import ArchiverResponse, Payload, RequestMeta, StoqResponse
+from stoq.data_classes import (
+    ArchiverResponse,
+    Payload,
+    RequestMeta,
+    PayloadMeta,
+    StoqResponse,
+)
 
 
 class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
@@ -71,7 +77,12 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self, payload: Payload, request_meta: RequestMeta
     ) -> Optional[ArchiverResponse]:
         self._connect()
-        self.producer.send(self.topic, payload.content)
+        msg = {
+            '_is_payload': True,
+            '_content': payload.content,
+            '_request_meta': request_meta,
+        }
+        self.producer.send(self.topic, helpers.dumps(msg).encode())
         self.producer.flush()
         return ArchiverResponse()
 
@@ -100,7 +111,13 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         )
         print(f'Monitoring {self.topic} topic for messages...')
         for message in consumer:
-            queue.put(json.loads(message.value))
+            msg = json.loads(message.value)
+            if msg.get('_is_payload'):
+                meta = PayloadMeta(extra_data=msg['_request_meta'])
+                payload = Payload(content=msg['_content'], payload_meta=meta)
+                queue.put(payload)
+            else:
+                queue.put(msg)
 
     def _connect(self) -> None:
         """
