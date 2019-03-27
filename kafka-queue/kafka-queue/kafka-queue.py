@@ -26,11 +26,11 @@ from typing import Dict, List, Optional, Union
 from kafka import KafkaConsumer, KafkaProducer
 
 from stoq import helpers
-from stoq.data_classes import StoqResponse
-from stoq.plugins import ConnectorPlugin, ProviderPlugin
+from stoq.plugins import ArchiverPlugin, ConnectorPlugin, ProviderPlugin
+from stoq.data_classes import ArchiverResponse, Payload, RequestMeta, StoqResponse
 
 
-class KafkaPlugin(ConnectorPlugin, ProviderPlugin):
+class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
         self.servers: Union[List[str], None] = None
@@ -66,6 +66,14 @@ class KafkaPlugin(ConnectorPlugin, ProviderPlugin):
             self.retries = int(plugin_opts["retries"])
         elif config.has_option("options", "retries"):
             self.retries = config.getint("options", "retries")
+
+    def archive(
+        self, payload: Payload, request_meta: RequestMeta
+    ) -> Optional[ArchiverResponse]:
+        self._connect()
+        self.producer.send(self.topic, payload.content)
+        self.producer.flush()
+        return ArchiverResponse()
 
     def save(self, response: StoqResponse) -> None:
         """
