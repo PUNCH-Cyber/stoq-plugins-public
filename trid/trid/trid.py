@@ -79,12 +79,16 @@ class TridPlugin(WorkerPlugin):
             trid_results, err = p.communicate()
             errors = [err] if err else None
 
+        unknown_ext = 0
         for line in trid_results.splitlines()[6:]:
             if line.startswith('Warning'):
                 break
             line = line.split()
             if line:
                 ext = line[1].strip('(.)')
+                if not ext:
+                    ext = f'UNK{unknown_ext}'
+                    unknown_ext += 1
                 results[ext].append({'likely': line[0], 'type': ' '.join(line[2:])})
 
         return WorkerResponse(results, errors=errors)
