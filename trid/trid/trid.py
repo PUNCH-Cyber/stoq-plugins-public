@@ -21,13 +21,14 @@ Identify file types from their TrID signature
 """
 
 import os
+import re
 import tempfile
 from pathlib import Path
 from subprocess import Popen, PIPE
 from collections import defaultdict
 from configparser import ConfigParser
 from inspect import currentframe, getframeinfo
-from typing import DefaultDict, Dict, Optional
+from typing import DefaultDict, Dict, List, Optional
 
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
@@ -65,6 +66,7 @@ class TridPlugin(WorkerPlugin):
 
         """
         results: DefaultDict = defaultdict(list)
+        errors: List[str] = []
 
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(payload.content)
@@ -77,21 +79,24 @@ class TridPlugin(WorkerPlugin):
                 universal_newlines=True,
             )
             trid_results, err = p.communicate()
-            errors = [err] if err else None
+            if err:
+                errors.append(err)
 
         unknown_ext = 0
-        for line in trid_results.splitlines()[6:]:
-            if line.startswith('Warning'):
-                break
-            line = line.split()
-            if line:
+        matches = re.findall(r'^ [0-9].*%.*$', trid_results, re.M)
+        warnings = re.findall(r'^Warning: (.*$)', trid_results, re.M)
+        errors.extend([w for w in warnings])
+        for match in matches:
+            match = match.split()
+            if match:
                 try:
-                    ext = line[1].strip('(.)')
+                    ext = match[1].strip('(.)')
                     if not ext:
                         ext = f'UNK{unknown_ext}'
                         unknown_ext += 1
-                    results[ext].append({'likely': line[0], 'type': ' '.join(line[2:])})
+                    results[ext].append(
+                        {'likely': match[0], 'type': ' '.join(match[2:])}
+                    )
                 except IndexError:
                     continue
-
         return WorkerResponse(results, errors=errors)
