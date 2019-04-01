@@ -85,10 +85,13 @@ class TridPlugin(WorkerPlugin):
                 break
             line = line.split()
             if line:
-                ext = line[1].strip('(.)')
-                if not ext:
-                    ext = f'UNK{unknown_ext}'
-                    unknown_ext += 1
-                results[ext].append({'likely': line[0], 'type': ' '.join(line[2:])})
+                try:
+                    ext = line[1].strip('(.)')
+                    if not ext:
+                        ext = f'UNK{unknown_ext}'
+                        unknown_ext += 1
+                    results[ext].append({'likely': line[0], 'type': ' '.join(line[2:])})
+                except IndexError:
+                    continue
 
         return WorkerResponse(results, errors=errors)
