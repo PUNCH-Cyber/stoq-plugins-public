@@ -83,7 +83,7 @@ class TridPlugin(WorkerPlugin):
                 errors.append(err)
 
         unknown_ext = 0
-        matches = re.findall(r'^ [0-9].*%.*$', trid_results, re.M)
+        matches = re.findall(r'^ {1,3}[0-9].*%.*$', trid_results, re.M)
         warnings = re.findall(r'^Warning: (.*$)', trid_results, re.M)
         errors.extend([w for w in warnings])
         for match in matches:
