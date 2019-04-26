@@ -89,7 +89,10 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
         if allinfo:
             params['allinfo'] = 1
         response = requests.get(url, params=params)
-        return response.json()
+        result = response.json()
+        if result:
+            result['ioc'] = query
+        return result
 
     def get_dispatches(
         self, payload: Payload, request_meta: RequestMeta
