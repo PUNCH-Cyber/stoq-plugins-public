@@ -24,6 +24,7 @@ Parse SMTP sessions
 from email import policy
 from bs4 import UnicodeDammit
 from email.parser import Parser
+from email.message import Message
 from configparser import ConfigParser
 from typing import List, Dict, Optional
 
@@ -105,18 +106,17 @@ class SMTPPlugin(WorkerPlugin):
                 message_json[curr_header] = value
 
         if not self.omit_body:
-            # Extract the e-mail body, to include HTML if available
-            message_json['body'] = str(message.get_body(preferencelist=('plain')))
-            message_json['body_html'] = str(message.get_body(preferencelist=('html')))
+            message_json['body'] = self._get_body(message, 'plain')
+            message_json['body_html'] = self._get_body(message, 'html')
 
         if self.extract_iocs:
             for k in self.ioc_keys:
                 if k in message_json:
                     ioc_content += f'\n{message_json[k]}'
                 elif k == 'body' and k not in message_json:
-                    ioc_content += str(message.get_body(preferencelist=('plain')))
+                    ioc_content += self._get_body(message, 'plain')
                 elif k == 'body_html' and k not in message_json:
-                    ioc_content += str(message.get_body(preferencelist=('html')))
+                    ioc_content += self._get_body(message, 'html')
 
         for mailpart in message.iter_attachments():
             if mailpart.get_content_type() == 'message/rfc822':
@@ -160,3 +160,24 @@ class SMTPPlugin(WorkerPlugin):
             ioc_meta = PayloadMeta(should_archive=False, dispatch_to=['iocextract'])
             attachments.append(ExtractedPayload(ioc_content.encode(), ioc_meta))
         return WorkerResponse(message_json, errors=errors, extracted=attachments)
+
+    def _get_body(self, message: Message, part: str) -> str:
+        # Extract the e-mail body, to include HTML if available
+        # We will use try and except because it is much faster than
+        # validating if the objects exist.
+        content = ''
+        if part == 'plain':
+            try:
+                content = UnicodeDammit(
+                    message.get_body(preferencelist=('plain')).get_payload(decode=True)
+                ).unicode_markup
+            except AttributeError:
+                pass
+        elif part == 'html':
+            try:
+                content = UnicodeDammit(
+                    message.get_body(preferencelist=('html')).get_payload(decode=True)
+                ).unicode_markup
+            except AttributeError:
+                pass
+        return content
