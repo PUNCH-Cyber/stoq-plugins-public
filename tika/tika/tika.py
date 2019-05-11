@@ -41,6 +41,11 @@ class TikaPlugin(WorkerPlugin):
         elif config.has_option('options', 'tika_url'):
             self.tika_url = config.get('options', 'tika_url')
 
+        if plugin_opts and 'tika_save_text' in plugin_opts:
+            self.tika_save_text = plugin_opts['tika_save_text']
+        elif config.has_option('options', 'tika_save_text'):
+            self.tika_save_text = config.get('options', 'tika_save_text')
+            
     def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
         """
         Upload content to a Tika server for automated text extraction
@@ -49,4 +54,6 @@ class TikaPlugin(WorkerPlugin):
         response = requests.put(self.tika_url, data=payload.content)
         response.raise_for_status()
         extracted = ExtractedPayload(response.content)
-        return WorkerResponse(extracted=extracted)
+        if self.tika_save_text:
+            return WorkerResponse(results=extracted, extracted=[extracted])
+        return WorkerResponse(extracted=[extracted])
