@@ -130,7 +130,7 @@ class IOCExtract(WorkerPlugin):
                     if matches:
                         results[ioc] = list(set(matches))
         elif self.compiled_re[ioctype]:
-            matches = self.compiled_re[ioctype].findall(payload.content.decode())
+            matches = self.compiled_re[ioc].findall(''.join(chr(x) for x in payload.content))
             if matches:
                 results[ioctype] = list(set(matches))
 
