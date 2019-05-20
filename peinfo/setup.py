@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name="peinfo",
-    version="2.0.0",
-    author="Marcus LaFerrera (@mlaferrera)",
+    version="2.1.0",
+    author="Facebook, Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
     description="Gather relevant information about an executable using pefile",
     packages=find_packages(),
-    package_data={'peinfo': ['peinfo.stoq', 'userdb.txt']},
+    include_package_data=True,
 )

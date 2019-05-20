@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-2019 PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@ Name = peinfo
 Module = peinfo
 
 [Documentation]
-Author = Marcus LaFerrera
-Version = 2.0.0
+Author = Facebook, Marcus LaFerrera
+Version = 2.1.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Gather relevant information about an executable using pefile
-
-[options]
-peidrules = userdb.txt

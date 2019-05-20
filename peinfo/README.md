@@ -14,8 +14,10 @@ All options below may be set by:
 - [`stoq` command](https://stoq-framework.readthedocs.io/en/latest/gettingstarted.html#plugin-options)
 - [`Stoq` class](https://stoq-framework.readthedocs.io/en/latest/dev/core.html?highlight=plugin_opts#using-providers)
 
-### Options
+## Configuration and Options
 
-- `peidrules` [str]: Path to peid rules file
+No configuration options are required.
 
-> Paths may be relative to the module, or a full path.
+## Special Thanks
+
+Thanks to those at Facebook that provided most of the contributions for this plugin.
