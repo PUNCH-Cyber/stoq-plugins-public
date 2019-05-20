@@ -27,7 +27,7 @@ script:
   - python exif/setup.py test
   - python hash/setup.py test
   - python hash_ssdeep/setup.py test
-  - python javaclass/setup.py test
+  # - python javaclass/setup.py test
   - python mimetype/setup.py test
   - python xorsearch/setup.py test
   - python yara/setup.py test
