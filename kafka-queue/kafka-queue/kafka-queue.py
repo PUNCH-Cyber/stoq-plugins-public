@@ -22,7 +22,8 @@ Publish and Consume messages from a Kafka Server
 import json
 from queue import Queue
 from configparser import ConfigParser
-from typing import Dict, List, Optional, Union
+from base64 import b64encode, b64decode
+from typing import Dict, List, Optional
 from kafka import KafkaConsumer, KafkaProducer
 
 from stoq import helpers
@@ -39,47 +40,33 @@ from stoq.data_classes import (
 class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
-        self.servers: Union[List[str], None] = None
-        self.group: str = 'stoq'
-        self.topic: str = 'stoq'
-        self.publish_archive: bool = True
-        self.retries: int = 5
         self.producer = None
 
-        if plugin_opts and 'servers' in plugin_opts:
-            self.servers = plugin_opts['servers']
-        elif config.has_option('options', 'servers'):
-            self.servers = [
-                s.strip() for s in config.get('options', 'servers').split(',')
-            ]
-
-        if plugin_opts and "group" in plugin_opts:
-            self.group = plugin_opts["group"]
-        elif config.has_option("options", "group"):
-            self.group = config.get("options", "group")
-
-        if plugin_opts and "topic" in plugin_opts:
-            self.topic = plugin_opts["topic"]
-        elif config.has_option("options", "topic"):
-            self.topic = config.get("options", "topic")
-
-        if plugin_opts and "publish_archive" in plugin_opts:
-            self.publish_archive = bool(plugin_opts["publish_archive"])
-        elif config.has_option("options", "publish_archive"):
-            self.publish_archive = config.getboolean("options", "publish_archive")
-
-        if plugin_opts and "retries" in plugin_opts:
-            self.retries = int(plugin_opts["retries"])
-        elif config.has_option("options", "retries"):
-            self.retries = config.getint("options", "retries")
+        self.servers = [
+            s.strip()
+            for s in config.get('options', 'servers', fallback='127.0.0.1:9092').split(
+                ','
+            )
+        ]
+        self.group = config.get('options', 'group', fallback='stoq')
+        self.topic = config.get('options', 'topic', fallback="stoq")
+        self.publish_archive = config.getboolean(
+            'options', 'publish_archive', fallback=True
+        )
+        self.retries = config.getint('options', 'retries', fallback=5)
 
     def archive(
         self, payload: Payload, request_meta: RequestMeta
     ) -> Optional[ArchiverResponse]:
+        """
+        Archive Payload object to Kafka queue
+
+        """
         self._connect()
         msg = {
             '_is_payload': True,
-            '_content': payload.content,
+            '_content': b64encode(payload.content),
+            '_payload_meta': payload.payload_meta.extra_data,
             '_request_meta': request_meta,
         }
         self.producer.send(self.topic, helpers.dumps(msg).encode())
@@ -89,6 +76,12 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
     def save(self, response: StoqResponse) -> None:
         """
         Save results or ArchiverResponse to Kafka
+
+        Either the full `StoqResponse` will be saved to the queue, or
+        each individual payload that was archived by another archiver
+        plugin. If it is an archived payload from a separate plugin,
+        only the metadata produced from the archiver plugin will be
+        sent to the queue, not the payload itself.
 
         """
         self._connect()
@@ -113,8 +106,12 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         for message in consumer:
             msg = json.loads(message.value)
             if msg.get('_is_payload'):
-                meta = PayloadMeta(extra_data=msg['_request_meta'])
-                payload = Payload(content=msg['_content'], payload_meta=meta)
+                # This message is a payload that was placed on the queue
+                # from the kafka-queue archiver plugin
+                extra_data = msg['_payload_meta']
+                extra_data['request_meta'] = msg['_request_meta']
+                meta = PayloadMeta(extra_data=extra_data)
+                payload = Payload(content=b64decode(msg['_content']), payload_meta=meta)
                 queue.put(payload)
             else:
                 queue.put(msg)
