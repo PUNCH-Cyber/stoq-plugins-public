@@ -21,9 +21,10 @@ Publish and Consume messages from a Kafka Server
 
 import json
 from queue import Queue
+from collections import ChainMap
+from typing import Dict, Optional
 from configparser import ConfigParser
 from base64 import b64encode, b64decode
-from typing import Dict, List, Optional
 from kafka import KafkaConsumer, KafkaProducer
 
 from stoq import helpers
@@ -86,11 +87,20 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         """
         self._connect()
         if self.publish_archive:
-            msgs: List[str] = []
             for result in response.results:
-                msgs = [{k: v} for k, v in result.archivers.items()]
-            for msg in msgs:
-                self.producer.send(self.topic, helpers.dumps(msg).encode())
+                for archiver, meta in result.archivers.items():
+                    # Construct a message that includes the original metadata
+                    # associated with the payload.
+                    r = {
+                        archiver: dict(
+                            ChainMap(
+                                meta,
+                                result.payload_meta.extra_data,
+                                {'request_meta': response.request_meta},
+                            )
+                        )
+                    }
+                    self.producer.send(self.topic, helpers.dumps(r).encode())
         else:
             self.producer.send(self.topic, str(response).encode())
         self.producer.flush()
