@@ -66,6 +66,8 @@ class PEInfoPlugin(WorkerPlugin):
         is_exe = self._is_exe(pe)
         is_dll = self._is_dll(pe)
         is_driver = self._is_driver(pe)
+        is_suspicious = self._is_suspicious(pe)
+        is_valid = self._is_valid(pe)
 
         results: Dict = {}
         extracted: List[ExtractedPayload] = []
@@ -117,6 +119,10 @@ class PEInfoPlugin(WorkerPlugin):
             results['is_dll'] = is_dll
         if is_driver:
             results['is_driver'] = is_driver
+        if is_suspicious:
+            results['is_suspicious'] = is_suspicious
+        if is_valid:
+            results['is_valid'] = is_suspicious
         results['compile_time_epoch'] = compile_time[0]
         results['compile_time'] = compile_time[1]
         results['image_base'] = image_base
