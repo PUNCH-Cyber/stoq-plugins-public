@@ -4,6 +4,7 @@
 
 ## Plugin Classes
 
+- [Archiver](https://stoq-framework.readthedocs.io/en/latest/dev/archivers.html)
 - [Connector](https://stoq-framework.readthedocs.io/en/latest/dev/connectors.html)
 - [Provider](https://stoq-framework.readthedocs.io/en/latest/dev/providers.html)
 
@@ -24,6 +25,10 @@ All options below may be set by:
 - `topic` [str]: Kafka topic to bind to
 
 - `retries` [int]: Retry attempts if publishing a message fails
+
+- `heartbeat_interval_ms` [int]: The expected time in milliseconds between heartbeats to the consumer coordinator
+
+- `session_timeout_ms` [int]: The timeout used to detect failures
 
 - `publish_archive` [`True`/`False`]: When used as a Connector plugin, should the ArchiveResponses be saved, or StoqResponse? Useful for sending archived payload metadata to topic.
 

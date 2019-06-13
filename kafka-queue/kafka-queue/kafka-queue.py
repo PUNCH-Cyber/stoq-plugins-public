@@ -55,6 +55,12 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
             'options', 'publish_archive', fallback=True
         )
         self.retries = config.getint('options', 'retries', fallback=5)
+        self.session_timeout_ms = config.getint(
+            'options', 'session_timeout_ms', fallback=15000
+        )
+        self.heartbeat_interval_ms = config.getint(
+            'options', 'heartbeat_interval_ms', fallback=5000
+        )
 
     def archive(
         self, payload: Payload, request_meta: RequestMeta
@@ -111,6 +117,8 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
             group_id=self.group,
             auto_offset_reset='earliest',
             bootstrap_servers=self.servers,
+            heartbeat_interval_ms=self.heartbeat_interval_ms,
+            session_timeout_ms=self.session_timeout_ms,
         )
         print(f'Monitoring {self.topic} topic for messages...')
         for message in consumer:

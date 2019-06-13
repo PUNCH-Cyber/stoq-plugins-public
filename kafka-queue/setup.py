@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="kafka-queue",
-    version="2.0.3",
+    version="2.0.4",
     author="Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
