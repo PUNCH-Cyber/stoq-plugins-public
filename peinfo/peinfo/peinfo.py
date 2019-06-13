@@ -122,7 +122,7 @@ class PEInfoPlugin(WorkerPlugin):
         if is_suspicious:
             results['is_suspicious'] = is_suspicious
         if is_valid:
-            results['is_valid'] = is_suspicious
+            results['is_valid'] = is_valid
         results['compile_time_epoch'] = compile_time[0]
         results['compile_time'] = compile_time[1]
         results['image_base'] = image_base
