@@ -67,6 +67,7 @@ class PeCarve(WorkerPlugin):
 
         """
         errors = []
+        extracted = None
         meta = None
         swf = None
         try:
