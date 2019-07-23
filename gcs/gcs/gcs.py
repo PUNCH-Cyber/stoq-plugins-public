@@ -88,9 +88,9 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         self._upload(payload.content, filename, self.archive_bucket)
         return ArchiverResponse(
             {
-                'bucket': self.archive_bucket,
-                'path': filename,
-                'project_id': self.project_id,
+                'bucketId': self.archive_bucket,
+                'objectId': filename,
+                'projectId': self.project_id,
             }
         )
 
@@ -101,12 +101,12 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         """
         meta = PayloadMeta(
             extra_data={
-                'bucket': task.results['archive_bucket'],
-                'path': task.results['path'],
-                'project_id': task.results['project_id'],
+                'bucketId': task.results['archive_bucket'],
+                'objectId': task.results['path'],
+                'projectId': task.results['projectId'],
             }
         )
-        client = Client(project=task.results['project_id'])
+        client = Client(project=task.results['projectId'])
         bucket = client.get_bucket(task.results['archive_bucket'])
         blob = Blob(task.results['path'], bucket)
         content = BytesIO()

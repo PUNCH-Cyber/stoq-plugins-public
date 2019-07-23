@@ -18,7 +18,7 @@ Module = gcs
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.1.0
+Version = 2.1.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Read and write data to Google Cloud Storage
 
