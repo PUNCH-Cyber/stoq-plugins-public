@@ -101,14 +101,14 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         """
         meta = PayloadMeta(
             extra_data={
-                'bucketId': task.results['archive_bucket'],
-                'objectId': task.results['path'],
+                'bucketId': task.results['bucketId'],
+                'objectId': task.results['objectId'],
                 'projectId': task.results['projectId'],
             }
         )
         client = Client(project=task.results['projectId'])
-        bucket = client.get_bucket(task.results['archive_bucket'])
-        blob = Blob(task.results['path'], bucket)
+        bucket = client.get_bucket(task.results['bucketId'])
+        blob = Blob(task.results['objectId'], bucket)
         content = BytesIO()
         blob.download_to_file(content)
         content.seek(0)
