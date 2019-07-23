@@ -18,12 +18,31 @@ Module = gcs
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 2.1.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Read and write data to Google Cloud Storage
 
 [options]
-project_id =
-archive_bucket =
-connector_bucket =
-use_sha = True
+# Google Cloud Project ID
+# project_id =
+
+# Bucket name to save archived content in GCS
+# archive_bucket =
+
+# Bucket name to save stoQ results to in GCS
+# connector_bucket =
+
+# Use the first 5 characters of the payloads SHA1 hash as the directory structure 
+# Note: This option will precede use_datetime if both are True
+# use_sha = True
+
+# Use the curremt date (YYYY/MM/DD) as the directory structure 
+# Note: This option will be preceded by use_sha if both are True
+# use_datetime = False
+#
+# Should CloudKMS be used to encrypt and decrypt data
+# use_encryption = False
+# If `use_encryption` is set to True, the below settings *MUST* be defined
+# crypto_id = 
+# keyring_id = 
+# location_id = 

@@ -20,13 +20,17 @@ Read and write data to Google Cloud Storage
 
 """
 
+import base64
 import hashlib
+import googleapiclient.discovery
 
 from io import BytesIO
+from datetime import datetime
 from configparser import ConfigParser
-from google.cloud.storage import Blob, Client
 from typing import Optional, Dict
+from google.cloud.storage import Blob, Client
 
+from stoq import StoqPluginException
 from stoq.plugins import ConnectorPlugin, ArchiverPlugin
 from stoq.data_classes import (
     StoqResponse,
@@ -41,30 +45,24 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
     def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
         super().__init__(config, plugin_opts)
 
-        self.project_id = None
-        self.archive_bucket = False
-        self.connector_bucket = None
-        self.use_sha = True
+        self.project_id = config.get('options', 'project_id')
+        self.archive_bucket = config.get('options', 'archive_bucket', fallback='')
+        self.connector_bucket = config.get('options', 'connector_bucket', fallback='')
+        self.use_sha = config.getboolean('options', 'use_sha', fallback=True)
+        self.use_datetime = config.getboolean('options', 'use_datetime', fallback=False)
+        self.use_encryption = config.getboolean(
+            'options', 'use_encryption', fallback=False
+        )
+        if self.use_encryption:
+            self.crypto_id = config.get('options', 'crypto_id')
+            self.keyring_id = config.get('options', 'keyring_id')
+            self.location_id = config.get('options', 'location_id')
 
-        if plugin_opts and 'project_id' in plugin_opts:
-            self.project_id = plugin_opts['project_id']
-        elif config.has_option('options', 'project_id'):
-            self.project_id = config.get('options', 'project_id')
-
-        if plugin_opts and 'archive_bucket' in plugin_opts:
-            self.archive_bucket = plugin_opts['archive_bucket']
-        elif config.has_option('options', 'archive_bucket'):
-            self.archive_bucket = config.get('options', 'archive_bucket')
-
-        if plugin_opts and 'connector_bucket' in plugin_opts:
-            self.connector_bucket = plugin_opts['connector_bucket']
-        elif config.has_option('options', 'connector_bucket'):
-            self.connector_bucket = config.get('options', 'connector_bucket')
-
-        if plugin_opts and 'use_sha' in plugin_opts:
-            self.use_sha = plugin_opts['use_sha']
-        elif config.has_option('archiver', 'use_sha'):
-            self.use_sha = config.getboolean('archiver', 'use_sha')
+            # Creates an API client for the KMS API.
+            self.kms_client = googleapiclient.discovery.build(
+                'cloudkms', 'v1', cache_discovery=False
+            )
+            self.kms_key = f'projects/{self.project_id}/locations/{self.location_id}/keyRings/{self.keyring_id}/cryptoKeys/{self.crypto_id}'
 
     def save(self, response: StoqResponse) -> None:
         """
@@ -74,9 +72,17 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         self._upload(str(response).encode(), response.scan_id, self.connector_bucket)
 
     def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
+        """
+        Archive payload to GCS
+
+        """
+
         if self.use_sha:
             filename = hashlib.sha1(payload.content).hexdigest()
             filename = f'{"/".join(list(filename[:5]))}/{filename}'
+        elif self.use_datetime:
+            datetime_path = datetime.now().strftime('%Y/%m/%d')
+            filename = f'{datetime_path}/{payload.payload_id}'
         else:
             filename = payload.payload_id
         self._upload(payload.content, filename, self.archive_bucket)
@@ -106,11 +112,51 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         content = BytesIO()
         blob.download_to_file(content)
         content.seek(0)
-        return Payload(content.read(), meta)
+        data = content.read()
+        if self.use_encryption:
+            data = self._decrypt(data)
+        return Payload(data, meta)
 
     def _upload(self, payload: bytes, filename: str, bucket: str) -> None:
+        """
+        Upload a payload to GCS
+
+        """
+
         client = Client(project=self.project_id)
         bucket = client.get_bucket(bucket)
+        if self.use_encryption:
+            payload = self._encrypt(payload)
         content = BytesIO(payload)
         blob = Blob(filename, bucket)
         blob.upload_from_file(content)
+
+    def _decrypt(self, ciphertext: bytes) -> bytes:
+        """
+        Decrypt an encrypted file with KMS
+
+        """
+
+        # Use the KMS API to decrypt the data.
+        crypto_keys = self.kms_client.projects().locations().keyRings().cryptoKeys()
+        request = crypto_keys.decrypt(
+            name=self.kms_key,
+            body={'ciphertext': base64.b64encode(ciphertext).decode('ascii')},
+        )
+        response = request.execute()
+        return base64.b64decode(response['plaintext'].encode('ascii'))
+
+    def _encrypt(self, plaintext: bytes) -> bytes:
+        """
+        Encrypts data from plaintext to ciphertext using KMS
+
+        """
+
+        # Use the KMS API to encrypt the data.
+        crypto_keys = self.kms_client.projects().locations().keyRings().cryptoKeys()
+        request = crypto_keys.encrypt(
+            name=self.kms_key,
+            body={'plaintext': base64.b64encode(plaintext).decode('ascii')},
+        )
+        response = request.execute()
+        return base64.b64decode(response['ciphertext'].encode('ascii'))
