@@ -22,7 +22,7 @@ Parse SMTP sessions
 """
 
 from email import policy
-from bs4 import UnicodeDammit
+from bs4 import UnicodeDammit  # type: ignore
 from email.parser import Parser
 from email.message import Message
 from configparser import ConfigParser
@@ -114,9 +114,13 @@ class SMTPPlugin(WorkerPlugin):
                 if k in message_json:
                     ioc_content += f'\n{message_json[k]}'
                 elif k == 'body' and k not in message_json:
-                    ioc_content += self._get_body(message, 'plain')
+                    b = self._get_body(message, 'plain')
+                    if b:
+                        ioc_content += b
                 elif k == 'body_html' and k not in message_json:
-                    ioc_content += self._get_body(message, 'html')
+                    b = self._get_body(message, 'html')
+                    if b:
+                        ioc_content += b
 
         for mailpart in message.iter_attachments():
             if mailpart.get_content_type() == 'message/rfc822':
