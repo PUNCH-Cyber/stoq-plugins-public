@@ -120,6 +120,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
                 blob = Blob(task.results['objectId'], bucket)
                 content = BytesIO()
                 blob.download_to_file(content)
+                break
             except (
                 InvalidResponse,
                 GoogleAPICallError,
@@ -154,6 +155,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
                 content = BytesIO(payload)
                 blob = Blob(filename, bucket_obj)
                 blob.upload_from_file(content)
+                break
             except (
                 InvalidResponse,
                 GoogleAPICallError,
