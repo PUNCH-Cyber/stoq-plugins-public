@@ -18,6 +18,6 @@ Module = peinfo
 
 [Documentation]
 Author = Facebook, Marcus LaFerrera
-Version = 2.1.1
+Version = 2.1.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Gather relevant information about an executable using pefile

@@ -450,7 +450,7 @@ class PEInfoPlugin(WorkerPlugin):
                 if size < 24 or size > 0xFFFF:
                     continue
                 debug_data = pe.__data__[off : off + size]
-                if debug_data[:4] == 'RSDS':
+                if debug_data[:4] == b'RSDS':
                     pdb_string = debug_data[24 : size - 1]
                     entry.update(
                         {
@@ -466,7 +466,7 @@ class PEInfoPlugin(WorkerPlugin):
                             'DebugPDB': pdb_string,
                         }
                     )
-                elif debug_data[:4] == 'NB10':
+                elif debug_data[:4] == b'NB10':
                     pdb_string = debug_data[16 : size - 1]
                     entry.update(
                         {
