@@ -28,7 +28,10 @@ from io import BytesIO
 from datetime import datetime
 from configparser import ConfigParser
 from typing import Optional, Dict
+from requests.exceptions import SSLError
 from google.cloud.storage import Blob, Client
+from google.resumable_media.common import InvalidResponse
+from google.api_core.exceptions import GoogleAPICallError, InternalServerError
 
 from stoq import StoqPluginException
 from stoq.plugins import ConnectorPlugin, ArchiverPlugin
@@ -50,6 +53,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         self.connector_bucket = config.get('options', 'connector_bucket', fallback='')
         self.use_sha = config.getboolean('options', 'use_sha', fallback=True)
         self.use_datetime = config.getboolean('options', 'use_datetime', fallback=False)
+        self.max_retries = config.getint('options', 'max_retries', fallback=5)
         self.use_encryption = config.getboolean(
             'options', 'use_encryption', fallback=False
         )
@@ -110,7 +114,21 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
         bucket = client.get_bucket(task.results['bucketId'])
         blob = Blob(task.results['objectId'], bucket)
         content = BytesIO()
-        blob.download_to_file(content)
+        count = 0
+        while count < self.max_retries:
+            try:
+                blob.download_to_file(content)
+            except (
+                InvalidResponse,
+                GoogleAPICallError,
+                InternalServerError,
+                SSLError,
+            ) as e:
+                if count >= self.max_retries:
+                    raise StoqPluginException(
+                        f'Failed to download {task.results["bucketId"]}/{task.results["objectId"]} from GCS: {str(e)}'
+                    )
+                count += 1
         content.seek(0)
         data = content.read()
         if self.use_encryption:
@@ -123,13 +141,27 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
 
         """
 
-        client = Client(project=self.project_id)
-        bucket = client.get_bucket(bucket)
-        if self.use_encryption:
-            payload = self._encrypt(payload)
-        content = BytesIO(payload)
-        blob = Blob(filename, bucket)
-        blob.upload_from_file(content)
+        count = 0
+        while count < self.max_retries:
+            client = Client(project=self.project_id)
+            bucket_obj = client.get_bucket(bucket)
+            if self.use_encryption:
+                payload = self._encrypt(payload)
+            content = BytesIO(payload)
+            blob = Blob(filename, bucket_obj)
+            try:
+                blob.upload_from_file(content)
+            except (
+                InvalidResponse,
+                GoogleAPICallError,
+                InternalServerError,
+                SSLError,
+            ) as e:
+                if count >= self.max_retries:
+                    raise StoqPluginException(
+                        f'Failed to upload {bucket}/{filename} to GCS: {str(e)}'
+                    )
+                count += 1
 
     def _decrypt(self, ciphertext: bytes) -> bytes:
         """

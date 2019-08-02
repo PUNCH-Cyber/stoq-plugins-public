@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="gcs",
-    version="2.1.2",
+    version="2.1.3",
     author="Marcus LaFerrera (@mlaferrera)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",

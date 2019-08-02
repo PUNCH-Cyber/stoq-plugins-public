@@ -18,7 +18,7 @@ Module = gcs
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.1.2
+Version = 2.1.3
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Read and write data to Google Cloud Storage
 
@@ -39,10 +39,14 @@ Description = Read and write data to Google Cloud Storage
 # Use the curremt date (YYYY/MM/DD) as the directory structure 
 # Note: This option will be preceded by use_sha if both are True
 # use_datetime = False
-#
+
+# How many times should we retry uploading/downloading from GCS if there is a failure?
+# max_retries = 5
 # Should CloudKMS be used to encrypt and decrypt data
 # use_encryption = False
 # If `use_encryption` is set to True, the below settings *MUST* be defined
 # crypto_id = 
 # keyring_id = 
 # location_id = 
+#
+#
