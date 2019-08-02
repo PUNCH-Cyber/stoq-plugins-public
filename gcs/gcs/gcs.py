@@ -25,6 +25,7 @@ import hashlib
 import googleapiclient.discovery
 
 from io import BytesIO
+from time import sleep
 from datetime import datetime
 from configparser import ConfigParser
 from typing import Optional, Dict
@@ -129,6 +130,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
                         f'Failed to download {task.results["bucketId"]}/{task.results["objectId"]} from GCS: {str(e)}'
                     )
                 count += 1
+                sleep(1)
         content.seek(0)
         data = content.read()
         if self.use_encryption:
@@ -162,6 +164,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
                         f'Failed to upload {bucket}/{filename} to GCS: {str(e)}'
                     )
                 count += 1
+                sleep(1)
 
     def _decrypt(self, ciphertext: bytes) -> bytes:
         """
