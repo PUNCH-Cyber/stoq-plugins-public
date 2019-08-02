@@ -26,6 +26,7 @@ import googleapiclient.discovery
 
 from io import BytesIO
 from time import sleep
+from random import randrange
 from datetime import datetime
 from configparser import ConfigParser
 from typing import Optional, Dict
@@ -111,13 +112,13 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
                 'projectId': task.results['projectId'],
             }
         )
-        client = Client(project=task.results['projectId'])
-        bucket = client.get_bucket(task.results['bucketId'])
-        blob = Blob(task.results['objectId'], bucket)
-        content = BytesIO()
         count = 0
+        client = Client(project=task.results['projectId'])
         while count < self.max_retries:
             try:
+                bucket = client.get_bucket(task.results['bucketId'])
+                blob = Blob(task.results['objectId'], bucket)
+                content = BytesIO()
                 blob.download_to_file(content)
             except (
                 InvalidResponse,
@@ -130,7 +131,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
                         f'Failed to download {task.results["bucketId"]}/{task.results["objectId"]} from GCS: {str(e)}'
                     )
                 count += 1
-                sleep(1)
+                sleep(randrange(0, 4))
         content.seek(0)
         data = content.read()
         if self.use_encryption:
@@ -143,15 +144,15 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
 
         """
 
+        client = Client(project=self.project_id)
         count = 0
         while count < self.max_retries:
-            client = Client(project=self.project_id)
-            bucket_obj = client.get_bucket(bucket)
-            if self.use_encryption:
-                payload = self._encrypt(payload)
-            content = BytesIO(payload)
-            blob = Blob(filename, bucket_obj)
             try:
+                bucket_obj = client.get_bucket(bucket)
+                if self.use_encryption:
+                    payload = self._encrypt(payload)
+                content = BytesIO(payload)
+                blob = Blob(filename, bucket_obj)
                 blob.upload_from_file(content)
             except (
                 InvalidResponse,
@@ -164,7 +165,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
                         f'Failed to upload {bucket}/{filename} to GCS: {str(e)}'
                     )
                 count += 1
-                sleep(1)
+                sleep(randrange(0, 4))
 
     def _decrypt(self, ciphertext: bytes) -> bytes:
         """
