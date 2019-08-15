@@ -24,6 +24,7 @@ Parse SMTP sessions
 from email import policy
 from bs4 import UnicodeDammit  # type: ignore
 from email.parser import Parser
+from urllib.parse import unquote
 from email.message import Message
 from configparser import ConfigParser
 from typing import List, Dict, Optional
@@ -184,4 +185,4 @@ class SMTPPlugin(WorkerPlugin):
                 ).unicode_markup
             except AttributeError:
                 pass
-        return content
+        return unquote(content)
