@@ -185,4 +185,6 @@ class SMTPPlugin(WorkerPlugin):
                 ).unicode_markup
             except AttributeError:
                 pass
-        return unquote(content)
+        if content:
+            content = unquote(content)
+        return content
