@@ -56,3 +56,13 @@ class ExifToolPlugin(WorkerPlugin):
             except Exception as err:
                 raise StoqPluginException(f'Failed gathering exif data: {err}')
         return WorkerResponse(results)
+
+    def version_info(self):
+        try:
+            cmd = [self.bin_path, '-ver']
+            output = run(cmd, stdout=PIPE)
+            version = output.stdout.rstrip()
+            self._version_info.update({'ExifToolVersion': version})
+        except Exception as err:
+            raise StoqPluginException(f'Failed gathering exiftool version: {err}')
+        return self._version_info

@@ -43,3 +43,11 @@ class TestCore(unittest.TestCase):
         self.assertIn('FileType', response.results)
         self.assertEqual('PDF', response.results['FileType'])
         self.assertEqual(6, response.results['PageCount'])
+
+    def test_version(self) -> None:
+        s = Stoq(plugin_dir_list=[self.plugin_dir])
+        plugin = s.load_plugin(self.plugin_name)
+        version_info = plugin.version_info()
+        self.assertIn('ExifToolVersion', version_info)
+        self.assertIn('PluginVersion', version_info)
+        self.assertEqual(version_info['PluginVersion'], '2.0.3')
