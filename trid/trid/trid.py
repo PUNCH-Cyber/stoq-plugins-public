@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -26,53 +26,48 @@ import tempfile
 from pathlib import Path
 from subprocess import Popen, PIPE
 from collections import defaultdict
-from configparser import ConfigParser
 from inspect import currentframe, getframeinfo
 from typing import DefaultDict, Dict, List, Optional
 
 from stoq.plugins import WorkerPlugin
+from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Payload, Request, WorkerResponse
 
 
 class TridPlugin(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.trid_defs = 'triddefs.trd'
-        self.bin_path = 'trid'
         filename = getframeinfo(currentframe()).filename
         parent = Path(filename).resolve().parent
 
-        if plugin_opts and 'trid_defs' in plugin_opts:
-            self.trid_defs = plugin_opts['trid_defs']
-        elif config.has_option('options', 'trid_defs'):
-            self.trid_defs = config.get('options', 'trid_defs')
+        self.bin = config.get('options', 'bin', fallback='trid')
+        self.skip_warnings = config.getlist(
+            'options', 'skip_warnings', fallback=['file seems to be plain text/ASCII']
+        )
+        self.trid_defs = config.get('options', 'trid_defs', fallback='triddefs.trd')
         if not os.path.isabs(self.trid_defs) and self.trid_defs:
             self.trid_defs = os.path.join(parent, self.trid_defs)
-        if not self.trid_defs or not os.path.isfile(self.trid_defs):
+        if os.path.isfile(self.trid_defs):
             raise StoqPluginException(
                 f'TrID definitions do not exist at {self.trid_defs}'
             )
 
-        if plugin_opts and 'bin_path' in plugin_opts:
-            self.bin_path = plugin_opts['bin_path']
-        elif config.has_option('options', 'bin_path'):
-            self.bin_path = config.get('options', 'bin_path')
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Scan a payload using TRiD
 
         """
         results: DefaultDict = defaultdict(list)
         errors: List[str] = []
+        unknown_ext: int = 0
 
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(payload.content)
             temp_file.flush()
             p = Popen(
-                [self.bin_path, f"-d:{self.trid_defs}", temp_file.name],
+                [self.bin, f"-d:{self.trid_defs}", temp_file.name],
                 stdout=PIPE,
                 stderr=PIPE,
                 env={'LC_ALL': 'C'},
@@ -82,10 +77,9 @@ class TridPlugin(WorkerPlugin):
             if err:
                 errors.append(err)
 
-        unknown_ext = 0
         matches = re.findall(r'^ {0,2}[0-9].*%.*$', trid_results, re.M)
         warnings = re.findall(r'^Warning: (.*$)', trid_results, re.M)
-        errors.extend([w for w in warnings])
+        errors.extend([w for w in warnings if w not in self.skip_warnings])
         for match in matches:
             match = match.split()
             if match:

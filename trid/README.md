@@ -22,4 +22,6 @@ All options below may be set by:
 
 - `trids_defs` [str]: Path to TRiD definitions
 
+- `skip_warnings` [List]: List of TRiD warnings to skip.
+
 > Paths may be relative to the module, or a full path.

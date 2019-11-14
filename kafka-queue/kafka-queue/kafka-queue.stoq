@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,34 +18,32 @@ Module = kafka-queue
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.4
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from a Kafka Server
 
 [options]
-min_stoq_version = 2.0.3
-
 # Comma separated list of Kafka servers
-servers = 127.0.0.1:9092
+# servers = 127.0.0.1:9092
 
 # Group to consume/publish messages from/to
-group = stoq
+# group = stoq
 
 # Kafka topic name
-topic = stoq
+# topic = stoq
 
 # Retry attempts if publishing a message fails
-retries = 5
+# retries = 5
 
 # The expected time in milliseconds between heartbeats to the consumer coordinator
 # See https://kafka-python.readthedocs.io/en/master/apidoc/KafkaConsumer.html
-heartbeat_interval_ms = 5000
+# heartbeat_interval_ms = 5000
 
 # The timeout used to detect failures
 # See https://kafka-python.readthedocs.io/en/master/apidoc/KafkaConsumer.html
-session_timeout_ms = 15000
+# session_timeout_ms = 15000
 
 # When used as a Connector plugin, should the ArchiveResponses be saved, or StoqResponse?
 # Useful for sending archived payload metadata to topic.
 # Default: True
-publish_archive = True
+# publish_archive = True

@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -43,13 +43,13 @@ import os
 import shlex
 import magic
 import tempfile
-from configparser import ConfigParser
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from subprocess import Popen, PIPE, TimeoutExpired
 
+from stoq.helpers import StoqConfigParser
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, RequestMeta, WorkerResponse, ExtractedPayload, PayloadMeta
+from stoq import Payload, Request, WorkerResponse, ExtractedPayload, PayloadMeta, Error
 
 
 class Decompress(WorkerPlugin):
@@ -86,35 +86,20 @@ class Decompress(WorkerPlugin):
         'upx': 'upx -d %INFILE% -o %OUTDIR%/unpacked_exe',
     }
 
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.password = ['-']
-        self.maximum_size = 50_000_000
-        self.timeout = 45
+        self.timeout = config.getint('options', 'timeout', fallback=45)
+        self.password = config.getlist('options', 'passwords', fallback=['-'])
+        self.maximum_size = config.getint(
+            'options', 'maximum_size', fallback=50_000_000
+        )
 
-        if plugin_opts and 'passwords' in plugin_opts:
-            self.passwords = [p.strip() for p in plugin_opts['passwords'].split(',')]
-        elif config.has_option('options', 'passwords'):
-            self.passwords = [
-                p.strip() for p in config.get('options', 'passwords').split(',')
-            ]
-
-        if plugin_opts and 'maximum_size' in plugin_opts:
-            self.maximum_size = int(plugin_opts['maximum_size'])
-        elif config.has_option('options', 'maximum_size'):
-            self.maximum_size = config.getint('options', 'maximum_size')
-
-        if plugin_opts and 'timeout' in plugin_opts:
-            self.timeout = int(plugin_opts['timeout'])
-        elif config.has_option('options', 'timeout'):
-            self.timeout = config.getint('options', 'timeout')
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Decompress a payload
 
-        request_meta:
+        payload.results.payload_meta:
             - passwords
             - archiver
         """
@@ -126,22 +111,23 @@ class Decompress(WorkerPlugin):
 
         archiver = None
         mimetype = None
-        results = {}
-        errors = []
-        extracted = []
-        passwords = request_meta.extra_data.get('passwords', self.passwords)
-        if isinstance(passwords, str):
-            passwords = [p.strip() for p in passwords.split(',')]
+        results: Dict = {}
+        extracted: List[ExtractedPayload] = []
+        passwords: List[str] = payload.results.payload_meta.extra_data.get(
+            'passwords', self.passwords
+        )
 
         # Determine the mimetype of the payload so we can identify the
-        # correct archiver. This should either be based off the request_meta
+        # correct archiver. This should either be based off the payload.results.payload_meta
         # (useful when payload is passed via dispatching) or via magic
-        if 'archiver' in request_meta.extra_data:
-            if request_meta.extra_data['archiver'] in self.ARCHIVE_CMDS:
-                archiver = self.ARCHIVE_CMDS[request_meta.extra_data['archiver']]
+        if 'archiver' in payload.results.payload_meta.extra_data:
+            if payload.results.payload_meta.extra_data['archiver'] in self.ARCHIVE_CMDS:
+                archiver = self.ARCHIVE_CMDS[
+                    payload.results.payload_meta.extra_data['archiver']
+                ]
             else:
                 raise StoqPluginException(
-                    f"Unknown archive type of {request_meta['archiver']}"
+                    f"Unknown archive type of {payload.results.payload_meta['archiver']}"
                 )
         else:
             mimetype = magic.from_buffer(payload.content, mime=True)
@@ -166,8 +152,9 @@ class Decompress(WorkerPlugin):
                 cmd = archiver.replace('%INFILE%', shlex.quote(archive_file))
                 cmd = cmd.replace('%OUTDIR%', shlex.quote(archive_outdir))
                 cmd = cmd.replace('%PASSWORD%', shlex.quote(password))
-                cmd = cmd.split(" ")
-                p = Popen(cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+                p = Popen(
+                    cmd.split(" "), stdout=PIPE, stderr=PIPE, universal_newlines=True
+                )
                 try:
                     outs, errs = p.communicate(timeout=self.timeout)
                 except TimeoutExpired:
@@ -178,10 +165,14 @@ class Decompress(WorkerPlugin):
 
             for root, dirs, files in os.walk(archive_outdir):
                 for f in files:
-                    path = os.path.join(extract_dir, root, f)
+                    path = os.path.join(extract_dir, root, str(f))
                     if os.path.getsize(path) > self.maximum_size:
-                        errors.append(
-                            f'Extracted object is too large ({os.path.getsize(path)} > {self.maximum_size})'
+                        request.errors.append(
+                            Error(
+                                f'Extracted object is too large ({os.path.getsize(path)} > {self.maximum_size})',
+                                plugin_name=self.plugin_name,
+                                payload_id=payload.payload_id,
+                            )
                         )
                         continue
                     with open(path, "rb") as extracted_file:
@@ -189,7 +180,13 @@ class Decompress(WorkerPlugin):
                         try:
                             data = extracted_file.read()
                         except OSError as err:
-                            errors.append(f'Unable to access extracted content: {err}')
+                            request.errors.append(
+                                Error(
+                                    f'Unable to access extracted content: {err}',
+                                    plugin_name=self.plugin_name,
+                                    payload_id=payload.payload_id,
+                                )
+                            )
                             continue
                         extracted.append(ExtractedPayload(data, meta))
-        return WorkerResponse(results, errors=errors, extracted=extracted)
+        return WorkerResponse(results, extracted=extracted)

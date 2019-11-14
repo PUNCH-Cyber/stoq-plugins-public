@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -29,40 +29,33 @@ from pymongo.errors import (
     ConnectionFailure,
     NetworkTimeout,
 )
+from typing import Optional, Dict
 from gridfs.errors import FileExists
 from configparser import ConfigParser
-from typing import Optional, Dict
 
-from stoq import helpers
+from stoq.helpers import StoqConfigParser, get_sha1
 from stoq.plugins import ConnectorPlugin, ArchiverPlugin
 from stoq.data_classes import (
     StoqResponse,
     Payload,
     ArchiverResponse,
-    RequestMeta,
+    Request,
     PayloadMeta,
 )
 
 
 class MongoDbPlugin(ArchiverPlugin, ConnectorPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.mongodb_uri = None
-        self.mongodb_collection = 'stoq'
         self.mongo_client = None
 
-        if plugin_opts and 'mongodb_uri' in plugin_opts:
-            self.mongodb_uri = plugin_opts['mongodb_uri']
-        elif config.has_option('options', 'mongodb_uri'):
-            self.mongodb_uri = config.get('options', 'mongodb_uri')
+        self.mongodb_uri = config.get('options', 'mongodb_uri', fallback=None)
+        self.mongodb_collection = config.get(
+            'options', 'mongodb_collection', fallback='stoq'
+        )
 
-        if plugin_opts and 'mongodb_collection' in plugin_opts:
-            self.mongodb_collection = plugin_opts['mongodb_collection']
-        elif config.has_option('options', 'mongodb_collection'):
-            self.mongodb_collection = config.get('options', 'mongodb_collection')
-
-    def save(self, response: StoqResponse) -> None:
+    async def save(self, response: StoqResponse) -> None:
         """
         Save results to MongoDB
 
@@ -72,13 +65,13 @@ class MongoDbPlugin(ArchiverPlugin, ConnectorPlugin):
         result['_id'] = result['scan_id']
         self.collection.insert(result)
 
-    def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
+    async def archive(self, payload: Payload, request: Request) -> ArchiverResponse:
         """
         Archive a payload to MongoDB
 
         """
         self._connect_gridfs()
-        sha1 = helpers.get_sha1(payload.content)
+        sha1 = get_sha1(payload.content)
         meta = payload.payload_meta.extra_data
         meta['_id'] = sha1
         try:
@@ -88,7 +81,7 @@ class MongoDbPlugin(ArchiverPlugin, ConnectorPlugin):
             pass
         return ArchiverResponse(meta)
 
-    def get(self, task: ArchiverResponse) -> Optional[Payload]:
+    async def get(self, task: ArchiverResponse) -> Optional[Payload]:
         """
         Retrieve archived payload from MongoDB
 
@@ -96,7 +89,7 @@ class MongoDbPlugin(ArchiverPlugin, ConnectorPlugin):
         self._connect_gridfs()
         result = self.gridfs_db.get(task.results['_id'])
         if result:
-            # payload = result.read()
+            payload = result.read()
             return Payload(payload, PayloadMeta(extra_data=task.results))
 
     def _connect(self) -> None:

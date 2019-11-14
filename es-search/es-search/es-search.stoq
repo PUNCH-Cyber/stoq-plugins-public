@@ -18,7 +18,7 @@ Module = es-search
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Save results to ElasticSearch
 
@@ -37,24 +37,24 @@ Description = Save results to ElasticSearch
 # connect to a node using SSL on port 443
 # es_host = [localhost]
 # es_options = {"port": 443, "use_ssl": true, "verify_certs": true}
-es_host = localhost
-es_options = {"port": 9200}
+# es_host = localhost
+# es_options = {"port": 9200}
 
 # Index name results should be inserted into
 # Default: stoq
-es_index = stoq
+# es_index = stoq
 
 # How long should we wait for ES operations before it times out?
 # Default: 60
-es_timeout = 60
+# es_timeout = 60
 
 # Should we try again if an operation fails?
-es_retry = True
+# es_retry = True
 
 # How many time should we try an operation if a timeout occurs?
 # Default: 10
-es_max_retries = 10
+# es_max_retries = 10
 
 # Should indexes be named by month (i.e., stoq-YYYY-MM)
 # Default: True
-index_by_month = True
+# index_by_month = True

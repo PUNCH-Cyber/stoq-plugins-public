@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -36,21 +36,24 @@ from google.resumable_media.common import InvalidResponse
 from google.api_core.exceptions import GoogleAPICallError, InternalServerError
 
 from stoq import StoqPluginException
+from stoq.helpers import StoqConfigParser
 from stoq.plugins import ConnectorPlugin, ArchiverPlugin
 from stoq.data_classes import (
     StoqResponse,
     Payload,
     ArchiverResponse,
-    RequestMeta,
+    Request,
     PayloadMeta,
 )
 
 
 class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.project_id = config.get('options', 'project_id')
+        self.project_id = config.get('options', 'project_id', fallback=None)
+        if not self.project_id:
+            raise StoqPluginException('project_id has not been defined')
         self.archive_bucket = config.get('options', 'archive_bucket', fallback='')
         self.connector_bucket = config.get('options', 'connector_bucket', fallback='')
         self.use_sha = config.getboolean('options', 'use_sha', fallback=True)
@@ -70,14 +73,14 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
             )
             self.kms_key = f'projects/{self.project_id}/locations/{self.location_id}/keyRings/{self.keyring_id}/cryptoKeys/{self.crypto_id}'
 
-    def save(self, response: StoqResponse) -> None:
+    async def save(self, response: StoqResponse) -> None:
         """
         Save results to Google Cloud Storage
 
         """
         self._upload(str(response).encode(), response.scan_id, self.connector_bucket)
 
-    def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
+    async def archive(self, payload: Payload, request: Request) -> ArchiverResponse:
         """
         Archive payload to GCS
 
@@ -100,7 +103,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
             }
         )
 
-    def get(self, task: ArchiverResponse) -> Payload:
+    async def get(self, task: ArchiverResponse) -> Payload:
         """
         Retrieve archived payload from gcs
 

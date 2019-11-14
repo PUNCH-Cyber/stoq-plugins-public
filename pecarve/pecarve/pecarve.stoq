@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -23,4 +23,4 @@ Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Carve portable executable files from a data stream
 
 [options]
-pe_headers = \x4d\x5a|\x5a\x4d
+# pe_headers = \x4d\x5a|\x5a\x4d

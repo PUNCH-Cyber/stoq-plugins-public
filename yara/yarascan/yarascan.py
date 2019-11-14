@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2019 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
-#   Licensed under the Apache License, Version 2.0 (the "License");
+#   Licensed under the Apache License, Version 2.0 (the 'License');
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
 #
 #       http://www.apache.org/licenses/LICENSE-2.0
 #
 #   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
+#   distributed under the License is distributed on an 'AS IS' BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
@@ -24,107 +24,83 @@ Process a payload using yara
 import os
 import yara
 from pathlib import Path
-from configparser import ConfigParser
-from typing import Dict, List, Optional
 from inspect import currentframe, getframeinfo
+from typing import Dict, Generator, List, Optional
 
+from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
 from stoq.plugins import WorkerPlugin, DispatcherPlugin
-from stoq import Payload, RequestMeta, WorkerResponse, DispatcherResponse
+from stoq import Payload, Request, WorkerResponse, DispatcherResponse
 
 
 class YaraPlugin(WorkerPlugin, DispatcherPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
         self.dispatch_rules = None
         self.worker_rules = None
-        self.strings_limit = None
-        filename = getframeinfo(currentframe()).filename
+        filename = getframeinfo(currentframe()).filename  # type: ignore
         parent = Path(filename).resolve().parent
 
-        if plugin_opts and "strings_limit" in plugin_opts:
-            self.strings_limit = int(plugin_opts["strings_limit"])
-        elif config.has_option("options", "strings_limit"):
-            self.strings_limit = config.getint("options", "strings_limit")
-
-        if plugin_opts and "dispatch_rules" in plugin_opts:
-            dispatch_ruleset = plugin_opts["dispatch_rules"]
-        elif config.has_option("options", "dispatch_rules"):
-            dispatch_ruleset = config.get("options", "dispatch_rules")
-        else:
-            dispatch_ruleset = None
+        self.timeout = config.getint('options', 'timeout', fallback=60)
+        self.strings_limit = config.getint('options', 'strings_limit', fallback=None)
+        dispatch_ruleset = config.get(
+            'options', 'dispatch_rules', fallback='rules/dispatcher.yar'
+        )
         if dispatch_ruleset:
             if not os.path.isabs(dispatch_ruleset):
                 dispatch_ruleset = os.path.join(parent, dispatch_ruleset)
-            self.dispatch_rules = self.compile_rules(dispatch_ruleset)
+            self.dispatch_rules = self._compile_rules(dispatch_ruleset)
 
-        if plugin_opts and "worker_rules" in plugin_opts:
-            worker_ruleset = plugin_opts["worker_rules"]
-        elif config.has_option("options", "worker_rules"):
-            worker_ruleset = config.get("options", "worker_rules")
-        else:
-            worker_ruleset = None
+        worker_ruleset = config.get('options', 'worker_rules', fallback=None)
         if worker_ruleset:
             if not os.path.isabs(worker_ruleset):
                 worker_ruleset = os.path.join(parent, worker_ruleset)
-            self.worker_rules = self.compile_rules(worker_ruleset)
+            self.worker_rules = self._compile_rules(worker_ruleset)
 
-    def compile_rules(self, filepath: str) -> None:
-        filepath = os.path.realpath(filepath)
-        if not os.path.isfile(filepath):
-            raise StoqPluginException(
-                f"Nonexistent yara rules file provided: {filepath}"
-            )
-        else:
-            return yara.compile(filepath=filepath)
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
-        matches = self.worker_rules.match(data=payload.content, timeout=60)
-        dict_matches = []
-        for match in matches:
-            dict_matches.append(
-                {
-                    'tags': match.tags,
-                    'namespace': match.namespace,
-                    'rule': match.rule,
-                    'meta': match.meta,
-                    'strings': match.strings[: self.strings_limit],
-                }
-            )
-        results = {"matches": dict_matches}
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
+        results = {
+            'matches': [
+                m for m in self._yara_matches(payload.content, self.worker_rules)
+            ]
+        }
         return WorkerResponse(results=results)
 
-    def get_dispatches(
-        self, payload: Payload, request_meta: RequestMeta
+    async def get_dispatches(
+        self, payload: Payload, request: Request
     ) -> DispatcherResponse:
         dr = DispatcherResponse()
-        for match in self._yara_dispatch_matches(payload.content):
+        for match in self._yara_matches(payload.content, self.dispatch_rules):
             if 'plugin' in match['meta']:
                 plugin_str = match['meta']['plugin'].lower().strip()
                 plugin_names = {p.strip() for p in plugin_str.split(',') if p.strip()}
                 for name in plugin_names:
                     if name:
                         if match['meta'].get('save', '').lower().strip() == 'false':
-                            payload.payload_meta.should_archive = False
+                            payload.results.payload_meta.should_archive = False
                         name = name.strip()
                         dr.plugin_names.append(name)
                         dr.meta[name] = match
         return dr
 
-    def _yara_dispatch_matches(self, content: bytes) -> List[Dict]:
-        if self.dispatch_rules is None:
-            return []
-        matches = self.dispatch_rules.match(data=content, timeout=60)
-        dict_matches = []
-        for match in matches:
-            dict_matches.append(
-                {
-                    'tags': match.tags,
-                    'namespace': match.namespace,
-                    'rule': match.rule,
-                    'meta': match.meta,
-                    'strings': match.strings,
-                }
+    def _compile_rules(self, filepath: str) -> yara.Rules:
+        filepath = os.path.realpath(filepath)
+        if not os.path.isfile(filepath):
+            raise StoqPluginException(
+                f'Nonexistent yara rules file provided: {filepath}'
             )
-        return dict_matches
+        else:
+            return yara.compile(filepath=filepath)
+
+    def _yara_matches(
+        self, content: bytes, rules: yara.Rules
+    ) -> Generator[Dict, None, None]:
+        matches = rules.match(data=content, timeout=self.timeout)
+        for match in matches:
+            yield {
+                'tags': match.tags,
+                'namespace': match.namespace,
+                'rule': match.rule,
+                'meta': match.meta,
+                'strings': match.strings[: self.strings_limit],
+            }

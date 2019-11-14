@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,19 +18,21 @@ Module = decompress
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.5
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Extract content from a multitude of archive formats
 
 [options]
+min_stoq_version = 3.0.0
+
 # Passwords to iterate over when decompressing a file
 # Default: -
-passwords = -,infected,password
+# passwords = -,infected,password
 
 # Maximum size of payloads to process (original compressed file and extracted files)
 # Default: 50MB
-maximum_size = 50000000
+# maximum_size = 50000000
 
 # How long (in seconds) to wait for decompression to finish
 # Default: 45
-timeout = 45
+# timeout = 45

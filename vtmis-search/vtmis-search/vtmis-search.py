@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,22 +22,15 @@ Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin
 """
 
 import requests
-from configparser import ConfigParser
 from typing import Dict, List, Optional
 
-from stoq.helpers import get_sha1
 from stoq.exceptions import StoqPluginException
-from stoq.plugins import WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin
-from stoq import (
-    Payload,
-    RequestMeta,
-    WorkerResponse,
-    DispatcherResponse,
-    DeepDispatcherResponse,
-)
+from stoq.helpers import get_sha1, StoqConfigParser
+from stoq.plugins import WorkerPlugin, DispatcherPlugin
+from stoq import Payload, Request, WorkerResponse, DispatcherResponse
 
 
-class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
+class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin):
     API_URL = 'https://www.virustotal.com/vtapi/v2'
     ENDPOINTS = {
         'ipv4': ('ip', '/ip-address/report', False),
@@ -46,56 +39,36 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
         'sha1': ('resource', '/file/report', True),
     }
 
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.apikey = None
-
-        if plugin_opts and 'apikey' in plugin_opts:
-            self.apikey = plugin_opts['apikey']
-        elif config.has_option('options', 'apikey'):
-            self.apikey = config.get('options', 'apikey')
-
+        self.apikey = config.get('options', 'apikey', fallback=None)
         if not self.apikey:
             raise StoqPluginException("VTMIS API Key does not exist")
 
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin
 
         """
         results: List[Dict] = []
-        seen: List[str] = []
+        seen: Set[str] = set()
 
-        for worker_result in payload.worker_results:
-            if 'iocextract' in worker_result:
-                for key, iocs in worker_result['iocextract'].items():
-                    for ioc in iocs:
-                        if key in self.ENDPOINTS and ioc not in seen:
-                            response = self._query_api(ioc, key)
-                            seen.append(ioc)
-                            results.append(response)
+        if 'iocextract' in payload.results.workers:
+            for key, iocs in worker_result['iocextract'].items():
+                for ioc in iocs:
+                    if key in self.ENDPOINTS and ioc not in seen:
+                        response = self._query_api(ioc, key)
+                        seen.add(ioc)
+                        results.append(response)
         if not results:
             sha1 = get_sha1(payload.content)
-            response = self._query_api(sha1, 'sha1')
-            results = [response]
+            results = self._query_api(sha1, 'sha1')
 
         return WorkerResponse(results=results)
 
-    def _query_api(self, query: str, endpoint: str) -> Dict:
-        key, endpoint, allinfo = self.ENDPOINTS[endpoint]
-        url = f'{self.API_URL}{endpoint}'
-        params = {'apikey': self.apikey, key: query}
-        if allinfo:
-            params['allinfo'] = 1
-        response = requests.get(url, params=params)
-        result = response.json()
-        if result:
-            result['ioc'] = query
-        return result
-
-    def get_dispatches(
-        self, payload: Payload, request_meta: RequestMeta
+    async def get_dispatches(
+        self, payload: Payload, request: Request
     ) -> DispatcherResponse:
         """
         Check if `iocextract` plugin has results, if so, dispatch to `vtmis-search` worker
@@ -108,16 +81,14 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin, DeepDispatcherPlugin):
                 break
         return dr
 
-    def get_deep_dispatches(
-        self, payload: Payload, request_meta: RequestMeta
-    ) -> DeepDispatcherResponse:
-        """
-        Check if `iocextract` plugin has results, if so, deep dispatch to `vtmis-search` worker
-
-        """
-        deepdr = DeepDispatcherResponse()
-        for worker_result in payload.worker_results:
-            if 'iocextract' in worker_result and 'vtmis-search' not in worker_result:
-                deepdr.plugin_names.append('vtmis-search')
-                break
-        return deepdr
+    def _query_api(self, query: str, endpoint: str) -> Dict:
+        key, endpoint, allinfo = self.ENDPOINTS[endpoint]
+        url = f'{self.API_URL}{endpoint}'
+        params = {'apikey': self.apikey, key: query}
+        if allinfo:
+            params['allinfo'] = 1
+        response = requests.get(url, params=params)
+        result = response.json()
+        if result:
+            result['ioc'] = query
+        return [result]

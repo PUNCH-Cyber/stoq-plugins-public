@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -23,25 +23,21 @@ Upload content to a Tika server for automated text extraction
 """
 
 import requests
-from typing import Dict, Optional
-from configparser import ConfigParser
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, RequestMeta, WorkerResponse, ExtractedPayload
+from stoq.helpers import StoqConfigParser
+from stoq import Payload, Request, WorkerResponse, ExtractedPayload
 
 
 class TikaPlugin(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.tika_url = None
+        self.tika_url = config.get(
+            'options', 'tika_url', fallback='http://localhost:9998/tika'
+        )
 
-        if plugin_opts and 'tika_url' in plugin_opts:
-            self.tika_url = plugin_opts['tika_url']
-        elif config.has_option('options', 'tika_url'):
-            self.tika_url = config.get('options', 'tika_url')
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Upload content to a Tika server for automated text extraction
 

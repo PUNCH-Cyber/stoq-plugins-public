@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -23,25 +23,20 @@ Processes a payload using ExifTool
 import json
 import tempfile
 from typing import Dict, Optional
-from configparser import ConfigParser
 from subprocess import run, PIPE
 
 from stoq.plugins import WorkerPlugin
-
+from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Error, Payload, Request, WorkerResponse
 
 
 class ExifToolPlugin(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
+        self.bin = config.get('options', 'bin', fallback='exiftool')
 
-        if plugin_opts and 'bin_path' in plugin_opts:
-            self.bin_path = plugin_opts['bin_path']
-        elif config.has_option('options', 'bin_path'):
-            self.bin_path = config.get('options', 'bin_path')
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Scan a payload using Exiftool
 
@@ -50,9 +45,13 @@ class ExifToolPlugin(WorkerPlugin):
             temp_file.write(payload.content)
             temp_file.flush()
             try:
-                cmd = [self.bin_path, '-j', '-n', temp_file.name]
+                cmd = [self.bin, '-j', '-n', temp_file.name]
                 output = run(cmd, stdout=PIPE)
                 results = json.loads(output.stdout)[0]
             except Exception as err:
-                raise StoqPluginException(f'Failed gathering exif data: {err}')
+                request.errors.append(
+                    Error(
+                        err, plugin_name=self.plugin_name, payload_id=payload.payload_id
+                    )
+                )
         return WorkerResponse(results)

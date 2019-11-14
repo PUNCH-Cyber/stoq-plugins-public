@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -26,22 +26,21 @@ import re
 import pefile
 from io import BytesIO
 from typing import Dict, Optional
-from configparser import ConfigParser
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, PayloadMeta, ExtractedPayload, RequestMeta, WorkerResponse
+from stoq.helpers import StoqConfigParser
+from stoq import Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
 
 
 class PeCarve(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        if plugin_opts and 'pe_headers' in plugin_opts:
-            self.pe_headers = plugin_opts['pe_headers'].encode()
-        elif config.has_option('options', 'pe_headers'):
-            self.pe_headers = config.get('options', 'pe_headers').encode()
+        self.pe_headers = config.get(
+            'options', 'pe_headers', fallback='\x4d\x5a|\x5a\x4d'
+        ).encode()
 
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Carve PE files from provided payload
 

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="yara",
-    version="2.0.1",
+    version="3.0.0",
     author="Marcus LaFerrera (@mlaferrera), David Maydewd",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
@@ -10,5 +10,6 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     test_suite='tests',
+    tests_require=['asynctest==0.13.0'],
     package_data={'yarascan': ['yarascan.stoq', 'rules/*']},
 )

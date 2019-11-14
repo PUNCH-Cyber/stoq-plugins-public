@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -20,21 +20,22 @@ Decodes and extracts information from Java Class files
 
 """
 
+from typing import Dict
 from javatools import unpack_class, ClassUnpackException
 
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Payload, Request, WorkerResponse
 
 
 class JavaClassPlugin(WorkerPlugin):
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Decodes and extracts information from Java Class files
 
         """
 
-        results = {}
+        results: Dict = {}
 
         try:
             content = unpack_class(payload.content)

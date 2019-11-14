@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 
 import os
 import yara
-import unittest
+import asynctest
 
 from pathlib import Path
 
-from stoq import RequestMeta, Stoq, Payload
+from stoq import Request, Stoq, Payload
 from stoq.exceptions import StoqPluginException
 from stoq.data_classes import WorkerResponse, DispatcherResponse
 
 
-class TestCore(unittest.TestCase):
+class TestCore(asynctest.TestCase):
     def setUp(self) -> None:
         self.plugin_name = 'yara'
         self.base_dir = Path(os.path.realpath(__file__)).parent
@@ -36,7 +36,7 @@ class TestCore(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_scan(self) -> None:
+    async def test_scan(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
             plugin_opts={
@@ -45,11 +45,11 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(self.generic_data)
-        response = plugin.scan(payload, RequestMeta())
+        response = await plugin.scan(payload, Request())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual('test_scan_rule', response.results['matches'][0]['rule'])
 
-    def test_scan_strings_limit(self) -> None:
+    async def test_scan_strings_limit(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
             plugin_opts={
@@ -61,12 +61,12 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(self.generic_data * 10)
-        response = plugin.scan(payload, RequestMeta())
+        response = await plugin.scan(payload, Request())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual('test_scan_rule', response.results['matches'][0]['rule'])
         self.assertEqual(5, len(response.results['matches'][0]['strings']))
 
-    def test_scan_meta_bytes(self) -> None:
+    async def test_scan_meta_bytes(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
             plugin_opts={
@@ -75,7 +75,7 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(b'meta_bytes')
-        response = plugin.scan(payload, RequestMeta())
+        response = await plugin.scan(payload, Request())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual(
             'test_scan_metadata_bytes', response.results['matches'][0]['rule']
@@ -106,7 +106,7 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(yara.SyntaxError):
             s.load_plugin(self.plugin_name)
 
-    def test_dispatcher(self) -> None:
+    async def test_dispatcher(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
             plugin_opts={
@@ -117,7 +117,7 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(self.generic_data)
-        response = plugin.get_dispatches(payload, RequestMeta())
+        response = await plugin.get_dispatches(payload, Request())
         self.assertIsInstance(response, DispatcherResponse)
         self.assertIn('test_dispatch_plugin', response.plugin_names)
         self.assertEqual(
@@ -132,7 +132,7 @@ class TestCore(unittest.TestCase):
             ['tag1', 'tag2'], response.meta['test_dispatch_plugin']['tags']
         )
 
-    def test_dispatcher_save_false(self) -> None:
+    async def test_dispatcher_save_false(self) -> None:
         s = Stoq(
             plugin_dir_list=[self.plugin_dir],
             plugin_opts={
@@ -143,6 +143,6 @@ class TestCore(unittest.TestCase):
         )
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(b'save_false')
-        response = plugin.get_dispatches(payload, RequestMeta())
+        response = await plugin.get_dispatches(payload, Request())
         self.assertIsInstance(response, DispatcherResponse)
         self.assertIn('False', response.meta['save_false']['meta']['save'])

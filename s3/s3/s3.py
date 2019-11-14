@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -20,67 +20,42 @@ Read and write data to Amazon S3
 
 """
 
-import hashlib
 import boto3
+import hashlib
 
 from io import BytesIO
-from configparser import ConfigParser
 from typing import Optional, Dict
 
+from stoq.helpers import StoqConfigParser
 from stoq.plugins import ConnectorPlugin, ArchiverPlugin
 from stoq.data_classes import (
     StoqResponse,
     Payload,
     ArchiverResponse,
-    RequestMeta,
+    Request,
     PayloadMeta,
 )
 
 
 class S3Plugin(ArchiverPlugin, ConnectorPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
         self.client = None
-        self.access_key = None
-        self.secret_key = None
-        self.archive_bucket = None
-        self.connector_bucket = None
-        self.use_sha = True
+        self.access_key = config.get('options', 'access_key', fallback=None)
+        self.secret_key = config.get('options', 'secret_key', fallback=None)
+        self.archive_bucket = config.get('options', 'archive_bucket', fallback=None)
+        self.connector_bucket = config.get('options', 'connector_bucket', fallback=None)
+        self.use_sha = config.getboolean('archiver', 'use_sha', fallback=True)
 
-        if plugin_opts and 'access_key' in plugin_opts:
-            self.access_key = plugin_opts['access_key']
-        elif config.has_option('options', 'access_key'):
-            self.access_key = config.get('options', 'access_key')
-
-        if plugin_opts and 'secret_key' in plugin_opts:
-            self.secret_key = plugin_opts['secret_key']
-        elif config.has_option('options', 'secret_key'):
-            self.secret_key = config.get('options', 'secret_key')
-
-        if plugin_opts and 'archive_bucket' in plugin_opts:
-            self.archive_bucket = plugin_opts['archive_bucket']
-        elif config.has_option('options', 'archive_bucket'):
-            self.archive_bucket = config.get('options', 'archive_bucket')
-
-        if plugin_opts and 'connector_bucket' in plugin_opts:
-            self.connector_bucket = plugin_opts['connector_bucket']
-        elif config.has_option('options', 'connector_bucket'):
-            self.connector_bucket = config.get('options', 'connector_bucket')
-
-        if plugin_opts and 'use_sha' in plugin_opts:
-            self.use_sha = plugin_opts['use_sha']
-        elif config.has_option('archiver', 'use_sha'):
-            self.use_sha = config.getboolean('archiver', 'use_sha')
-
-    def save(self, response: StoqResponse) -> None:
+    async def save(self, response: StoqResponse) -> None:
         """
         Save results to S3
 
         """
         self._upload(str(response).encode(), response.scan_id, self.connector_bucket)
 
-    def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
+    async def archive(self, payload: Payload, request: Request) -> ArchiverResponse:
         """
         Archive payload to S3
 
@@ -93,7 +68,7 @@ class S3Plugin(ArchiverPlugin, ConnectorPlugin):
         self._upload(payload.content, filename, self.archive_bucket)
         return ArchiverResponse({'bucket': self.archive_bucket, 'path': filename})
 
-    def get(self, task: ArchiverResponse) -> Payload:
+    async def get(self, task: ArchiverResponse) -> Payload:
         """
         Retrieve archived payload from S3
 

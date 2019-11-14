@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,35 +22,29 @@ Monitor a directory for newly created files for processing
 
 import os
 from time import sleep
-from queue import Queue
+from asyncio import Queue
 from typing import Dict, Optional
-from configparser import ConfigParser
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from stoq.plugins import ProviderPlugin
 from stoq import Payload, PayloadMeta
+from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
 
 
 class DirmonPlugin(ProviderPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.source_dir = None
-
-        if plugin_opts and 'source_dir' in plugin_opts:
-            self.source_dir = plugin_opts['source_dir']
-        elif config.has_option('options', 'source_dir'):
-            self.source_dir = config.get('options', 'source_dir')
-
+        self.source_dir = config.get('options', 'source_dir', fallback=None)
         if not self.source_dir or not os.path.exists(self.source_dir):
             raise StoqPluginException(
                 f"Source directory not defined or doesn't exist: '{self.source_dir}'"
             )
         self.source_dir = os.path.abspath(self.source_dir)
 
-    def ingest(self, queue: Queue) -> None:
+    async def ingest(self, queue: Queue) -> None:
         """
         Monitor a directory for newly created files for ingest
 
@@ -60,7 +54,7 @@ class DirmonPlugin(ProviderPlugin):
         observer = Observer()
         observer.schedule(handler, self.source_dir, recursive=False)
         observer.start()
-        print(f'Monitoring {self.source_dir} for newly created files...')
+        self.log.info(f'Monitoring {self.source_dir} for newly created files...')
         try:
             while True:
                 sleep(2)
@@ -80,5 +74,5 @@ class WatchdogEvent(FileSystemEventHandler):
                 'source_dir': os.path.dirname(event.src_path),
             }
         )
-        with open(event.src_path, "rb") as f:
+        with open(event.src_path, 'rb') as f:
             self.queue.put(Payload(f.read(), meta))

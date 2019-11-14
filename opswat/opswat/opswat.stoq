@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,18 +18,18 @@ Module = opswat
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Scan payloads using OPSWAT MetaDefender
 
 [options]
-opswat_url =
-apikey =
+# opswat_url =
+# apikey =
 
 # Time in seconds to wait between checking for completed results
 # Default: 30
-delay = 30
+# delay = 30
 
 # Maximum amount of attempts to retrieve results
 # Default: 10
-max_attempts = 10
+# max_attempts = 10

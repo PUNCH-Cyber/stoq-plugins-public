@@ -23,4 +23,6 @@ All options below may be set by:
 
 - `strings_limit` [int]: Limit the strings results in yara matches
 
+- `timeout` [int]: Time in seconds to wait for a yara scan to complete
+
 > Paths may be relative to the module, or a full path.

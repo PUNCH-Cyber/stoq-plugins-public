@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ Module = mongodb
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Save results and archive payloads using MongoDB
 
@@ -29,8 +29,7 @@ Description = Save results and archive payloads using MongoDB
 #
 # Example:
 # Connect to localhost on port 27017 using MongoDB URI Format
-mongodb_uri = mongodb://localhost:27017/
+# mongodb_uri = mongodb://localhost:27017/
 
 # MongoDB Collection name when saving results
-# Default: stoq
-mongodb_collection = stoq
+# mongodb_collection = stoq

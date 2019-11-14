@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -25,28 +25,24 @@ Determine mimetype of a payload
 import magic
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Payload, Request, WorkerResponse
 
 # This is silly. python-magic is the preferred library as it is maintained.
 # But, sometimes filemagic is used by other libraries. Let's determine which
 # one is installed so we can call it properly.
-if hasattr(magic.Magic, "from_buffer"):
+if hasattr(magic.Magic, 'from_buffer'):
     USE_PYTHON_MAGIC = True
 else:
     USE_PYTHON_MAGIC = False
 
 
 class MimeType(WorkerPlugin):
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         if USE_PYTHON_MAGIC:
             magic_scan = magic.Magic(mime=True)
             magic_result = magic_scan.from_buffer(payload.content[0:1000])
         else:
-            if mime:
-                flags = magic.MAGIC_MIME_TYPE
-            else:
-                flags = None
-            with magic.Magic(flags=flags) as m:
+            with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
                 magic_result = m.id_buffer(payload.content[0:1000])
         if hasattr(magic_result, 'decode'):
             magic_result = magic_result.decode('utf-8')

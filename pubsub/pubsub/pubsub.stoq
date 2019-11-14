@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,25 +18,25 @@ Module = pubsub
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Interact with Google Cloud Pub/Sub
 
 [options]
 # Google Cloud Project id
-project_id =
+# project_id =
 
 # Pub/Sub Topic for to bind to
-topic =
+# topic = stoq
 
 # Pub/Sub Subscription to monitor for messages
-subscription = stoq-feed
+# subscription = stoq
 
 # When used as a Connector plugin, should the ArchiveResponses be saved, or StoqResponse?
 # Useful for sending archived payload metadata to topic.
 # Default: True
-publish_archive = True
+# publish_archive = True
 
 # Number of messages to retrieve per request
 # Default: 10
-max_messages = 10
+# max_messages = 10

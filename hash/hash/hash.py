@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ Hash a payload
 from hashlib import md5, sha1, sha256
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Payload, Request, WorkerResponse
 
 
 class Hash(WorkerPlugin):
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
-
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         return WorkerResponse(
             results={
                 'sha256': sha256(payload.content).hexdigest(),

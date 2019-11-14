@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ Module = xdpcarve
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Carve and decode elements from XDP objects
 
 [options]
-elements = chunk
+# elements = chunk

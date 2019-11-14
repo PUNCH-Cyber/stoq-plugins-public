@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -28,28 +28,24 @@ from inspect import currentframe, getframeinfo
 from jinja2.exceptions import TemplateNotFound
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
 from stoq.plugins import DecoratorPlugin, ConnectorPlugin
 from stoq.data_classes import StoqResponse, DecoratorResponse
 
 
 class JinjaPlugin(ConnectorPlugin, DecoratorPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
-
-        self.template = None
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
         filename = getframeinfo(currentframe()).filename
         parent = Path(filename).resolve().parent
 
-        if plugin_opts and 'template' in plugin_opts:
-            self.template = plugin_opts['template']
-        elif config.has_option('options', 'template'):
-            self.template = config.get('options', 'template')
+        self.template = config.get('options', 'template', fallback='stoq.tpl')
         if self.template:
             self.template = os.path.abspath(os.path.join(parent, self.template))
 
-    def save(self, response: StoqResponse) -> None:
+    async def save(self, response: StoqResponse) -> None:
         """
         Print results to STDOUT
 
@@ -59,7 +55,7 @@ class JinjaPlugin(ConnectorPlugin, DecoratorPlugin):
         else:
             print(response)
 
-    def decorate(self, response: StoqResponse) -> DecoratorResponse:
+    async def decorate(self, response: StoqResponse) -> DecoratorResponse:
         """
         Decorate results using a template
 

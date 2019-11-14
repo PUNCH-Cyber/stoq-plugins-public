@@ -18,6 +18,6 @@ Module = symhash
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.0
-Website = https://github.com/PUNCH-Cyber/stoq-plugins-public/v2
+Version = 3.0.0
+Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Calculate symbol table hashes of a Mach-O executable file

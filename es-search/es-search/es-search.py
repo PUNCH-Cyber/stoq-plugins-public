@@ -24,59 +24,27 @@ import certifi
 
 from datetime import datetime
 from typing import Optional, Dict
-from configparser import ConfigParser
 from elasticsearch import Elasticsearch
 
 from stoq.plugins import ConnectorPlugin
+from stoq.helpers import StoqConfigParser
 from stoq.data_classes import StoqResponse
 
 
 class ElasticSearchPlugin(ConnectorPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.es_index = 'stoq'
-        self.es_host = None
-        self.es_options = None
-        self.es_timeout = 60
-        self.es_max_retries = 10
-        self.index_by_month = True
         self.es = None
-
-        if plugin_opts and 'es_host' in plugin_opts:
-            self.es_host = plugin_opts['es_host']
-        elif config.has_option('options', 'es_host'):
-            self.es_host = config.get('options', 'es_host')
-
-        if plugin_opts and 'es_options' in plugin_opts:
-            self.es_options = plugin_opts['es_options']
-        elif config.has_option('options', 'es_options'):
-            self.es_options = json.loads(config.get('options', 'es_options'))
-
-        if plugin_opts and 'es_timeout' in plugin_opts:
-            self.es_timeout = int(plugin_opts['es_timeout'])
-        elif config.has_option('options', 'es_timeout'):
-            self.es_timeout = int(config.get('options', 'es_timeout'))
-
-        if plugin_opts and 'es_retry' in plugin_opts:
-            self.es_retry = plugin_opts['es_retry']
-        elif config.has_option('options', 'es_retry'):
-            self.es_retry = config.getboolean('options', 'es_retry')
-
-        if plugin_opts and 'es_max_retries' in plugin_opts:
-            self.es_max_retries = int(plugin_opts['es_max_retries'])
-        elif config.has_option('options', 'es_max_retries'):
-            self.es_max_retries = int(config.get('options', 'es_max_retries'))
-
-        if plugin_opts and 'es_index' in plugin_opts:
-            self.es_index = plugin_opts['es_index']
-        elif config.has_option('options', 'es_index'):
-            self.es_index = config.get('options', 'es_index')
-
-        if plugin_opts and 'index_by_month' in plugin_opts:
-            self.index_by_month = plugin_opts['index_by_month']
-        elif config.has_option('options', 'index_by_month'):
-            self.index_by_month = config.getboolean('options', 'index_by_month')
+        self.es_host = config.get('options', 'es_host', fallback=None)
+        self.es_options = json.loads(config.get('options', 'es_options', fallback='{}'))
+        self.es_timeout = config.getint('options', 'es_timeout', fallback=60)
+        self.es_retry = config.getboolean('options', 'es_retry', fallback=True)
+        self.es_max_retries = config.getint('options', 'es_max_retries', fallback=10)
+        self.es_index = config.get('options', 'es_index', fallback='stoq')
+        self.index_by_month = config.getboolean(
+            'options', 'index_by_month', fallback=True
+        )
 
     def save(self, response: StoqResponse) -> None:
         """

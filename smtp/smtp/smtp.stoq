@@ -1,25 +1,39 @@
+#   Copyright 2014-present PUNCH Cyber Analytics Group
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
 [Core]
 Name = smtp
 Module = smtp
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.8
+Version = 3.0.8
 Website = https://github.com/PUNCH-Cyber/stoq
 Description = SMTP Parser Worker
 
 [options]
 # Save body of e-mail (text or html) to the results.
-omit_body = False
+# omit_body = False
 
 # Always send extracted attachments to these plugins
-always_dispatch = hash
+# always_dispatch = hash
 
 # Should attachments be archived?
-archive_attachments = True
+# archive_attachments = True
 
 # Automatically extract IOC's from SMTP sessions
-extract_iocs = True
+# extract_iocs = True
 
 # SMTP sessions keys to attempt to extract IOC's from
-ioc_keys = received, x-orig-ip, x-originating-ip, x-remote-ip, x-sender-ip, body, body_html
+# ioc_keys = received, x-orig-ip, x-originating-ip, x-remote-ip, x-sender-ip, body, body_html

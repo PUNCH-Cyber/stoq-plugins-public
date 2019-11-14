@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2019 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -39,14 +39,14 @@ from stoq.data_classes import (
     ExtractedPayload,
     Payload,
     PayloadMeta,
-    RequestMeta,
+    Request,
     WorkerResponse,
 )
 from stoq.plugins import WorkerPlugin
 
 
 class PEInfoPlugin(WorkerPlugin):
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         pe = self._get_pe_file(payload.content)
 
         imports = self._get_imports(pe)

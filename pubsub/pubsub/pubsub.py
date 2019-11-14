@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -21,55 +21,32 @@ Interact with Google Cloud Pub/Sub
 """
 
 import json
-from queue import Queue
+from asyncio import Queue
 from google.cloud import pubsub
 from typing import Dict, List, Optional
-from configparser import ConfigParser
 from google.api_core.exceptions import AlreadyExists
 
+from stoq.helpers import StoqConfigParser
 from stoq.plugins import ConnectorPlugin, ProviderPlugin, ArchiverPlugin
-from stoq.data_classes import StoqResponse, Payload, RequestMeta, ArchiverResponse
+from stoq.data_classes import StoqResponse, Payload, Request, ArchiverResponse
 
 
 class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.project_id = None
-        self.max_messages = 10
-        self.publish_archive = True
-        self.topic = None
-        self.subscription = None
         self.publish_client = None
         self.ingest_client = None
+        self.project_id = config.get('options', 'project_id')
+        self.max_messages = config.getint('options', 'max_messages', fallback=10)
+        self.publish_archive = config.getboolean(
+            'options', 'publish_archive', fallback=True
+        )
+        self.topic = config.get('options', 'topic', fallback='stoq')
+        self.subscription = config.get('options', 'subscription', fallback='stoq')
 
-        if plugin_opts and 'project_id' in plugin_opts:
-            self.project_id = plugin_opts['project_id']
-        elif config.has_option('options', 'project_id'):
-            self.project_id = config.get('options', 'project_id')
-
-        if plugin_opts and "max_messages" in plugin_opts:
-            self.max_messages = int(plugin_opts["max_messages"])
-        elif config.has_option("options", "max_messages"):
-            self.max_messages = int(config.get("options", "max_messages"))
-
-        if plugin_opts and "publish_archive" in plugin_opts:
-            self.publish_archive = bool(plugin_opts["publish_archive"])
-        elif config.has_option("options", "publish_archive"):
-            self.publish_archive = bool(config.get("options", "publish_archive"))
-
-        if plugin_opts and "topic" in plugin_opts:
-            self.topic = plugin_opts["topic"]
-        elif config.has_option("options", "topic"):
-            self.topic = config.get("options", "topic")
-
-        if plugin_opts and "subscription" in plugin_opts:
-            self.subscription = plugin_opts["subscription"]
-        elif config.has_option("options", "subscription"):
-            self.subscription = config.get("options", "subscription")
-
-    def archive(
-        self, payload: Payload, request_meta: RequestMeta
+    async def archive(
+        self, payload: Payload, request: Request
     ) -> Optional[ArchiverResponse]:
         topic = f'projects/{self.project_id}/topics/{self.topic}'
         self._publish_connect(topic)
@@ -78,7 +55,7 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         )
         return ArchiverResponse({'msg_id': future.result()})
 
-    def save(self, response: StoqResponse) -> None:
+    async def save(self, response: StoqResponse) -> None:
         """
         Save results or ArchiverResponse to Pub/Sub
 
@@ -86,7 +63,7 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         topic = f'projects/{self.project_id}/topics/{self.topic}'
         self._publish_connect(topic)
         if self.publish_archive:
-            msgs: List[str] = []
+            msgs: List[Dict[str, str]] = []
             for result in response.results:
                 msgs = [{k: v} for k, v in result.archivers.items()]
             for msg in msgs:
@@ -94,11 +71,11 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         else:
             self.publish_client.publish(topic, str(response).encode())
 
-    def ingest(self, queue: Queue) -> None:
+    async def ingest(self, queue: Queue) -> None:
         topic = f'projects/{self.project_id}/topics/{self.topic}'
         subscription = f'projects/{self.project_id}/subscriptions/{self.subscription}'
         self._ingest_connect(subscription, topic)
-        print(f'Monitoring {subscription} subscription for messages...')
+        self.log.info(f'Monitoring {subscription} subscription for messages...')
         while True:
             messages = self.ingest_client.pull(
                 subscription, max_messages=self.max_messages, return_immediately=False

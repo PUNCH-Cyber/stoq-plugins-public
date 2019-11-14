@@ -1,1 +1,1 @@
-git+https://github.com/obriencj/python-javatools
+javatools~=1.4.0

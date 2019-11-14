@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -25,57 +25,41 @@ import tempfile
 from pathlib import Path
 from typing import Dict, Optional
 from subprocess import check_output, run
-from configparser import ConfigParser
 from inspect import currentframe, getframeinfo
 
 from stoq.plugins import WorkerPlugin
+from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Payload, Request, WorkerResponse
 
 
 class XorSearchPlugin(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        bin_path = None
-        terms = None
-
-        filename = getframeinfo(currentframe()).filename
+        filename = getframeinfo(currentframe()).filename  # type: ignore
         parent = Path(filename).resolve().parent
 
-        if plugin_opts and 'terms' in plugin_opts:
-            terms = plugin_opts['terms']
-        elif config.has_option('options', 'terms'):
-            terms = config.get('options', 'terms')
-        if terms:
-            if not os.path.isabs(terms):
-                terms = os.path.join(parent, terms)
-        self.terms = terms
+        self.terms = config.get('options', 'terms', fallback='terms.txt')
+        if not os.path.isabs(self.terms):
+            self.terms = os.path.join(parent, self.terms)
+        self.bin = config.get('options', 'bin_path', fallback='xorsearch')
 
-        if plugin_opts and 'bin_path' in plugin_opts:
-            bin_path = plugin_opts['bin_path']
-        elif config.has_option('options', 'bin_path'):
-            bin_path = config.get('options', 'bin_path')
-        if bin_path:
-            if not os.path.isabs(bin_path):
-                bin_path = os.path.join(parent, bin_path)
-        self.bin_path = bin_path
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Scan a payload using xorsearch
 
         """
+        result: Dict = {}
+
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(payload.content)
             temp_file.flush()
-            cmd = [self.bin_path, '-f', self.terms, temp_file.name]
+            cmd = [self.bin, '-f', self.terms, temp_file.name]
             process_results = check_output(cmd).splitlines()
 
-        result = {}
         for line in process_results:
-            line = line.decode()
-            _, _, key, _, pos, hit = line.split(maxsplit=5)
+            _, _, key, _, pos, hit = line.decode().split(maxsplit=5)
             # We are going to skip over hits that are not xor'd
             if key != '00':
                 key = f'0x{key}'
@@ -84,5 +68,4 @@ class XorSearchPlugin(WorkerPlugin):
                 result[key].append(
                     {'pos': f'0x{pos.replace("(-1):", "")}', 'match': hit}
                 )
-
         return WorkerResponse(result)

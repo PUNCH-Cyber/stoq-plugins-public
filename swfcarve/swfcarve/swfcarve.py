@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -27,30 +27,29 @@ import zlib
 import pylzma
 import struct
 from io import BytesIO
-from typing import Dict, Optional
-from configparser import ConfigParser
+from typing import Dict, List, Optional
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, PayloadMeta, ExtractedPayload, RequestMeta, WorkerResponse
+from stoq.helpers import StoqConfigParser
+from stoq import Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
 
 
 class PeCarve(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        if plugin_opts and 'swf_headers' in plugin_opts:
-            self.swf_headers = plugin_opts['swf_headers'].encode()
-        elif config.has_option('options', 'swf_headers'):
-            self.swf_headers = config.get('options', 'swf_headers').encode()
+        self.swf_headers = config.get(
+            'options', 'swf_headers', fallback='SWF|CWS|FWS'
+        ).encode()
 
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Carve and decompress SWF files from payloads
 
         """
 
-        extracted = []
-        errors = []
+        extracted: List[ExtractedPayload] = []
+        errors: List[str] = []
         content = BytesIO(payload.content)
         content.seek(0)
         for start, end in self._carve(content):
@@ -66,10 +65,10 @@ class PeCarve(WorkerPlugin):
         Extract and decompress an SWF object
 
         """
-        errors = []
-        extracted = None
-        meta = None
-        swf = None
+        errors: List[str] = []
+        extracted: List[ExtractedPayload] = []
+        meta: Optional[PayloadMeta] = None
+        swf: Optional[bytes] = None
         try:
             """
             Header as obtained from SWF File Specification:
@@ -102,24 +101,28 @@ class PeCarve(WorkerPlugin):
             try:
                 if magic == "ZWS":
                     content.seek(12)
-                    content = pylzma.decompress(content.read(decompressed_size))
+                    decompressed_content = pylzma.decompress(
+                        content.read(decompressed_size)
+                    )
                 elif magic == "CWS":
-                    content = zlib.decompress(content.read(decompressed_size))
+                    decompressed_content = zlib.decompress(
+                        content.read(decompressed_size)
+                    )
                 elif magic == 'FWS':
                     # Not compressed, but let's return the payload based on the
                     # size defined in the header
-                    content = content.read(decompressed_size)
+                    decompressed_content = content.read(decompressed_size)
                 else:
                     return None, errors
             except:
                 return None, errors
 
-            if len(content) != decompressed_size:
+            if len(decompressed_content) != decompressed_size:
                 errors.append(
                     'Invalid size of carved SWF content: {len(content)} != {decompressed_size}'
                 )
             else:
-                swf = composite_header + content
+                swf = composite_header + decompressed_content
                 meta = PayloadMeta(
                     extra_data={'offset': offset, 'swf_version': swf_version}
                 )

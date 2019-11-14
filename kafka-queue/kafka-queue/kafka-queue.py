@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@ Publish and Consume messages from a Kafka Server
 """
 
 import json
-from queue import Queue
+from asyncio import Queue
 from collections import ChainMap
 from typing import Dict, Optional
-from configparser import ConfigParser
 from base64 import b64encode, b64decode
 from kafka import KafkaConsumer, KafkaProducer
 
-from stoq import helpers
+from stoq.helpers import StoqConfigParser, dumps
 from stoq.plugins import ArchiverPlugin, ConnectorPlugin, ProviderPlugin
 from stoq.data_classes import (
     ArchiverResponse,
@@ -39,16 +38,11 @@ from stoq.data_classes import (
 
 
 class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
         self.producer = None
 
-        self.servers = [
-            s.strip()
-            for s in config.get('options', 'servers', fallback='127.0.0.1:9092').split(
-                ','
-            )
-        ]
+        self.servers = config.getlist('options', 'servers', fallback=['127.0.0.1:9092'])
         self.group = config.get('options', 'group', fallback='stoq')
         self.topic = config.get('options', 'topic', fallback="stoq")
         self.publish_archive = config.getboolean(
@@ -62,8 +56,8 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
             'options', 'heartbeat_interval_ms', fallback=5000
         )
 
-    def archive(
-        self, payload: Payload, request_meta: RequestMeta
+    async def archive(
+        self, payload: Payload, request: Request
     ) -> Optional[ArchiverResponse]:
         """
         Archive Payload object to Kafka queue
@@ -80,7 +74,7 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self.producer.flush()
         return ArchiverResponse()
 
-    def save(self, response: StoqResponse) -> None:
+    async def save(self, response: StoqResponse) -> None:
         """
         Save results or ArchiverResponse to Kafka
 
@@ -111,7 +105,7 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
             self.producer.send(self.topic, str(response).encode())
         self.producer.flush()
 
-    def ingest(self, queue: Queue) -> None:
+    async def ingest(self, queue: Queue) -> None:
         consumer = KafkaConsumer(
             self.topic,
             group_id=self.group,
@@ -120,7 +114,7 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
             heartbeat_interval_ms=self.heartbeat_interval_ms,
             session_timeout_ms=self.session_timeout_ms,
         )
-        print(f'Monitoring {self.topic} topic for messages...')
+        self.log.info(f'Monitoring {self.topic} topic for messages...')
         for message in consumer:
             msg = json.loads(message.value)
             if msg.get('_is_payload'):

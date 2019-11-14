@@ -16,7 +16,7 @@ All options below may be set by:
 
 ### Options
 
-- `bin_path` [str]: Path to xorsearch binary
+- `bin` [str]: Path to xorsearch binary
 
 > Paths may be relative to the module, or a full path.
 

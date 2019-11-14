@@ -1,4 +1,4 @@
-#   Copyright 2014-2015 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@ Module = trid
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 2.0.6
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Identify file types from their TrID signature
 
 [options]
-bin_path = trid
-trid_defs = triddefs.trd
+# bin_path = trid
+# trid_defs = triddefs.trd
+# skip_warnings = "file seems to be plain text/ASCII"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 import os
 import logging
-import unittest
+import asynctest
 
 from pathlib import Path
 
-from stoq import RequestMeta, Stoq, Payload
+from stoq import Request, Stoq, Payload
 from stoq.data_classes import WorkerResponse
 
 
-class TestCore(unittest.TestCase):
+class TestCore(asynctest.TestCase):
     def setUp(self) -> None:
         self.plugin_name = 'hash_ssdeep'
         self.base_dir = Path(os.path.realpath(__file__)).parent
@@ -35,10 +35,10 @@ class TestCore(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_scan(self) -> None:
+    async def test_scan(self) -> None:
         s = Stoq(plugin_dir_list=[self.plugin_dir])
         plugin = s.load_plugin(self.plugin_name)
         payload = Payload(self.generic_data)
-        response = plugin.scan(payload, RequestMeta())
+        response = await plugin.scan(payload, Request())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual('3:hMCE7pr3Kn:huJ6', response.results['ssdeep'])

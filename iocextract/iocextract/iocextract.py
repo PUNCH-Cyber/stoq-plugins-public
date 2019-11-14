@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@ from ipaddress import ip_address, ip_network
 from inspect import currentframe, getframeinfo
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq.helpers import StoqConfigParser
+from stoq import Payload, Request, WorkerResponse
 
 
 class IOCExtract(WorkerPlugin):
@@ -41,18 +42,24 @@ class IOCExtract(WorkerPlugin):
 
     """
 
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.whitelist_file = [
-            e.strip() for e in config.get('options', 'whitelist_file').split(',')
-        ]
-        self.iana_url = config.get('options', 'iana_url')
-        self.iana_tld_file = config.get('options', 'iana_tld_file')
+        self.whitelist_file = config.getlist(
+            'options', 'whitelist_file', fallback=['whitelist.txt']
+        )
+        self.iana_url = config.get(
+            'options',
+            'iana_url',
+            fallback='https://data.iana.org/TLD/tlds-alpha-by-domain.txt',
+        )
+        self.iana_tld_file = config.get(
+            'options', 'iana_tld_file', fallback='tlds-alpha-by-domain.txt'
+        )
         iana_tlds = self._get_iana_tlds()
 
         # Helper regexes
-        self.helpers = {}
+        self.helpers: Dict = {}
         self.helpers[
             'dot'
         ] = r"(?:\.|\[\.\]|\<\.\>|\{\.\}|\(\.\)|\<DOT\>|\[DOT\]|\{DOT\}|\(DOT\))"
@@ -82,7 +89,7 @@ class IOCExtract(WorkerPlugin):
         }
 
         # Data-type regexes
-        self.ioctypes = {}
+        self.ioctypes: Dict = {}
         self.ioctypes['md5'] = r"\b[A-F0-9]{32}\b"
         self.ioctypes['sha1'] = r"\b[A-F0-9]{40}\b"
         self.ioctypes['sha256'] = r"\b[A-F0-9]{64}\b"
@@ -109,19 +116,19 @@ class IOCExtract(WorkerPlugin):
         )
 
         # Compile regexes for faster repeat usage
-        self.compiled_re = {}
-        self.whitelist_patterns = {}
+        self.compiled_re: Dict = {}
+        self.whitelist_patterns: Dict[str, Set] = {}
         for ioc in self.ioctypes:
             self.whitelist_patterns[ioc] = set()
             self.compiled_re[ioc] = re.compile(self.ioctypes[ioc], re.IGNORECASE)
 
         self._load_whitelist()
 
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
 
-        normalize = True
-        ioctype = 'all'
-        results = {}
+        normalize: bool = True
+        ioctype: str = 'all'
+        results: Dict = {}
 
         if ioctype == 'all':
             for ioc in self.compiled_re:
@@ -146,13 +153,13 @@ class IOCExtract(WorkerPlugin):
 
         return WorkerResponse(results)
 
-    def _normalize(self, parsed_results: Dict[str, List[Set]]) -> Dict[str, Set]:
+    def _normalize(self, parsed_results: Dict[str, List[str]]) -> Dict[str, Set]:
         """
         Normalize, e.g., replace '[DOT]' with '.' for return value
 
         """
 
-        normalized_results = {}
+        normalized_results: Dict = {}
         for indicator_type in parsed_results:
             normalized_results[indicator_type] = set()
             for indicator in parsed_results[indicator_type]:
@@ -189,7 +196,9 @@ class IOCExtract(WorkerPlugin):
                 parent = Path(filename).resolve().parent
                 whitelist_file = os.path.join(parent, whitelist_file)
             if not os.path.isfile(whitelist_file):
-                print("Invalid whitelist file...skipping {}".format(whitelist_file))
+                self.log.warn(
+                    "Invalid whitelist file...skipping {}".format(whitelist_file)
+                )
                 continue
 
             with open(whitelist_file) as content:
@@ -200,13 +209,15 @@ class IOCExtract(WorkerPlugin):
                     try:
                         indicator_type, pattern = line.split(':', 1)
                     except:
-                        print("Invalid line in whitelist: {}".format(line))
+                        self.log.warn("Invalid line in whitelist: {}".format(line))
                         continue
 
                     try:
                         self.whitelist_patterns[indicator_type].add(pattern.strip())
                     except KeyError:
-                        print("Unknown indicator type: {}".format(indicator_type))
+                        self.log.warn(
+                            "Unknown indicator type: {}".format(indicator_type)
+                        )
 
     def _check_whitelist(self, indicator: str, indicator_type: str) -> bool:
 
@@ -270,10 +281,10 @@ class IOCExtract(WorkerPlugin):
                         return False
 
         except KeyError:
-            print("Unknown indicator type: {}".format(indicator_type))
+            self.log.warn("Unknown indicator type: {}".format(indicator_type))
             return False
         except Exception as err:
-            print("Unable to handle indicator/pattern: {}".format(str(err)))
+            self.log.warn("Unable to handle indicator/pattern: {}".format(str(err)))
             return False
 
         return True
@@ -287,8 +298,9 @@ class IOCExtract(WorkerPlugin):
             with open(self.iana_tld_file) as f:
                 iana_content = f.read()
         else:
-            print("Downloading latest IANA TLD file from {}".format(self.iana_url))
+            self.log.info(
+                "Downloading latest IANA TLD file from {}".format(self.iana_url)
+            )
             iana_content = requests.get(self.iana_url).content.decode()
 
         return "|".join(iana_content.splitlines()[1:])
-

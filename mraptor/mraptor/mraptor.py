@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,18 +22,19 @@ Port of mraptor3 from oletools
 
 """
 
+from typing import Dict
 from oletools.mraptor3 import MacroRaptor
 from oletools import olevba3 as olevba
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Payload, Request, WorkerResponse
 
 
 class MacroRaptorPlugin(WorkerPlugin):
     FLAGS = {'A': 'AutoExec', 'W': 'Write', 'X': 'Execute'}
 
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
-        results = {}
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
+        results: Dict = {}
         filename = payload.payload_meta.extra_data.get('filename', payload.payload_id)
         vba_parser = olevba.VBA_Parser(filename=filename, data=payload.content)
 
@@ -42,8 +43,7 @@ class MacroRaptorPlugin(WorkerPlugin):
                 vba_code[3].decode('utf-8', 'replace')
                 for vba_code in vba_parser.extract_all_macros()
             ]
-            vba_modules = '\n'.join(vba_modules)
-            mraptor = MacroRaptor(vba_modules)
+            mraptor = MacroRaptor('\n'.join(vba_modules))
             mraptor.scan()
             flags = [
                 self.FLAGS[flag] for flag in mraptor.get_flags() if flag in self.FLAGS

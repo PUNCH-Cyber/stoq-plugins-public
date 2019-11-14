@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ Calculate symbol table hashes of a Mach-O executable file
 from symhash import create_sym_hash
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Payload, Request, WorkerResponse
 
 
 class SymHash(WorkerPlugin):
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
-
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         return WorkerResponse(
             results={'symhash': create_sym_hash(data=payload.content)}
         )

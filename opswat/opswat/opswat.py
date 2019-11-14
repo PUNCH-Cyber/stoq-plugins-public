@@ -24,51 +24,28 @@ Scan payloads using OPSWAT MetaDefender
 import requests
 from time import sleep
 from json import JSONDecodeError
-from configparser import ConfigParser
 from typing import Dict, Optional, Union, Tuple
 
-from stoq.helpers import get_sha1
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq.helpers import get_sha1, StoqConfigParser
+from stoq import Payload, Request, WorkerResponse
 
 
 class MetadefenderPlugin(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.opswat_url = None
-        self.apikey = None
-        self.delay = 30
-        self.max_attempts = 10
-
-        if plugin_opts and 'opswat_url' in plugin_opts:
-            self.opswat_url = plugin_opts['opswat_url']
-        elif config.has_option('options', 'opswat_url'):
-            self.opswat_url = config.get('options', 'opswat_url')
-
-        if plugin_opts and 'apikey' in plugin_opts:
-            self.apikey = plugin_opts['apikey']
-        elif config.has_option('options', 'apikey'):
-            self.apikey = config.get('options', 'apikey')
-
-        if plugin_opts and 'delay' in plugin_opts:
-            self.delay = int(plugin_opts['delay'])
-        elif config.has_option('options', 'delay'):
-            self.delay = int(config.get('options', 'delay'))
-
-        if plugin_opts and 'max_attempts' in plugin_opts:
-            self.max_attempts = int(plugin_opts['max_attempts'])
-        elif config.has_option('options', 'max_attempts'):
-            self.max_attempts = int(config.get('options', 'max_attempts'))
-
+        self.opswat_url = config.get('options', 'opswat_url', fallback=None)
         if not self.opswat_url:
             raise StoqPluginException("MetaDefender URL was not provided")
-
+        self.apikey = config.get('options', 'apikey', fallback=None)
         if not self.apikey:
             raise StoqPluginException("MetaDefender API Key was not provided")
+        self.delay = config.getint('options', 'delay', fallback=10)
+        self.max_attempts = config.getint('options', 'max_attempts', fallback=10)
 
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Scan payloads using OPSWAT MetaDefender
 
@@ -95,8 +72,8 @@ class MetadefenderPlugin(WorkerPlugin):
         Wait for a scan to complete and then parse the results
 
         """
-        count = 0
-        err = None
+        count: int = 0
+        err: Optional[str] = None
         sleep(self.delay)
         while count < self.max_attempts:
             try:

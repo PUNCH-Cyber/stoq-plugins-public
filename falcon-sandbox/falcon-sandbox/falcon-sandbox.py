@@ -27,82 +27,46 @@ from json import JSONDecodeError
 from configparser import ConfigParser
 from typing import Dict, Optional, Union, Tuple, List
 
-from stoq import helpers
 from stoq.plugins import WorkerPlugin
+from stoq.helpers import StoqConfigParser, get_sha1
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Error, Payload, Request, WorkerResponse
 
 
 class FalconSandboxPlugin(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.sandbox_url = None
-        self.apikey = None
-        self.delay = 30
-        self.max_attempts = 10
-        self.useragent = 'Falcon Sandbox'
+        self.sandbox_url = config.get('options', 'sandbox_url', fallback=None)
+        if not self.sandbox_url:
+            raise StoqPluginException("Falcon Sandbox URL was not provided")
+        self.apikey = config.get('options', 'apikey', fallback=None)
+        if not self.apikey:
+            raise StoqPluginException("Falcon Sandbox API Key was not provided")
+        self.delay = config.getint('options', 'delay', fallback=30)
+        self.max_attempts = config.getint('options', 'max_attempts', fallback=10)
+        self.useragent = config.get('options', 'useragent', fallback='Falcon Sandbox')
         # Available environments ID:
         #     300: 'Linux (Ubuntu 16.04, 64 bit)',
         #     200: 'Android Static Analysis’,
         #     160: 'Windows 10 64 bit’,
         #     110: 'Windows 7 64 bit’,
         #     100: ‘Windows 7 32 bit’
-        self.environment_id = 160
-        self.wait_for_results = True
+        self.environment_id = config.getint('options', 'environment_id', fallback=160)
+        self.wait_for_results = config.getboolean(
+            'options', 'wait_for_results', fallback=True
+        )
 
-        if plugin_opts and 'sandbox_url' in plugin_opts:
-            self.sandbox_url = plugin_opts['sandbox_url']
-        elif config.has_option('options', 'sandbox_url'):
-            self.sandbox_url = config.get('options', 'sandbox_url')
-
-        if plugin_opts and 'apikey' in plugin_opts:
-            self.apikey = plugin_opts['apikey']
-        elif config.has_option('options', 'apikey'):
-            self.apikey = config.get('options', 'apikey')
-
-        if plugin_opts and 'delay' in plugin_opts:
-            self.delay = int(plugin_opts['delay'])
-        elif config.has_option('options', 'delay'):
-            self.delay = int(config.get('options', 'delay'))
-
-        if plugin_opts and 'max_attempts' in plugin_opts:
-            self.max_attempts = int(plugin_opts['max_attempts'])
-        elif config.has_option('options', 'max_attempts'):
-            self.max_attempts = config.getint('options', 'max_attempts')
-
-        if plugin_opts and 'useragent' in plugin_opts:
-            self.useragent = plugin_opts['useragent']
-        elif config.has_option('options', 'useragent'):
-            self.useragent = config.get('options', 'useragent')
-
-        if plugin_opts and 'environment_id' in plugin_opts:
-            self.environment_id = int(plugin_opts['environment_id'])
-        elif config.has_option('options', 'environment_id'):
-            self.environment_id = config.getint('options', 'environment_id')
-
-        if plugin_opts and 'wait_for_results' in plugin_opts:
-            self.wait_for_results = plugin_opts['wait_for_results']
-        elif config.has_option('options', 'wait_for_results'):
-            self.wait_for_results = config.getboolean('options', 'wait_for_results')
-
-        if not self.sandbox_url:
-            raise StoqPluginException("Falcon Sandbox URL was not provided")
-
-        if not self.apikey:
-            raise StoqPluginException("Falcon Sandbox API Key was not provided")
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Scan payloads using Falcon Sandbox
 
         """
 
-        errors = None
         url = f'{self.sandbox_url}/submit/file'
         headers = {'api-key': self.apikey, 'user-agent': self.useragent}
         filename = payload.payload_meta.extra_data.get(
-            'filename', helpers.get_sha1(payload.content)
+            'filename', get_sha1(payload.content)
         )
         if isinstance(filename, bytes):
             filename = filename.decode()
@@ -112,18 +76,19 @@ class FalconSandboxPlugin(WorkerPlugin):
         response.raise_for_status()
         results = response.json()
         if self.wait_for_results:
-            results, errors = self._parse_results(results['job_id'])
-        return WorkerResponse(results, errors=errors)
+            results = self._parse_results(
+                results['job_id'], payload.payload_id, request
+            )
+        return WorkerResponse(results)
 
     def _parse_results(
-        self, job_id: str
+        self, job_id: str, payload_id: str, request: Request
     ) -> Tuple[Union[Dict, None], Union[List[str], None]]:
         """
         Wait for a scan to complete and then parse the results
 
         """
         count = 0
-        err = None
         while count < self.max_attempts:
             sleep(self.delay)
             try:
@@ -133,11 +98,22 @@ class FalconSandboxPlugin(WorkerPlugin):
                 response.raise_for_status()
                 result = response.json()
                 if result['state'] not in ('IN_QUEUE', 'IN_PROGRESS'):
-                    return result, None
+                    return result
             except (JSONDecodeError, KeyError) as err:
-                err = str(err)
+                request.errors.append(
+                    Error(
+                        error=err, plugin_name=self.plugin_name, payload_id=payload_id
+                    )
+                )
             finally:
                 count += 1
                 if count >= self.max_attempts:
-                    err = f'Scan did not complete in time -- attempts: {count}'
-        return None, [err]
+                    msg = f'Scan did not complete in time -- attempts: {count}'
+                    request.errors.append(
+                        Error(
+                            error=msg,
+                            plugin_name=self.plugin_name,
+                            payload_id=payload_id,
+                        )
+                    )
+        return None

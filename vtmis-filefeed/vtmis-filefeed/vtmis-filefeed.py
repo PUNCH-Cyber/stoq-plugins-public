@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2019 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,51 +22,33 @@ Process VTMIS File Feed
 """
 
 import json
-import logging
 import tarfile
 import requests
 from io import BytesIO
-from queue import Queue
-from configparser import ConfigParser
+from asyncio import Queue
 from datetime import datetime, timedelta
 from typing import Dict, List, Union, Optional
 
+from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
 from stoq.plugins import ProviderPlugin, WorkerPlugin
-from stoq import Payload, ExtractedPayload, RequestMeta, WorkerResponse
-
-log = logging.getLogger('stoq')
+from stoq import Payload, ExtractedPayload, Request, WorkerResponse
 
 
 class VTMISFileFeedPlugin(ProviderPlugin, WorkerPlugin):
     API_URL = 'https://www.virustotal.com/vtapi/v2/file/feed'
 
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.apikey = None
-        self.time_slice = '1m'
-        self.download = False
-
-        if plugin_opts and 'apikey' in plugin_opts:
-            self.apikey = plugin_opts['apikey']
-        elif config.has_option('options', 'apikey'):
-            self.apikey = config.get('options', 'apikey')
-
-        if plugin_opts and 'time_since' in plugin_opts:
-            self.time_since = plugin_opts['time_since']
-        elif config.has_option('options', 'time_since'):
-            self.time_since = config.get('options', 'time_since')
-
-        if plugin_opts and 'download' in plugin_opts:
-            self.download = plugin_opts['download']
-        elif config.has_option('options', 'download'):
-            self.download = config.get('options', 'download')
+        self.apikey = config.get('options', 'apikey', fallback=None)
+        self.time_since = config.get('options', 'time_since', fallback='1m')
+        self.download = config.getboolean('options', 'download', fallback=False)
 
         if not self.apikey:
             raise StoqPluginException("VTMIS API Key does not exist")
 
-    def ingest(self, queue: Queue) -> None:
+    async def ingest(self, queue: Queue) -> None:
         for time_slice in self._generate_dates(self.time_since):
             params = {'apikey': self.apikey, 'package': time_slice}
             response = requests.get(self.API_URL, params=params)
@@ -102,20 +84,20 @@ class VTMISFileFeedPlugin(ProviderPlugin, WorkerPlugin):
         else:
             yield time_since
 
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Return individual result from vtmis-filefeed provider
 
         """
-        extracted: Union[List[ExtractedPayload], None] = None
-        errors: Union[List[str], None] = None
-        results = json.loads(payload.content)
+        extracted: List[ExtractedPayload] = []
+        errors: List[str] = []
+        results: Dict = json.loads(payload.content)
         if self.download:
-            log.info(f'Downloading VTMIS sample sha1: {results["sha1"]}')
+            self.log.info(f'Downloading VTMIS sample sha1: {results["sha1"]}')
             try:
                 response = requests.get(results['link'])
                 response.raise_for_status()
                 extracted = [ExtractedPayload(response.content)]
             except Exception as err:
-                errors = [f'Unable to download sample {results["sha1"]}: {err}']
+                errors.append(f'Unable to download sample {results["sha1"]}: {err}')
         return WorkerResponse(results=results, errors=errors, extracted=extracted)

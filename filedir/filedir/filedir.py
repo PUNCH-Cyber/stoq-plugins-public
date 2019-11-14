@@ -1,4 +1,4 @@
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,72 +22,36 @@ Handle file and directory interactions
 
 import os
 import hashlib
-from queue import Queue
 from pathlib import Path
+from asyncio import Queue
 from datetime import datetime
 from typing import Dict, Optional
-from configparser import ConfigParser
 
 from stoq import helpers
+from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, PayloadMeta, ArchiverResponse, StoqResponse, RequestMeta
 from stoq.plugins import ProviderPlugin, ConnectorPlugin, ArchiverPlugin
+from stoq import Payload, PayloadMeta, ArchiverResponse, StoqResponse, Request
 
 
 class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.source_dir = None
-        self.recursive = False
-        self.results_dir = os.path.join(os.getcwd(), 'results')
-        self.date_mode = False
-        self.date_format = '%Y/%m/%d'
-        self.archive_dir = os.path.join(os.getcwd(), 'archive')
-        self.use_sha = True
-        self.compactly = True
+        self.source_dir = config.get('options', 'source_dir', fallback=None)
+        self.recursive = config.getboolean('options', 'recursive', fallback=False)
+        self.results_dir = config.get(
+            'options', 'results_dir', fallback=os.path.join(os.getcwd(), 'results')
+        )
+        self.date_mode = config.getboolean('options', 'date_mode', fallback=False)
+        self.date_format = config.get('options', 'date_format', fallback='%Y/%m/%d')
+        self.compactly = config.getboolean('options', 'compactly', fallback=True)
+        self.archive_dir = config.get(
+            'options', 'archive_dir', fallback=os.path.join(os.getcwd(), 'archive')
+        )
+        self.use_sha = config.getboolean('options', 'use_sha', fallback=True)
 
-        if plugin_opts and 'source_dir' in plugin_opts:
-            self.source_dir = plugin_opts['source_dir']
-        elif config.has_option('options', 'source_dir'):
-            self.source_dir = config.get('options', 'source_dir')
-
-        if plugin_opts and 'recursive' in plugin_opts:
-            self.recursive = plugin_opts['recursive']
-        elif config.has_option('options', 'recursive'):
-            self.recursive = config.getboolean('options', 'recursive')
-
-        if plugin_opts and 'results_dir' in plugin_opts:
-            self.results_dir = plugin_opts['results_dir']
-        elif config.has_option('options', 'results_dir'):
-            self.results_dir = config.get('options', 'results_dir')
-
-        if plugin_opts and 'date_mode' in plugin_opts:
-            self.date_mode = plugin_opts['date_mode']
-        elif config.has_option('options', 'date_mode'):
-            self.date_mode = config.getboolean('options', 'date_mode')
-
-        if plugin_opts and 'date_format' in plugin_opts:
-            self.date_format = plugin_opts['date_format']
-        elif config.has_option('options', 'date_format'):
-            self.date_format = config.get('options', 'date_format')
-
-        if plugin_opts and 'compactly' in plugin_opts:
-            self.compactly = plugin_opts['compactly']
-        elif config.has_option('options', 'compactly'):
-            self.compactly = config.getboolean('options', 'compactly')
-
-        if plugin_opts and 'archive_dir' in plugin_opts:
-            self.archive_dir = plugin_opts['archive_dir']
-        elif config.has_option('options', 'archive_dir'):
-            self.archive_dir = config.get('options', 'archive_dir')
-
-        if plugin_opts and 'use_sha' in plugin_opts:
-            self.use_sha = plugin_opts['use_sha']
-        elif config.has_option('options', 'use_sha'):
-            self.use_sha = config.getboolean('options', 'use_sha')
-
-    def ingest(self, queue: Queue) -> None:
+    async def ingest(self, queue: Queue) -> None:
         """
         Ingest files from a directory
 
@@ -122,7 +86,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         with open(path, "rb") as f:
             queue.put(Payload(f.read(), meta))
 
-    def save(self, response: StoqResponse) -> None:
+    async def save(self, response: StoqResponse) -> None:
         """
         Save results to disk
 
@@ -138,7 +102,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         with open(f'{path}/{filename}', 'x') as outfile:
             outfile.write(f'{helpers.dumps(response, compactly=self.compactly)}\n')
 
-    def archive(self, payload: Payload, request_meta: RequestMeta) -> ArchiverResponse:
+    async def archive(self, payload: Payload, request: Request) -> ArchiverResponse:
         """
         Archive payload to disk
 
@@ -160,7 +124,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
             pass
         return ArchiverResponse({'path': f'{path}/{filename}'})
 
-    def get(self, task: ArchiverResponse) -> Payload:
+    async def get(self, task: ArchiverResponse) -> Payload:
         """
         Retrieve archived payload from disk
 

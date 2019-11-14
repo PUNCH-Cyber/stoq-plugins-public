@@ -1,4 +1,4 @@
-#   Copyright 2014-2019 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -23,25 +23,20 @@ Parse and abstract PE, ELF and MachO files using LIEF
 import json
 import lief
 from typing import Dict, Optional
-from configparser import ConfigParser
 
+from stoq.helpers import StoqConfigParser
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, RequestMeta, WorkerResponse
+from stoq import Payload, Request, WorkerResponse
 
 
 class LiefPlugin(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.abstract = True
+        self.abstract = config.getbool('options', 'abstract', fallback=True)
 
-        if plugin_opts and 'abstract' in plugin_opts:
-            self.abstract = bool(plugin_opts['abstract'])
-        elif config.has_option('options', 'abstract'):
-            self.abstract = bool(config.get('options', 'abstract'))
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
         Scan a payload using LIEF
 

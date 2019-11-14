@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -26,22 +26,18 @@ from bs4 import UnicodeDammit  # type: ignore
 from email.parser import Parser
 from urllib.parse import unquote
 from email.message import Message
-from configparser import ConfigParser
 from typing import List, Dict, Optional
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, RequestMeta, WorkerResponse, ExtractedPayload, PayloadMeta
+from stoq.helpers import StoqConfigParser
+from stoq import Payload, Request, WorkerResponse, ExtractedPayload, PayloadMeta
 
 
 class SMTPPlugin(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
 
-        self.omit_body: bool = False
-        self.always_dispatch: List[str] = []
-        self.archive_attachments: bool = True
-        self.extract_iocs: bool = False
-        self.ioc_keys: List[str] = [
+        ioc_keys: List[str] = [
             'received',
             'x-orig-ip',
             'x-originating-ip',
@@ -50,47 +46,15 @@ class SMTPPlugin(WorkerPlugin):
             'body',
             'body_html',
         ]
+        self.omit_body = config.getboolean('options', 'omit_body', fallback=False)
+        self.always_dispatch = config.getlist('options', 'always_dispatch', fallback=[])
+        self.archive_attachments = config.getboolean(
+            'options', 'archive_attachments', fallback=True
+        )
+        self.extract_iocs = config.getboolean('options', 'extract_iocs', fallback=False)
+        self.ioc_keys = config.getlist('options', 'ioc_keys', fallback=ioc_keys)
 
-        if plugin_opts and 'omit_body' in plugin_opts:
-            self.omit_body = plugin_opts['omit_body']
-        elif config.has_option('options', 'omit_body'):
-            self.omit_body = config.getboolean('options', 'omit_body')
-
-        if plugin_opts and 'always_dispatch' in plugin_opts:
-            if isinstance(plugin_opts['always_dispatch'], str):
-                self.always_dispatch = [
-                    x.strip() for x in plugin_opts['always_dispatch'].split(',')
-                ]
-            else:
-                self.always_dispatch = plugin_opts['always_dispatch']
-        elif config.has_option('options', 'always_dispatch'):
-            self.always_dispatch = [
-                x.strip() for x in config.get('options', 'always_dispatch').split(',')
-            ]
-
-        if plugin_opts and 'archive_attachments' in plugin_opts:
-            self.archive_attachments = plugin_opts['archive_attachments']
-        elif config.has_option('options', 'archive_attachments'):
-            self.archive_attachments = config.getboolean(
-                'options', 'archive_attachments'
-            )
-
-        if plugin_opts and 'extract_iocs' in plugin_opts:
-            self.extract_iocs = plugin_opts['extract_iocs']
-        elif config.has_option('options', 'extract_iocs'):
-            self.extract_iocs = config.getboolean('options', 'extract_iocs')
-
-        if plugin_opts and 'ioc_keys' in plugin_opts:
-            if isinstance(plugin_opts['ioc_keys'], str):
-                self.ioc_keys = [x.strip() for x in plugin_opts['ioc_keys'].split(',')]
-            else:
-                self.ioc_keys = plugin_opts['ioc_keys']
-        elif config.has_option('options', 'ioc_keys'):
-            self.ioc_keys = [
-                x.strip() for x in config.get('options', 'ioc_keys').split(',')
-            ]
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         message_json: Dict[str, str] = {}
         attachments: List[ExtractedPayload] = []
         errors: List[str] = []

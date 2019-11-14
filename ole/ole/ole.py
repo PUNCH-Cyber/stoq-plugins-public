@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -27,13 +27,12 @@ import olefile
 from oletools import oleobj
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, PayloadMeta, ExtractedPayload, RequestMeta, WorkerResponse
+from stoq import Error, Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
 
 
 class OlePlugin(WorkerPlugin):
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         extracted = []
-        errors = []
         ole_object = olefile.OleFileIO(payload.content)
         streams = ole_object.listdir(streams=True)
         for stream in streams:
@@ -60,6 +59,11 @@ class OlePlugin(WorkerPlugin):
                     )
                     extracted.append(ExtractedPayload(stream_buffer, meta))
             except Exception as err:
-                errors.append(str(err))
-        return WorkerResponse(extracted=extracted, errors=errors)
-
+                request.errors.append(
+                    Error(
+                        error=str(err),
+                        plugin_name=self.plugin_name,
+                        payload_id=payload.payload_id,
+                    )
+                )
+        return WorkerResponse(extracted=extracted)

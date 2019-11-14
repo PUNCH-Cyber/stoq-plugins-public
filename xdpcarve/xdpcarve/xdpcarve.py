@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -23,29 +23,23 @@ Carve and decode elements from XDP objects
 """
 
 import base64
-from typing import Dict, Optional
-from configparser import ConfigParser
+from typing import Dict, List, Optional
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 
 from stoq.plugins import WorkerPlugin
-from stoq import Payload, PayloadMeta, ExtractedPayload, RequestMeta, WorkerResponse
+from stoq.helpers import StoqConfigParser
+from stoq import Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
 
 
 class XdpCarve(WorkerPlugin):
-    def __init__(self, config: ConfigParser, plugin_opts: Optional[Dict]) -> None:
-        super().__init__(config, plugin_opts)
+    def __init__(self, config: StoqConfigParser) -> None:
+        super().__init__(config)
+        self.elements = config.getlist('options', 'elements', fallback=['chunk'])
 
-        if plugin_opts and 'elements' in plugin_opts:
-            self.ioc_keys = plugin_opts['elements']
-        elif config.has_option('options', 'elements'):
-            self.elements = [
-                x.strip() for x in config.get('options', 'elements').split(',')
-            ]
-
-    def scan(self, payload: Payload, request_meta: RequestMeta) -> WorkerResponse:
-        extracted = []
-        errors = []
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
+        extracted: List[ExtractedPayload] = []
+        errors: List[str] = []
         try:
             parsed_xml = parseString(payload.content)
         except ExpatError as err:
@@ -60,6 +54,6 @@ class XdpCarve(WorkerPlugin):
                     content = base64.b64decode(content)
                 except:
                     pass
-                meta = PayloadMeta(extra_data={"element_name": name})
+                meta = PayloadMeta(extra_data={'element_name': name})
                 extracted.append(ExtractedPayload(content, meta))
         return WorkerResponse(extracted=extracted, errors=errors)
