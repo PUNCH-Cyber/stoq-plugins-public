@@ -31,7 +31,7 @@ from typing import Dict, List, Optional
 
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
-from stoq import Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
+from stoq import Error, Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
 
 
 class PeCarve(WorkerPlugin):
@@ -49,15 +49,21 @@ class PeCarve(WorkerPlugin):
         """
 
         extracted: List[ExtractedPayload] = []
-        errors: List[str] = []
+        errors: List[Error] = []
         content = BytesIO(payload.content)
         content.seek(0)
         for start, end in self._carve(content):
-            ex, err = self.decompress(content, start)
+            ex, errs = self.decompress(content, start)
             if ex:
                 extracted.append(ex)
-            if err:
-                errors.extend(err)
+            for err in errs:
+                errors.append(
+                    Error(
+                        error=err,
+                        plugin_name=self.plugin_name,
+                        payload_id=payload.results.payload_id,
+                    )
+                )
         return WorkerResponse(extracted=extracted, errors=errors)
 
     def decompress(self, content: BytesIO, offset: int = 0):

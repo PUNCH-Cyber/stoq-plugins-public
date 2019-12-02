@@ -22,8 +22,8 @@ Processes a payload using ExifTool
 
 import json
 import tempfile
-from typing import Dict, Optional
 from subprocess import run, PIPE
+from typing import Dict, List, Optional
 
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
@@ -41,6 +41,7 @@ class ExifToolPlugin(WorkerPlugin):
         Scan a payload using Exiftool
 
         """
+        errors: List[Error] = []
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(payload.content)
             temp_file.flush()
@@ -49,9 +50,9 @@ class ExifToolPlugin(WorkerPlugin):
                 output = run(cmd, stdout=PIPE)
                 results = json.loads(output.stdout)[0]
             except Exception as err:
-                request.errors.append(
+                errors.append(
                     Error(
                         err, plugin_name=self.plugin_name, payload_id=payload.payload_id
                     )
                 )
-        return WorkerResponse(results)
+        return WorkerResponse(results, errors=errors)

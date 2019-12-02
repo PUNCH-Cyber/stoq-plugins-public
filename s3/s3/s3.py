@@ -64,7 +64,7 @@ class S3Plugin(ArchiverPlugin, ConnectorPlugin):
             filename = hashlib.sha1(payload.content).hexdigest()
             filename = f'{"/".join(list(filename[:5]))}/{filename}'
         else:
-            filename = payload.payload_id
+            filename = payload.results.payload_id
         self._upload(payload.content, filename, self.archive_bucket)
         return ArchiverResponse({'bucket': self.archive_bucket, 'path': filename})
 

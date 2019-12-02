@@ -24,7 +24,7 @@ import json
 from asyncio import Queue
 from google.cloud import pubsub
 from typing import Dict, List, Optional
-from google.api_core.exceptions import AlreadyExists
+from google.api_core.exceptions import DeadlineExceeded
 
 from stoq.helpers import StoqConfigParser
 from stoq.plugins import ConnectorPlugin, ProviderPlugin, ArchiverPlugin
@@ -77,26 +77,26 @@ class PubSubPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self._ingest_connect(subscription, topic)
         self.log.info(f'Monitoring {subscription} subscription for messages...')
         while True:
-            messages = self.ingest_client.pull(
-                subscription, max_messages=self.max_messages, return_immediately=False
-            )
-            for msg in messages.received_messages:
-                queue.put(json.loads(msg.message.data.decode()))
-                self.ingest_client.acknowledge(subscription, [msg.ack_id])
+            try:
+                messages = self.ingest_client.pull(
+                    subscription,
+                    max_messages=self.max_messages,
+                    return_immediately=False,
+                )
+                for msg in messages.received_messages:
+                    await queue.put(json.loads(msg.message.data.decode()))
+                    self.ingest_client.acknowledge(subscription, [msg.ack_id])
+            except DeadlineExceeded:
+                self.log.debug(
+                    f'Reconnecting to {subscription} subscription for messages...'
+                )
+                self._ingest_connect(subscription, topic)
 
     def _publish_connect(self, topic: str) -> None:
         if not self.publish_client:
             self.publish_client = pubsub.PublisherClient()
-            try:
-                self.publish_client.create_topic(topic)
-            except AlreadyExists:
-                pass
 
     def _ingest_connect(self, subscription: str, topic: str) -> None:
         self._publish_connect(topic)
         if not self.ingest_client:
             self.ingest_client = pubsub.SubscriberClient()
-            try:
-                self.ingest_client.create_subscription(subscription, topic)
-            except AlreadyExists:
-                pass

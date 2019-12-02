@@ -29,7 +29,7 @@ from xml.parsers.expat import ExpatError
 
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
-from stoq import Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
+from stoq import Error, Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
 
 
 class XdpCarve(WorkerPlugin):
@@ -39,11 +39,17 @@ class XdpCarve(WorkerPlugin):
 
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         extracted: List[ExtractedPayload] = []
-        errors: List[str] = []
+        errors: List[Error] = []
         try:
             parsed_xml = parseString(payload.content)
         except ExpatError as err:
-            errors.append(f'Unable to parse payload as XML with xdpcarve: {err}')
+            errors.append(
+                Error(
+                    error=f'Unable to parse payload as XML with xdpcarve: {err}',
+                    plugin_name=self.plugin_name,
+                    payload_id=payload.results.payload_id,
+                )
+            )
             return WorkerResponse(errors=errors)
         for name in self.elements:
             dom_element = parsed_xml.getElementsByTagName(name)

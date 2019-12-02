@@ -41,7 +41,6 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
     def __init__(self, config: StoqConfigParser) -> None:
         super().__init__(config)
 
-        self.conn = None
         self.publish_archive = config.getboolean(
             'options', 'publish_archive', fallback=True
         )
@@ -49,11 +48,11 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self.redis_port = config.getint('options', 'redis_port', fallback=6379)
         self.max_connections = config.getint('options', 'max_connections', fallback=15)
         self.redis_queue = config.get('options', 'redis_queue', fallback='stoq')
+        self._connect()
 
     async def archive(
         self, payload: Payload, request: Request
     ) -> Optional[ArchiverResponse]:
-        self._connect()
         self.conn.set(f'{payload.payload_id}_meta', str(payload.payload_meta))
         self.conn.set(f'{payload.payload_id}_buf', payload.content)
         self.conn.rpush(self.redis_queue, payload.payload_id)
@@ -64,9 +63,8 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         Save results or ArchiverResponse to redis
 
         """
-        self._connect()
         if self.publish_archive:
-            msgs: List[str] = []
+            msgs: List[Dict] = []
             for result in response.results:
                 msgs = [{k: v} for k, v in result.archivers.items()]
             for msg in msgs:
@@ -74,8 +72,7 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         else:
             self.conn.set(response.scan_id, str(response))
 
-    def ingest(self, queue: Queue) -> None:
-        self._connect()
+    async def ingest(self, queue: Queue) -> None:
         self.log.info(f'Monitoring redis queue {self.redis_queue}')
         while True:
             msg = self.conn.blpop(self.redis_queue, timeout=0)
@@ -87,20 +84,21 @@ class RedisPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
             meta = self.conn.get(f'{data}_meta')
             if meta and payload:
                 meta = json.loads(meta.decode())
-                queue.put(Payload(payload, payload_meta=PayloadMeta(extra_data=meta)))
+                await queue.put(
+                    Payload(payload, payload_meta=PayloadMeta(extra_data=meta))
+                )
                 self.conn.delete(f'{meta}_buf')
                 self.conn.delete(f'{meta}_meta')
             else:
-                queue.put(json.loads(data))
+                await queue.put(json.loads(data))
 
     def _connect(self):
-        if not self.conn:
-            self.conn = redis.Redis(
-                host=self.redis_host,
-                port=self.redis_port,
-                socket_keepalive=True,
-                socket_timeout=300,
-                connection_pool=redis.BlockingConnectionPool(
-                    max_connections=self.max_connections
-                ),
-            )
+        self.conn = redis.Redis(
+            host=self.redis_host,
+            port=self.redis_port,
+            socket_keepalive=True,
+            socket_timeout=300,
+            connection_pool=redis.BlockingConnectionPool(
+                max_connections=self.max_connections
+            ),
+        )

@@ -46,7 +46,7 @@ class ElasticSearchPlugin(ConnectorPlugin):
             'options', 'index_by_month', fallback=True
         )
 
-    def save(self, response: StoqResponse) -> None:
+    async def save(self, response: StoqResponse) -> None:
         """
         Save results to ElasticSearch
 

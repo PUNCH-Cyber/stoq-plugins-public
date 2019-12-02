@@ -44,5 +44,5 @@ class TikaPlugin(WorkerPlugin):
         """
         response = requests.put(self.tika_url, data=payload.content)
         response.raise_for_status()
-        extracted = ExtractedPayload(response.content)
+        extracted = [ExtractedPayload(response.content)]
         return WorkerResponse(extracted=extracted)

@@ -30,7 +30,7 @@ from typing import List, Dict, Optional
 
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
-from stoq import Payload, Request, WorkerResponse, ExtractedPayload, PayloadMeta
+from stoq import Error, Payload, Request, WorkerResponse, ExtractedPayload, PayloadMeta
 
 
 class SMTPPlugin(WorkerPlugin):
@@ -57,7 +57,7 @@ class SMTPPlugin(WorkerPlugin):
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         message_json: Dict[str, str] = {}
         attachments: List[ExtractedPayload] = []
-        errors: List[str] = []
+        errors: List[Error] = []
         ioc_content: str = ''
         session = UnicodeDammit(payload.content).unicode_markup
         message = Parser(policy=policy.default).parsestr(session)
@@ -105,7 +105,13 @@ class SMTPPlugin(WorkerPlugin):
                         attachment = ExtractedPayload(part.as_bytes(), attachment_meta)
                         attachments.append(attachment)
                     except Exception as err:
-                        errors.append(f'Failed rfc822 attachment: {err}')
+                        errors.append(
+                            Error(
+                                error=f'Failed rfc822 attachment: {err}',
+                                plugin_name=self.plugin_name,
+                                payload_id=payload.results.payload_id,
+                            )
+                        )
             else:
                 try:
                     attachment_meta = PayloadMeta(
@@ -124,7 +130,13 @@ class SMTPPlugin(WorkerPlugin):
                     )
                     attachments.append(attachment)
                 except Exception as err:
-                    errors.append(f'Failed extracting attachment: {err}')
+                    errors.append(
+                        Error(
+                            error=f'Failed extracting attachment: {err}',
+                            plugin_name=self.plugin_name,
+                            payload_id=payload.results.payload_id,
+                        )
+                    )
         if self.extract_iocs:
             ioc_meta = PayloadMeta(should_archive=False, dispatch_to=['iocextract'])
             attachments.append(ExtractedPayload(ioc_content.encode(), ioc_meta))

@@ -93,7 +93,7 @@ class GCSPlugin(ArchiverPlugin, ConnectorPlugin):
             datetime_path = datetime.now().strftime('%Y/%m/%d')
             filename = f'{datetime_path}/{payload.payload_id}'
         else:
-            filename = payload.payload_id
+            filename = payload.results.payload_id
         self._upload(payload.content, filename, self.archive_bucket)
         return ArchiverResponse(
             {

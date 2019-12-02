@@ -21,6 +21,7 @@ Save results and archive payloads using MongoDB
 """
 
 import json
+
 from gridfs import GridFS
 from pymongo import MongoClient
 from pymongo.errors import (
@@ -31,7 +32,6 @@ from pymongo.errors import (
 )
 from typing import Optional, Dict
 from gridfs.errors import FileExists
-from configparser import ConfigParser
 
 from stoq.helpers import StoqConfigParser, get_sha1
 from stoq.plugins import ConnectorPlugin, ArchiverPlugin
@@ -91,6 +91,7 @@ class MongoDbPlugin(ArchiverPlugin, ConnectorPlugin):
         if result:
             payload = result.read()
             return Payload(payload, PayloadMeta(extra_data=task.results))
+        return None
 
     def _connect(self) -> None:
         """

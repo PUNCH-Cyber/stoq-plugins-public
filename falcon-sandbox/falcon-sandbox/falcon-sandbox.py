@@ -63,9 +63,10 @@ class FalconSandboxPlugin(WorkerPlugin):
 
         """
 
+        errors: List[Error] = []
         url = f'{self.sandbox_url}/submit/file'
         headers = {'api-key': self.apikey, 'user-agent': self.useragent}
-        filename = payload.payload_meta.extra_data.get(
+        filename = payload.results.payload_meta.extra_data.get(
             'filename', get_sha1(payload.content)
         )
         if isinstance(filename, bytes):
@@ -76,19 +77,19 @@ class FalconSandboxPlugin(WorkerPlugin):
         response.raise_for_status()
         results = response.json()
         if self.wait_for_results:
-            results = self._parse_results(
-                results['job_id'], payload.payload_id, request
-            )
-        return WorkerResponse(results)
+            results, errors = self._parse_results(results['job_id'])
+        return WorkerResponse(results, errors=errors)
 
     def _parse_results(
-        self, job_id: str, payload_id: str, request: Request
+        self, job_id: str
     ) -> Tuple[Union[Dict, None], Union[List[str], None]]:
         """
         Wait for a scan to complete and then parse the results
 
         """
         count = 0
+        errors: List[Error] = []
+
         while count < self.max_attempts:
             sleep(self.delay)
             try:
@@ -98,9 +99,9 @@ class FalconSandboxPlugin(WorkerPlugin):
                 response.raise_for_status()
                 result = response.json()
                 if result['state'] not in ('IN_QUEUE', 'IN_PROGRESS'):
-                    return result
+                    return result, errors
             except (JSONDecodeError, KeyError) as err:
-                request.errors.append(
+                errors.append(
                     Error(
                         error=err, plugin_name=self.plugin_name, payload_id=payload_id
                     )
@@ -109,11 +110,11 @@ class FalconSandboxPlugin(WorkerPlugin):
                 count += 1
                 if count >= self.max_attempts:
                     msg = f'Scan did not complete in time -- attempts: {count}'
-                    request.errors.append(
+                    errors.append(
                         Error(
                             error=msg,
                             plugin_name=self.plugin_name,
                             payload_id=payload_id,
                         )
                     )
-        return None
+        return None, errors

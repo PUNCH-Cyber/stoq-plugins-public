@@ -32,7 +32,7 @@ from typing import DefaultDict, Dict, List, Optional
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, Request, WorkerResponse
+from stoq import Error, Payload, Request, WorkerResponse
 
 
 class TridPlugin(WorkerPlugin):
@@ -60,7 +60,7 @@ class TridPlugin(WorkerPlugin):
 
         """
         results: DefaultDict = defaultdict(list)
-        errors: List[str] = []
+        errors: List[Error] = []
         unknown_ext: int = 0
 
         with tempfile.NamedTemporaryFile() as temp_file:
@@ -75,11 +75,27 @@ class TridPlugin(WorkerPlugin):
             )
             trid_results, err = p.communicate()
             if err:
-                errors.append(err)
+                errors.append(
+                    Error(
+                        error=err,
+                        plugin_name=self.plugin_name,
+                        payload_id=payload.results.payload_id,
+                    )
+                )
 
         matches = re.findall(r'^ {0,2}[0-9].*%.*$', trid_results, re.M)
         warnings = re.findall(r'^Warning: (.*$)', trid_results, re.M)
-        errors.extend([w for w in warnings if w not in self.skip_warnings])
+        errors.extend(
+            [
+                Error(
+                    error=w,
+                    plugin_name=self.plugin_name,
+                    payload_id=payload.results.payload_id,
+                )
+                for w in warnings
+                if w not in self.skip_warnings
+            ]
+        )
         for match in matches:
             match = match.split()
             if match:

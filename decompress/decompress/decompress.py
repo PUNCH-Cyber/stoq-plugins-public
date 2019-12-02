@@ -41,7 +41,6 @@ extract content appropriately.
 
 import os
 import shlex
-import magic
 import tempfile
 from typing import Dict, List, Optional
 from subprocess import Popen, PIPE, TimeoutExpired
@@ -49,10 +48,19 @@ from subprocess import Popen, PIPE, TimeoutExpired
 from stoq.helpers import StoqConfigParser
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
-from stoq import Payload, Request, WorkerResponse, ExtractedPayload, PayloadMeta, Error
+from stoq import (
+    Payload,
+    Request,
+    WorkerResponse,
+    ExtractedPayload,
+    PayloadMeta,
+    Error,
+)
 
 
 class Decompress(WorkerPlugin):
+    required_workers = set('mimetype')
+
     ARCHIVE_MAGIC = {
         'application/gzip': '7z',
         'application/jar': '7z',
@@ -76,6 +84,13 @@ class Decompress(WorkerPlugin):
         'application/x-lzma': '7z',
         'application/x-rpm': '7z',
         'application/x-xz': '7z',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '7z',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.template': '7z',
+        'application/vnd.openxmlformats-officedocument.spreadsheetm1.sheet': '7z',
+        'application/vnd.openxmlformats-officedocument.spreadsheetm1.template': '7z',
+        'application/vnd.openxmlformats-officedocument.presentationm1.presentation': '7z',
+        'application/vnd.openxmlformats-officedocument.presentationm1.template': '7z',
+        'application/vnd.openxmlformats-officedocument.presentationm1.slideshow': '7z',
     }
 
     ARCHIVE_CMDS = {
@@ -90,7 +105,9 @@ class Decompress(WorkerPlugin):
         super().__init__(config)
 
         self.timeout = config.getint('options', 'timeout', fallback=45)
-        self.password = config.getlist('options', 'passwords', fallback=['-'])
+        self.passwords = config.getlist(
+            'options', 'passwords', fallback=['-', 'infected', 'password']
+        )
         self.maximum_size = config.getint(
             'options', 'maximum_size', fallback=50_000_000
         )
@@ -111,6 +128,7 @@ class Decompress(WorkerPlugin):
 
         archiver = None
         mimetype = None
+        errors: List[Error] = []
         results: Dict = {}
         extracted: List[ExtractedPayload] = []
         passwords: List[str] = payload.results.payload_meta.extra_data.get(
@@ -119,7 +137,7 @@ class Decompress(WorkerPlugin):
 
         # Determine the mimetype of the payload so we can identify the
         # correct archiver. This should either be based off the payload.results.payload_meta
-        # (useful when payload is passed via dispatching) or via magic
+        # (useful when payload is passed via dispatching) or via mimetype plugin
         if 'archiver' in payload.results.payload_meta.extra_data:
             if payload.results.payload_meta.extra_data['archiver'] in self.ARCHIVE_CMDS:
                 archiver = self.ARCHIVE_CMDS[
@@ -130,7 +148,7 @@ class Decompress(WorkerPlugin):
                     f"Unknown archive type of {payload.results.payload_meta['archiver']}"
                 )
         else:
-            mimetype = magic.from_buffer(payload.content, mime=True)
+            mimetype = payload.results.workers['mimetype']['mimetype']
             if mimetype in self.ARCHIVE_MAGIC:
                 archive_type = self.ARCHIVE_MAGIC[mimetype]
                 if archive_type in self.ARCHIVE_CMDS:
@@ -167,11 +185,11 @@ class Decompress(WorkerPlugin):
                 for f in files:
                     path = os.path.join(extract_dir, root, str(f))
                     if os.path.getsize(path) > self.maximum_size:
-                        request.errors.append(
+                        errors.append(
                             Error(
                                 f'Extracted object is too large ({os.path.getsize(path)} > {self.maximum_size})',
                                 plugin_name=self.plugin_name,
-                                payload_id=payload.payload_id,
+                                payload_id=payload.results.payload_id,
                             )
                         )
                         continue
@@ -180,13 +198,13 @@ class Decompress(WorkerPlugin):
                         try:
                             data = extracted_file.read()
                         except OSError as err:
-                            request.errors.append(
+                            errors.append(
                                 Error(
                                     f'Unable to access extracted content: {err}',
                                     plugin_name=self.plugin_name,
-                                    payload_id=payload.payload_id,
+                                    payload_id=payload.results.payload_id,
                                 )
                             )
                             continue
                         extracted.append(ExtractedPayload(data, meta))
-        return WorkerResponse(results, extracted=extracted)
+        return WorkerResponse(results, extracted=extracted, errors=errors)

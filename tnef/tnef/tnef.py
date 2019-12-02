@@ -40,6 +40,5 @@ class TNEFExtractorPlugin(WorkerPlugin):
                 except:
                     filename = "None"
                 tnef_meta = PayloadMeta(extra_data={'filename': filename})
-                attachment = ExtractedPayload(tnef_attachment.data, tnef_meta)
-                extracted.extend(attachment)
+                extracted.append(ExtractedPayload(tnef_attachment.data, tnef_meta))
         return WorkerResponse(extracted=extracted)

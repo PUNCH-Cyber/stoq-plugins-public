@@ -22,14 +22,15 @@ Scan payloads using OPSWAT MetaDefender
 """
 
 import requests
+
 from time import sleep
 from json import JSONDecodeError
-from typing import Dict, Optional, Union, Tuple
+from typing import Dict, List, Optional, Union, Tuple
 
 from stoq.plugins import WorkerPlugin
 from stoq.exceptions import StoqPluginException
 from stoq.helpers import get_sha1, StoqConfigParser
-from stoq import Payload, Request, WorkerResponse
+from stoq import Error, Payload, Request, WorkerResponse
 
 
 class MetadefenderPlugin(WorkerPlugin):
@@ -38,10 +39,10 @@ class MetadefenderPlugin(WorkerPlugin):
 
         self.opswat_url = config.get('options', 'opswat_url', fallback=None)
         if not self.opswat_url:
-            raise StoqPluginException("MetaDefender URL was not provided")
+            raise StoqPluginException('MetaDefender URL was not provided')
         self.apikey = config.get('options', 'apikey', fallback=None)
         if not self.apikey:
-            raise StoqPluginException("MetaDefender API Key was not provided")
+            raise StoqPluginException('MetaDefender API Key was not provided')
         self.delay = config.getint('options', 'delay', fallback=10)
         self.max_attempts = config.getint('options', 'max_attempts', fallback=10)
 
@@ -51,18 +52,25 @@ class MetadefenderPlugin(WorkerPlugin):
 
         """
 
+        errors: List[Error] = []
         headers = {
             'apikey': self.apikey,
-            'filename': payload.payload_meta.extra_data.get(
+            'filename': payload.results.payload_meta.extra_data.get(
                 'filename', get_sha1(payload.content)
             ),
         }
         response = requests.post(self.opswat_url, data=payload.content, headers=headers)
         response.raise_for_status()
         data_id = response.json()['data_id']
-        results, errors = self._parse_results(data_id)
-        if errors:
-            errors = [errors]
+        results, error = self._parse_results(data_id)
+        if error:
+            errors.append(
+                Error(
+                    error=error,
+                    plugin_name=self.plugin_name,
+                    payload_id=payload.results.payload_id,
+                )
+            )
         return WorkerResponse(results, errors=errors)
 
     def _parse_results(
@@ -73,7 +81,7 @@ class MetadefenderPlugin(WorkerPlugin):
 
         """
         count: int = 0
-        err: Optional[str] = None
+        error: Optional[str] = None
         sleep(self.delay)
         while count < self.max_attempts:
             try:
@@ -85,10 +93,10 @@ class MetadefenderPlugin(WorkerPlugin):
                     return result, None
                 sleep(self.delay)
             except (JSONDecodeError, KeyError) as err:
-                err = str(err)
+                error = str(err)
                 sleep(self.delay)
             finally:
                 count += 1
                 if count >= self.max_attempts:
-                    err = f'Scan did not complete in time -- attempts: {count}'
-        return None, err
+                    error = f'Scan did not complete in time -- attempts: {count}'
+        return None, error

@@ -22,6 +22,7 @@ Extract objects from RTF payloads
 
 """
 
+from typing import List
 from oletools import rtfobj
 
 from stoq.plugins import WorkerPlugin
@@ -30,7 +31,7 @@ from stoq import Payload, PayloadMeta, ExtractedPayload, Request, WorkerResponse
 
 class RtfPlugin(WorkerPlugin):
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
-        extracted = []
+        extracted: List[ExtractedPayload] = []
         rtf = rtfobj.RtfObjParser(payload.content)
         rtf.parse()
 

@@ -41,7 +41,9 @@ class LiefPlugin(WorkerPlugin):
         Scan a payload using LIEF
 
         """
-        filename = payload.payload_meta.extra_data.get('filename', payload.payload_id)
+        filename = payload.results.payload_meta.extra_data.get(
+            'filename', payload.results.payload_id
+        )
 
         try:
             binary = lief.parse(raw=payload.content, name=filename)

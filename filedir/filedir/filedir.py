@@ -63,16 +63,16 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
                 for root_path, subdirs, files in os.walk(self.source_dir):
                     for entry in files:
                         path = os.path.join(root_path, entry)
-                        self._queue(path, queue)
+                        await self._queue(path, queue)
             else:
                 for entry in os.scandir(self.source_dir):
                     if not entry.name.startswith('.') and entry.is_file():
                         path = os.path.join(self.source_dir, entry.name)
-                        self._queue(path, queue)
+                        await self._queue(path, queue)
         elif os.path.isfile(self.source_dir):
-            self._queue(self.source_dir, queue)
+            await self._queue(self.source_dir, queue)
 
-    def _queue(self, path: str, queue: Queue) -> None:
+    async def _queue(self, path: str, queue: Queue) -> None:
         """
         Publish payload to stoQ queue
 
@@ -84,7 +84,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
             }
         )
         with open(path, "rb") as f:
-            queue.put(Payload(f.read(), meta))
+            await queue.put(Payload(f.read(), meta))
 
     async def save(self, response: StoqResponse) -> None:
         """

@@ -23,12 +23,11 @@ Monitor a directory for newly created files for processing
 import os
 from time import sleep
 from asyncio import Queue
+from watchgod import awatch
 from typing import Dict, Optional
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
-from stoq.plugins import ProviderPlugin
 from stoq import Payload, PayloadMeta
+from stoq.plugins import ProviderPlugin
 from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
 
@@ -50,29 +49,20 @@ class DirmonPlugin(ProviderPlugin):
 
         """
 
-        handler = WatchdogEvent(queue)
-        observer = Observer()
-        observer.schedule(handler, self.source_dir, recursive=False)
-        observer.start()
         self.log.info(f'Monitoring {self.source_dir} for newly created files...')
-        try:
-            while True:
-                sleep(2)
-        except KeyboardInterrupt:
-            observer.stop()
-        observer.join()
-
-
-class WatchdogEvent(FileSystemEventHandler):
-    def __init__(self, queue: Queue) -> None:
-        self.queue = queue
-
-    def on_created(self, event):
-        meta = PayloadMeta(
-            extra_data={
-                'filename': os.path.basename(event.src_path),
-                'source_dir': os.path.dirname(event.src_path),
-            }
-        )
-        with open(event.src_path, 'rb') as f:
-            self.queue.put(Payload(f.read(), meta))
+        async for changes in awatch(self.source_dir):
+            for change in list(changes):
+                event = change[0]
+                src_path = os.path.abspath(change[1])
+                # Only handle Change.added
+                if event != 1:
+                    continue
+                meta = PayloadMeta(
+                    extra_data={
+                        'filename': os.path.basename(src_path),
+                        'source_dir': os.path.dirname(src_path),
+                    }
+                )
+                with open(src_path, 'rb') as f:
+                    payload = Payload(f.read(), meta)
+                    await queue.put(payload)

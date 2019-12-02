@@ -75,10 +75,8 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin):
 
         """
         dr = DispatcherResponse()
-        for worker_result in payload.worker_results:
-            if 'iocextract' in worker_result:
-                dr.plugin_names.append('vtmis-search')
-                break
+        if 'iocextract' in payload.results.workers:
+            dr.plugin_names.append('vtmis-search')
         return dr
 
     def _query_api(self, query: str, endpoint: str) -> Dict:

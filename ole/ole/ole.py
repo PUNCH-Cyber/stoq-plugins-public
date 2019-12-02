@@ -24,6 +24,8 @@ Carve OLE streams within Microsoft Office Documents
 
 import string
 import olefile
+
+from typing import List
 from oletools import oleobj
 
 from stoq.plugins import WorkerPlugin
@@ -32,7 +34,8 @@ from stoq import Error, Payload, PayloadMeta, ExtractedPayload, Request, WorkerR
 
 class OlePlugin(WorkerPlugin):
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
-        extracted = []
+        extracted: List[ExtractedPayload] = []
+        errors: List[Error] = []
         ole_object = olefile.OleFileIO(payload.content)
         streams = ole_object.listdir(streams=True)
         for stream in streams:
@@ -59,11 +62,11 @@ class OlePlugin(WorkerPlugin):
                     )
                     extracted.append(ExtractedPayload(stream_buffer, meta))
             except Exception as err:
-                request.errors.append(
+                errors.append(
                     Error(
                         error=str(err),
                         plugin_name=self.plugin_name,
                         payload_id=payload.payload_id,
                     )
                 )
-        return WorkerResponse(extracted=extracted)
+        return WorkerResponse(extracted=extracted, errors=errors)

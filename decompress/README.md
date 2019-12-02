@@ -16,6 +16,12 @@ All options below may be set by:
 - [`stoq` command](https://stoq-framework.readthedocs.io/en/latest/gettingstarted.html#plugin-options)
 - [`Stoq` class](https://stoq-framework.readthedocs.io/en/latest/dev/core.html?highlight=plugin_opts#using-providers)
 
+### Required Plugin Dependencies
+
+The below stoQ plugins must be installed for this plugin to function properly:
+
+- mimetype
+
 ### Options
 
 - `passwords` [str]: Ordered comma separated list of passwords used for brute forcing compressed payload (if supported)

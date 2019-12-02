@@ -31,6 +31,7 @@ from stoq.plugins import ArchiverPlugin, ConnectorPlugin, ProviderPlugin
 from stoq.data_classes import (
     ArchiverResponse,
     Payload,
+    Request,
     RequestMeta,
     PayloadMeta,
     StoqResponse,
@@ -67,10 +68,10 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         msg = {
             '_is_payload': True,
             '_content': b64encode(payload.content),
-            '_payload_meta': payload.payload_meta.extra_data,
-            '_request_meta': request_meta,
+            '_payload_meta': payload.results.payload_meta.extra_data,
+            '_request_meta': request.request_meta,
         }
-        self.producer.send(self.topic, helpers.dumps(msg).encode())
+        self.producer.send(self.topic, dumps(msg).encode())
         self.producer.flush()
         return ArchiverResponse()
 
@@ -100,7 +101,7 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
                             )
                         )
                     }
-                    self.producer.send(self.topic, helpers.dumps(r).encode())
+                    self.producer.send(self.topic, dumps(r).encode())
         else:
             self.producer.send(self.topic, str(response).encode())
         self.producer.flush()
@@ -124,9 +125,9 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
                 extra_data['request_meta'] = msg['_request_meta']
                 meta = PayloadMeta(extra_data=extra_data)
                 payload = Payload(content=b64decode(msg['_content']), payload_meta=meta)
-                queue.put(payload)
+                await queue.put(payload)
             else:
-                queue.put(msg)
+                await queue.put(msg)
 
     def _connect(self) -> None:
         """
