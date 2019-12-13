@@ -76,6 +76,7 @@ class MetadefenderPlugin(WorkerPlugin):
 
         headers = {
             'apikey': self.apikey,
+            'content-type': 'application/octet-stream',
             'filename': payload.payload_meta.extra_data.get(
                 'filename', get_sha1(payload.content)
             ),
