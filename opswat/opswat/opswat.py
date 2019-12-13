@@ -55,6 +55,7 @@ class MetadefenderPlugin(WorkerPlugin):
         errors: List[Error] = []
         headers = {
             'apikey': self.apikey,
+            'content-type': 'application/octet-stream',
             'filename': payload.results.payload_meta.extra_data.get(
                 'filename', get_sha1(payload.content)
             ),
