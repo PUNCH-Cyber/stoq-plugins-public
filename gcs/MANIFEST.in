@@ -1,1 +1,1 @@
-include gcs/*.stoq
+graft gcs

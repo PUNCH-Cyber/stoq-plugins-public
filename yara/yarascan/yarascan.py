@@ -83,7 +83,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
                         dr.meta[name] = match
         return dr
 
-    def _compile_rules(self, filepath: str) -> yara.Rules:
+    def _compile_rules(self, filepath: str) -> yara:
         filepath = os.path.realpath(filepath)
         if not os.path.isfile(filepath):
             raise StoqPluginException(
@@ -92,9 +92,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
         else:
             return yara.compile(filepath=filepath)
 
-    def _yara_matches(
-        self, content: bytes, rules: yara.Rules
-    ) -> Generator[Dict, None, None]:
+    def _yara_matches(self, content: bytes, rules: yara) -> Generator[Dict, None, None]:
         matches = rules.match(data=content, timeout=self.timeout)
         for match in matches:
             yield {

@@ -1,1 +1,1 @@
-include javaclass/*.stoq
+graft javaclass

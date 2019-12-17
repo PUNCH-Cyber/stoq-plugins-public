@@ -1,1 +1,1 @@
-include decompress/*.stoq
+graft decompress

@@ -1,1 +1,1 @@
-include xdpcarve/*.stoq
+graft xdpcarve

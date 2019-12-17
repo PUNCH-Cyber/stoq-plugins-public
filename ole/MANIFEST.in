@@ -1,1 +1,1 @@
-include ole/*.stoq
+graft ole

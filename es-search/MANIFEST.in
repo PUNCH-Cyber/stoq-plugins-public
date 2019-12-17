@@ -1,1 +1,1 @@
-include es-search/*.stoq
+graft es-search

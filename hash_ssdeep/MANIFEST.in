@@ -1,1 +1,1 @@
-include hash_ssdeep/*.stoq
+graft hash_ssdeep

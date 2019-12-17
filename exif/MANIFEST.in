@@ -1,1 +1,1 @@
-include exif/*.stoq
+graft exif

@@ -1,1 +1,1 @@
-include stdout/*.stoq
+graft stdout

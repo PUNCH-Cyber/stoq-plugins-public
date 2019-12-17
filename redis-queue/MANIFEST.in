@@ -1,1 +1,1 @@
-include redis-queue/*.stoq
+graft redis-queue

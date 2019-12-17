@@ -1,1 +1,1 @@
-include tnef/*.stoq
+graft tnef

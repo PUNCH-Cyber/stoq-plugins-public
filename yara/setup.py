@@ -11,5 +11,4 @@ setup(
     include_package_data=True,
     test_suite='tests',
     tests_require=['asynctest>=0.13.0'],
-    package_data={'yarascan': ['yarascan.stoq', 'rules/*']},
 )

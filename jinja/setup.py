@@ -9,5 +9,4 @@ setup(
     description="Decorate results using a template",
     packages=find_packages(),
     include_package_data=True,
-    package_data={'jinja': ['jinja.stoq', 'stoq.tpl']},
 )

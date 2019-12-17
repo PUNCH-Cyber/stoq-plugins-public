@@ -1,1 +1,1 @@
-include s3/*.stoq
+graft s3

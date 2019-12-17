@@ -1,1 +1,1 @@
-include xorsearch/*.stoq
+graft xorsearch

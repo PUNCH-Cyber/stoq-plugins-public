@@ -1,1 +1,1 @@
-include falcon-sandbox/*.stoq
+graft falcon-sandbox

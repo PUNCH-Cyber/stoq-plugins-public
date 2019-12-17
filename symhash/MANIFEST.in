@@ -1,1 +1,1 @@
-include symhash/*.stoq
+graft symhash

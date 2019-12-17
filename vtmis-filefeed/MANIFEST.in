@@ -1,1 +1,1 @@
-include vtmis-filefeed/*.stoq
+graft vtmis-filefeed

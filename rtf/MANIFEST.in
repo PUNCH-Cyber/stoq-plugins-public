@@ -1,1 +1,1 @@
-include rtf/*.stoq
+graft rtf

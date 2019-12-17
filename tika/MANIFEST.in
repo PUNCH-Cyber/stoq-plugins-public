@@ -1,1 +1,1 @@
-include tika/*.stoq
+graft tika

@@ -1,1 +1,1 @@
-include mraptor/*.stoq
+graft mraptor

@@ -1,1 +1,1 @@
-include mimetype/*.stoq
+graft mimetype

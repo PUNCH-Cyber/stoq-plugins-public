@@ -1,1 +1,1 @@
-include trid/*.stoq
+graft trid
