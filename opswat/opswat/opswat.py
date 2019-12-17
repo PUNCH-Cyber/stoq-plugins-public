@@ -87,7 +87,8 @@ class MetadefenderPlugin(WorkerPlugin):
         while count < self.max_attempts:
             try:
                 url = f'{self.opswat_url}/{data_id}'
-                response = requests.get(url)
+                headers = {'apikey': self.apikey}
+                response = requests.get(url, headers=headers)
                 response.raise_for_status()
                 result = response.json()
                 if result['scan_results']['progress_percentage'] == 100:
