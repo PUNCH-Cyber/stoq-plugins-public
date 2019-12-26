@@ -108,7 +108,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
 
         """
         path = self.archive_dir
-        filename = payload.payload_id
+        filename = payload.results.payload_id
         if self.use_sha:
             filename = hashlib.sha1(payload.content).hexdigest()
             path = f'{path}/{"/".join(list(filename[:5]))}'
