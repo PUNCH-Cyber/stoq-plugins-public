@@ -18,7 +18,7 @@ Module = kafka-queue
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 3.0.0
+Version = 3.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Publish and Consume messages from a Kafka Server
 

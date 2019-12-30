@@ -20,11 +20,12 @@ Publish and Consume messages from a Kafka Server
 """
 
 import json
-from asyncio import Queue
+from kafka import KafkaProducer
 from collections import ChainMap
 from typing import Dict, Optional
 from base64 import b64encode, b64decode
-from kafka import KafkaConsumer, KafkaProducer
+from asyncio import Queue, get_event_loop
+from aiokafka import AIOKafkaConsumer
 
 from stoq.helpers import StoqConfigParser, dumps
 from stoq.plugins import ArchiverPlugin, ConnectorPlugin, ProviderPlugin
@@ -107,16 +108,19 @@ class KafkaPlugin(ArchiverPlugin, ConnectorPlugin, ProviderPlugin):
         self.producer.flush()
 
     async def ingest(self, queue: Queue) -> None:
-        consumer = KafkaConsumer(
+        consumer = AIOKafkaConsumer(
             self.topic,
             group_id=self.group,
             auto_offset_reset='earliest',
             bootstrap_servers=self.servers,
             heartbeat_interval_ms=self.heartbeat_interval_ms,
             session_timeout_ms=self.session_timeout_ms,
+            loop=get_event_loop(),
         )
+        await consumer.start()
         self.log.info(f'Monitoring {self.topic} topic for messages...')
-        for message in consumer:
+
+        async for message in consumer:
             msg = json.loads(message.value)
             if msg.get('_is_payload'):
                 # This message is a payload that was placed on the queue
