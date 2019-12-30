@@ -18,7 +18,7 @@ All options below may be set by:
 
 ### Options
 
-- `bin_path` [str]: Path to TRiD binary
+- `bin` [str]: Path to TRiD binary
 
 - `trids_defs` [str]: Path to TRiD definitions
 

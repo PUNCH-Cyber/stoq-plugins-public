@@ -23,6 +23,6 @@ Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Identify file types from their TrID signature
 
 [options]
-# bin_path = trid
+# bin = trid
 # trid_defs = triddefs.trd
 # skip_warnings = "file seems to be plain text/ASCII"
