@@ -21,10 +21,10 @@ Scan a payload using xorsearch
 """
 
 import os
-import tempfile
+
 from pathlib import Path
 from typing import Dict, Optional
-from subprocess import check_output, run
+from subprocess import Popen, PIPE
 from inspect import currentframe, getframeinfo
 
 from stoq.plugins import WorkerPlugin
@@ -52,12 +52,10 @@ class XorSearchPlugin(WorkerPlugin):
         """
         result: Dict = {}
 
-        with tempfile.NamedTemporaryFile() as temp_file:
-            temp_file.write(payload.content)
-            temp_file.flush()
-            cmd = [self.bin, '-f', self.terms, temp_file.name]
-            process_results = check_output(cmd).splitlines()
-
+        cmd = [self.bin, '-f', self.terms, '-']
+        p = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        out, err = p.communicate(input=payload.content)
+        process_results = out.splitlines()
         for line in process_results:
             _, _, key, _, pos, hit = line.decode().split(maxsplit=5)
             # We are going to skip over hits that are not xor'd
