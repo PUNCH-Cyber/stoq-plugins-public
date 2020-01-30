@@ -21,8 +21,7 @@ Processes a payload using ExifTool
 """
 
 import json
-import tempfile
-from subprocess import run, PIPE
+from subprocess import PIPE, Popen
 from typing import Dict, List, Optional
 
 from stoq.plugins import WorkerPlugin
@@ -42,17 +41,13 @@ class ExifToolPlugin(WorkerPlugin):
 
         """
         errors: List[Error] = []
-        with tempfile.NamedTemporaryFile() as temp_file:
-            temp_file.write(payload.content)
-            temp_file.flush()
-            try:
-                cmd = [self.bin, '-j', '-n', temp_file.name]
-                output = run(cmd, stdout=PIPE)
-                results = json.loads(output.stdout)[0]
-            except Exception as err:
-                errors.append(
-                    Error(
-                        err, plugin_name=self.plugin_name, payload_id=payload.payload_id
-                    )
-                )
+        try:
+            cmd = [self.bin, '-j', '-n', '-']
+            p = Popen(cmd, stdout=PIPE, stdin=PIPE)
+            out, err = p.communicate(input=payload.content)
+            results = json.loads(out)[0]
+        except Exception as err:
+            errors.append(
+                Error(err, plugin_name=self.plugin_name, payload_id=payload.payload_id)
+            )
         return WorkerResponse(results, errors=errors)
