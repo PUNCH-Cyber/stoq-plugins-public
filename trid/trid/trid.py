@@ -49,7 +49,7 @@ class TridPlugin(WorkerPlugin):
         self.trid_defs = config.get('options', 'trid_defs', fallback='triddefs.trd')
         if not os.path.isabs(self.trid_defs) and self.trid_defs:
             self.trid_defs = os.path.join(parent, self.trid_defs)
-        if os.path.isfile(self.trid_defs):
+        if not os.path.isfile(self.trid_defs):
             raise StoqPluginException(
                 f'TrID definitions do not exist at {self.trid_defs}'
             )
