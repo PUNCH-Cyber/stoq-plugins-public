@@ -52,7 +52,9 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
                 dispatch_ruleset = os.path.join(parent, dispatch_ruleset)
             self.dispatch_rules = self._compile_rules(dispatch_ruleset)
 
-        worker_ruleset = config.get('options', 'worker_rules', fallback=None)
+        worker_ruleset = config.get(
+            'options', 'worker_rules', fallback='rules/stoq.yar'
+        )
         if worker_ruleset:
             if not os.path.isabs(worker_ruleset):
                 worker_ruleset = os.path.join(parent, worker_ruleset)
