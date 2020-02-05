@@ -1,1 +1,1 @@
-oletools~=0.54
+oletools>=0.54
