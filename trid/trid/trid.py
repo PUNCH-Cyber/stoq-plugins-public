@@ -66,11 +66,13 @@ class TridPlugin(WorkerPlugin):
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(payload.content)
             temp_file.flush()
+            env = os.environ.copy()
+            env['LC_ALL'] = 'C'
             p = Popen(
                 [self.bin, f"-d:{self.trid_defs}", temp_file.name],
                 stdout=PIPE,
                 stderr=PIPE,
-                env={'LC_ALL': 'C'},
+                env=env,
                 universal_newlines=True,
             )
             trid_results, err = p.communicate()
