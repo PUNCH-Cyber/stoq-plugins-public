@@ -44,6 +44,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
 
         self.timeout = config.getint('options', 'timeout', fallback=60)
         self.strings_limit = config.getint('options', 'strings_limit', fallback=None)
+        self.xor_first_match = config.getboolean('options', 'xor_first_match', fallback=True)
         dispatch_ruleset = config.get(
             'options', 'dispatch_rules', fallback='rules/dispatcher.yar'
         )
@@ -73,16 +74,14 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
     ) -> DispatcherResponse:
         dr = DispatcherResponse()
         for match in self._yara_matches(payload.content, self.dispatch_rules):
-            if 'plugin' in match['meta']:
-                plugin_str = match['meta']['plugin'].lower().strip()
-                plugin_names = {p.strip() for p in plugin_str.split(',') if p.strip()}
-                for name in plugin_names:
-                    if name:
-                        if match['meta'].get('save', '').lower().strip() == 'false':
-                            payload.results.payload_meta.should_archive = False
-                        name = name.strip()
-                        dr.plugin_names.append(name)
-                        dr.meta[name] = match
+            if match['meta'].get('save', '').lower().strip() == 'false':
+                payload.results.payload_meta.should_archive = False
+            plugin_names = self._extract_plugin_names(match)
+            if 'xor' in plugin_names:
+                self._plugin_xor_extract_key(match)
+            for name in plugin_names:
+                dr.plugin_names.append(name)
+                dr.meta[name] = match
         return dr
 
     def _compile_rules(self, filepath: str) -> yara:
@@ -104,3 +103,43 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
                 'meta': match.meta,
                 'strings': match.strings[: self.strings_limit],
             }
+
+    def _extract_plugin_names(self, match: dict) -> set:
+        plugin_names = set()
+        if 'meta' in match:
+            plugin_str = match['meta'].get('plugin', '').lower().strip()
+            plugin_names.update({p.strip() for p in plugin_str.split(',') if p.strip()})
+        return plugin_names
+
+    def _plugin_xor_extract_key(self, match: dict) -> None:
+        # Extract XOR key using plaintext in metadata against strings, see YARA issue #1242 for known issues
+        if 'strings' not in match or 'meta' not in match:
+            return
+        xor_info = []
+        xor_pt = {'$' + k[7:]: v for k, v in match['meta'].items() if k.startswith('xor_pt_') and v}
+        if xor_pt:
+            for offset, label, match_bytes in match['strings']:
+                if label not in xor_pt:
+                    continue
+                xor_pt_bytes = bytes(xor_pt[label], 'utf8')
+                if len(xor_pt_bytes) != len(match_bytes):
+                    continue
+                key = self._xor_extract_key(match_bytes, xor_pt_bytes)
+                if key and self.xor_first_match:
+                    xorkey = key[0] if len(key) == 1 else bytes(key)
+                    match['meta']['xorkey'] = repr(xorkey)
+                    return
+                elif key:
+                    xor_info.append((offset, label, key))
+            if xor_info:
+                match['meta']['xor_info'] = repr(xor_info)
+
+    def _xor_extract_key(self, ct_bytes, pt_bytes) -> bytes:
+        key_list = bytearray(a ^ b for (a, b) in zip(pt_bytes, ct_bytes))
+        keys_len = len(key_list)
+        for i in range(1, keys_len):
+            sub_key = key_list[:i]
+            overlap_key = sub_key * (1 + keys_len // i)
+            if overlap_key[:keys_len] == key_list:
+                key = bytes(sub_key)
+                return key

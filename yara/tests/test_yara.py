@@ -146,3 +146,35 @@ class TestCore(asynctest.TestCase):
         response = await plugin.get_dispatches(payload, Request())
         self.assertIsInstance(response, DispatcherResponse)
         self.assertIn('False', response.meta['save_false']['meta']['save'])
+
+    async def test_dispatcher_create_xorkey(self) -> None:
+        s = Stoq(
+            plugin_dir_list=[self.plugin_dir],
+            plugin_opts={
+                self.plugin_name: {
+                    'dispatch_rules': f'{self.data_dir}/dispatch_rules.yar'
+                }
+            },
+        )
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(b'This program_A}|f5egzrgtx')
+        response = await plugin.get_dispatches(payload, Request())
+        self.assertIsInstance(response, DispatcherResponse)
+        self.assertIn('21', response.meta['xor']['meta']['xorkey'])
+
+    async def test_dispatcher_create_xor_info(self) -> None:
+        s = Stoq(
+            plugin_dir_list=[self.plugin_dir],
+            plugin_opts={
+                self.plugin_name: {
+                    'dispatch_rules': f'{self.data_dir}/dispatch_rules.yar',
+                    'xor_first_match': False,
+                },
+            },
+        )
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(b'This program_A}|f5egzrgtx Exxc1`c\x7fvbp}`p.')
+        response = await plugin.get_dispatches(payload, Request())
+        self.assertIsInstance(response, DispatcherResponse)
+        self.assertIn("[(13, '$this_prog', b'\\x15'), (26, '$this_prog_2b', b'\\x11\\x10')]",
+                      response.meta['xor']['meta']['xor_info'])
