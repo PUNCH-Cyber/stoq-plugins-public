@@ -245,19 +245,27 @@ class IOCExtract(WorkerPlugin):
                     if len(indicator.split('/')) > 1:
                         indicator_has_netmask = True
 
-                    if pattern_has_netmask:
-                        pattern_ip = ip_network("{}".format(pattern))
-                    else:
-                        pattern_ip = ip_network(
-                            "{}/{}".format(pattern, netmasks[indicator_type])
-                        )
+                    try:
+                        if pattern_has_netmask:
+                            pattern_ip = ip_network("{}".format(pattern))
+                        else:
+                            pattern_ip = ip_network(
+                                "{}/{}".format(pattern, netmasks[indicator_type])
+                            )
 
-                    if indicator_has_netmask:
-                        indicator_ip = ip_network(indicator)
-                    else:
-                        indicator_ip = ip_address(indicator)
+                        # Remove leading zero's from extracted ip addresses.
+                        # Required for python <= 3.7
+                        # https://bugs.python.org/issue36384
+                        indicator = re.sub(r"0+([0-9])", r"\1", indicator)
+                        if indicator_has_netmask:
+                            indicator_ip = ip_network(indicator)
+                        else:
+                            indicator_ip = ip_address(indicator)
 
-                    if indicator_ip in pattern_ip:
+                        if indicator_ip in pattern_ip:
+                            return False
+                    except ValueError as err:
+                        self.log.warning(err)
                         return False
 
                 elif indicator_type == 'domain':

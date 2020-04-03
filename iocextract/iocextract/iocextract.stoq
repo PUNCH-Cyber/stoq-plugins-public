@@ -18,7 +18,7 @@ Module = iocextract
 
 [Documentation]
 Author = Mike Geide, Marcus LaFerrera
-Version = 3.0.0
+Version = 3.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Regex routines to extract and normalize IOC's from a payload
 
