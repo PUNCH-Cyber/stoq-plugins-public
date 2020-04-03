@@ -59,7 +59,6 @@ from stoq import (
 
 
 class Decompress(WorkerPlugin):
-    required_workers = set('mimetype')
 
     ARCHIVE_MAGIC = {
         'application/gzip': '7z',
@@ -104,6 +103,7 @@ class Decompress(WorkerPlugin):
     def __init__(self, config: StoqConfigParser) -> None:
         super().__init__(config)
 
+        self.required_workers.add('mimetype')
         self.timeout = config.getint('options', 'timeout', fallback=45)
         self.passwords = config.getlist(
             'options', 'passwords', fallback=['-', 'infected', 'password']
