@@ -135,7 +135,8 @@ rule xor_This_program
         plugin = "xor"
         save = "True"
         xor_pt_this_prog = "This program"
-        // xorkey = "This metadata is created by yarascan.py"
+        // xorkey = "Only extract first XOR key as str by yarascan.py, if xor_first_match is True"
+        // xor_info = "Extract XOR keys as repr of list of tuples by yarascan.py, if xor_first_match is False"
     strings:
         $this_prog = "This program" xor(0x01-0xFF)
     condition:

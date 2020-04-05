@@ -115,8 +115,9 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
         # Extract XOR key using plaintext in metadata against strings, see YARA issue #1242 for known issues
         if 'strings' not in match or 'meta' not in match:
             return
+        xor_pt_prefix = 'xor_plaintext_for_string_'
         xor_info = []
-        xor_pt = {'$' + k[7:]: v for k, v in match['meta'].items() if k.startswith('xor_pt_') and v}
+        xor_pt = {'$' + k[len(xor_pt_prefix):]: v for k, v in match['meta'].items() if k.startswith(xor_pt_prefix) and v}
         if xor_pt:
             for offset, label, match_bytes in match['strings']:
                 if label not in xor_pt:
