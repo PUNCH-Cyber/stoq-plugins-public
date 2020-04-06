@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="yara",
-    version="3.0.1",
+    version="3.0.2",
     author="Marcus LaFerrera (@mlaferrera), David Maydewd",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",

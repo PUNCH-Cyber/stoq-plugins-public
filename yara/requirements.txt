@@ -1,1 +1,1 @@
-yara-python>=3.8
+yara-python>=3.11
