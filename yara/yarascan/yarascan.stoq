@@ -18,7 +18,7 @@ Module = yarascan
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 3.0.1
+Version = 3.0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Process a payload using yara
 
@@ -36,3 +36,7 @@ Description = Process a payload using yara
 # Time in seconds to wait for a yara scan to complete.
 # Default: 60
 # timeout = 60
+
+# Dispatcher returns first extracted XOR key as str (xorkey), not all keys as list of tuples (xor_info)
+# Default: True
+# xor_first_match = True

@@ -18,7 +18,7 @@ Module = decompress
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 3.0.0
+Version = 3.0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Extract content from a multitude of archive formats
 
@@ -36,3 +36,11 @@ min_stoq_version = 3.0.0
 # How long (in seconds) to wait for decompression to finish
 # Default: 45
 # timeout = 45
+#
+# Always dispatch extracted files to these plugins
+# Default: Empty List
+# always_dispatch = yara, exif
+#
+# Always erchive extracted files
+# Default: True
+# archive_extracted = True

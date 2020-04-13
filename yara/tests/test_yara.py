@@ -19,6 +19,7 @@ import yara
 import asynctest
 
 from pathlib import Path
+from ast import literal_eval
 
 from stoq import Request, Stoq, Payload
 from stoq.exceptions import StoqPluginException
@@ -146,3 +147,35 @@ class TestCore(asynctest.TestCase):
         response = await plugin.get_dispatches(payload, Request())
         self.assertIsInstance(response, DispatcherResponse)
         self.assertIn('False', response.meta['save_false']['meta']['save'])
+
+    async def test_dispatcher_create_xorkey(self) -> None:
+        s = Stoq(
+            plugin_dir_list=[self.plugin_dir],
+            plugin_opts={
+                self.plugin_name: {
+                    'dispatch_rules': f'{self.data_dir}/dispatch_rules.yar'
+                }
+            },
+        )
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(b'This program_A}|f5egzrgtx')
+        response = await plugin.get_dispatches(payload, Request())
+        self.assertIsInstance(response, DispatcherResponse)
+        self.assertEqual(21, literal_eval(response.meta['xor']['meta'].get('xorkey', 'None')))
+
+    async def test_dispatcher_create_xor_info(self) -> None:
+        s = Stoq(
+            plugin_dir_list=[self.plugin_dir],
+            plugin_opts={
+                self.plugin_name: {
+                    'dispatch_rules': f'{self.data_dir}/dispatch_rules.yar',
+                    'xor_first_match': False,
+                },
+            },
+        )
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(b'This program_A}|f5egzrgtx Exxc1`c\x7fvbp}`p.')
+        response = await plugin.get_dispatches(payload, Request())
+        self.assertIsInstance(response, DispatcherResponse)
+        self.assertListEqual([(13, '$this_prog', b'\x15'), (26, '$this_prog_2b', b'\x11\x10')],
+                             literal_eval(response.meta['xor']['meta'].get('xor_info', '[]')))
