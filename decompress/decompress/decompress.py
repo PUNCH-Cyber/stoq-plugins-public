@@ -111,6 +111,10 @@ class Decompress(WorkerPlugin):
         self.maximum_size = config.getint(
             'options', 'maximum_size', fallback=50_000_000
         )
+        self.always_dispatch = config.getlist('options', 'always_dispatch', fallback=[])
+        self.archive_extracted = config.getboolean(
+            'options', 'archive_extracted', fallback=True
+        )
 
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
@@ -194,7 +198,11 @@ class Decompress(WorkerPlugin):
                         )
                         continue
                     with open(path, "rb") as extracted_file:
-                        meta = PayloadMeta(extra_data={'filename': f})
+                        meta = PayloadMeta(
+                            should_archive=self.archive_extracted,
+                            dispatch_to=self.always_dispatch,
+                            extra_data={'filename': f},
+                        )
                         try:
                             data = extracted_file.read()
                         except OSError as err:

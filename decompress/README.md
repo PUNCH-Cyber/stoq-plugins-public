@@ -30,6 +30,10 @@ The below stoQ plugins must be installed for this plugin to function properly:
 
 - `timeout` [int]: How long (in seconds) to wait for decompression to finish
 
+- `always_dispatch` [str]: Comma separated list of plugins to always dispatch extractes files to
+
+- `archive_extracted` [True/False]: Always archive extracted files individually
+
 ### Use
 
 Multiple compression algorithms are currently supported. Due to the limitations of python compression libraries, `stoQ` leverages command line tools instead. `ARCHIVE_MAGIC` and `ARCHIVE_CMDS` can be found in `decompress.py`.
