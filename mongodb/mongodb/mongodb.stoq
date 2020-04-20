@@ -18,7 +18,7 @@ Module = mongodb
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 3.0.0
+Version = 3.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Save results and archive payloads using MongoDB
 
@@ -31,5 +31,8 @@ Description = Save results and archive payloads using MongoDB
 # Connect to localhost on port 27017 using MongoDB URI Format
 # mongodb_uri = mongodb://localhost:27017/
 
+# MongoDB database name
+# mongodb_database = stoq
+#
 # MongoDB Collection name when saving results
 # mongodb_collection = stoq

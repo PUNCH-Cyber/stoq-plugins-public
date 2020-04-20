@@ -51,6 +51,9 @@ class MongoDbPlugin(ArchiverPlugin, ConnectorPlugin):
         self.mongo_client = None
 
         self.mongodb_uri = config.get('options', 'mongodb_uri', fallback=None)
+        self.mongodb_database = config.get(
+            'options', 'mongodb_database', fallback='stoq'
+        )
         self.mongodb_collection = config.get(
             'options', 'mongodb_collection', fallback='stoq'
         )
@@ -63,7 +66,7 @@ class MongoDbPlugin(ArchiverPlugin, ConnectorPlugin):
         self._connect_mongodb()
         result = json.loads(str(response))
         result['_id'] = result['scan_id']
-        self.collection.insert(result)
+        self.collection.insert_one(result)
 
     async def archive(self, payload: Payload, request: Request) -> ArchiverResponse:
         """
@@ -114,7 +117,7 @@ class MongoDbPlugin(ArchiverPlugin, ConnectorPlugin):
 
     def _connect_mongodb(self) -> None:
         self._connect()
-        self.mongo_db = self.mongo_client.stoq
+        self.mongo_db = self.mongo_client[self.mongodb_database]
         self.collection = self.mongo_db[self.mongodb_collection]
 
     def disconnect(self) -> None:
