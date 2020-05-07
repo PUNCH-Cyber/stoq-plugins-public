@@ -133,11 +133,11 @@ class IOCExtract(WorkerPlugin):
         if ioctype == 'all':
             for ioc in self.compiled_re:
                 if self.compiled_re[ioc]:
-                    matches = self.compiled_re[ioc].findall(payload.content.decode())
+                    matches = self.compiled_re[ioc].findall(payload.content.decode(errors='replace'))
                     if matches:
                         results[ioc] = list(set(matches))
         elif self.compiled_re[ioctype]:
-            matches = self.compiled_re[ioctype].findall(payload.content.decode())
+            matches = self.compiled_re[ioctype].findall(payload.content.decode(errors='replace'))
             if matches:
                 results[ioctype] = list(set(matches))
 
