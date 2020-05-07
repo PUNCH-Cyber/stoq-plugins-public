@@ -21,6 +21,10 @@ All options below may be set by:
 
 > Must be formatted as described in the [MongoDB documentation](https://docs.mongodb.com/manual/reference/connection-string/)
 
+- `mongodb_database` [str]: Name of the database to use.
+
+> Defaults to `stoq`.
+
 - `mongodb_collection` [str]: MongoDB Collection name when saving results.
 
 > Defaults to `stoq`.
