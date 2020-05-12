@@ -20,6 +20,7 @@ install:
   - pip install -r hash_ssdeep/requirements.txt
   # - pip install -r javaclass/requirements.txt
   - pip install -r mimetype/requirements.txt
+  - pip install -r xordecode/requirements.txt
   - pip install -r yara/requirements.txt
 
 script:
