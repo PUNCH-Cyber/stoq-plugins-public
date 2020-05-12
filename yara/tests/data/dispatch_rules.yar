@@ -23,11 +23,11 @@ rule test_save_false
 rule test_xorkey_creation
 {
     meta:
-        plugin = "xor"
+        plugin = "xordecode"
         save = "True"
         xor_plaintext_for_string_this_prog = "This program"
         // xorkey = "Only extract first XOR key as str by yarascan.py, if xor_first_match is True"
-        // xor_info = "Extract XOR keys as repr of list of tuples by yarascan.py, if xor_first_match is False"
+        // xor_info = "Extract XOR keys as a list of tuples by yarascan.py, if xor_first_match is False"
     strings:
         $this_prog = "This program" xor(0x01-0xFF)
     condition:
@@ -37,12 +37,12 @@ rule test_xorkey_creation
 rule test_xor_info_creation
 {
     meta:
-        plugin = "xor"
+        plugin = "xordecode"
         save = "True"
         xor_plaintext_for_string_this_prog = "This program"
         xor_plaintext_for_string_this_prog_2b = "This program"
         // xorkey = "Only extract first XOR key as str by yarascan.py, if xor_first_match is True"
-        // xor_info = "Extract XOR keys as repr of list of tuples by yarascan.py, if xor_first_match is False"
+        // xor_info = "Extract XOR keys as a list of tuples by yarascan.py, if xor_first_match is False"
     strings:
         $this_prog = "This program" xor(0x01-0xFF)
         $this_prog_2b = "Tiir qrngsal" xor(0x01-0xFF)

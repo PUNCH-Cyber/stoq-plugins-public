@@ -19,7 +19,6 @@ import yara
 import asynctest
 
 from pathlib import Path
-from ast import literal_eval
 
 from stoq import Request, Stoq, Payload
 from stoq.exceptions import StoqPluginException
@@ -161,7 +160,7 @@ class TestCore(asynctest.TestCase):
         payload = Payload(b'This program_A}|f5egzrgtx')
         response = await plugin.get_dispatches(payload, Request())
         self.assertIsInstance(response, DispatcherResponse)
-        self.assertEqual(21, literal_eval(response.meta['xor']['meta'].get('xorkey', 'None')))
+        self.assertEqual(21, int(response.meta['xordecode']['meta'].get('xorkey', 'None')))
 
     async def test_dispatcher_create_xor_info(self) -> None:
         s = Stoq(
@@ -178,4 +177,4 @@ class TestCore(asynctest.TestCase):
         response = await plugin.get_dispatches(payload, Request())
         self.assertIsInstance(response, DispatcherResponse)
         self.assertListEqual([(13, '$this_prog', b'\x15'), (26, '$this_prog_2b', b'\x11\x10')],
-                             response.meta['xor']['meta'].get('xor_info', '[]'))
+                             response.meta['xordecode']['meta'].get('xor_info', '[]'))
