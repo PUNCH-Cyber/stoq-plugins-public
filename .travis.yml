@@ -29,5 +29,6 @@ script:
   - python hash_ssdeep/setup.py test
   # - python javaclass/setup.py test
   - python mimetype/setup.py test
+  - python xordecode/setup.py test
   - python xorsearch/setup.py test
   - python yara/setup.py test

@@ -178,4 +178,4 @@ class TestCore(asynctest.TestCase):
         response = await plugin.get_dispatches(payload, Request())
         self.assertIsInstance(response, DispatcherResponse)
         self.assertListEqual([(13, '$this_prog', b'\x15'), (26, '$this_prog_2b', b'\x11\x10')],
-                             literal_eval(response.meta['xor']['meta'].get('xor_info', '[]')))
+                             response.meta['xor']['meta'].get('xor_info', '[]'))

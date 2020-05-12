@@ -13,30 +13,11 @@
 #   limitations under the License.
 
 [Core]
-Name = yara
-Module = yarascan
+Name = xordecode
+Module = xordecode
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 3.0.3
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Process a payload using yara
-
-[options]
-# Worker rules file
-# worker_rules = rules/stoq.yar
-
-# Dispatcher rules file
-# dispatch_rules = rules/dispatcher.yar
-
-# Limit the strings results in yara matches
-# Default: None
-# strings_limit = 10
-
-# Time in seconds to wait for a yara scan to complete.
-# Default: 60
-# timeout = 60
-
-# Dispatcher returns first extracted XOR key as str (xorkey), not all keys as list of tuples (xor_info)
-# Default: True
-# xor_first_match = True
+Description = Decode XOR encoded payloads
