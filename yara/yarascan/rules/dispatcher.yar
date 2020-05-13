@@ -131,21 +131,19 @@ rule ace_file
         $magic at 7
 }
 
-/*
 rule xor_This_program
 {
     meta:
-        plugin = "xor"
+        plugin = "xordecode"
         save = "True"
-        xor_pt_this_prog = "This program"
+        xor_plaintext_this_prog = "This program"
         // xorkey = "Only extract first XOR key as str by yarascan.py, if xor_first_match is True"
-        // xor_info = "Extract XOR keys as repr of list of tuples by yarascan.py, if xor_first_match is False"
+        // xor_info = "Extract XOR keys as a list of tuples, if xor_first_match is False"
     strings:
         $this_prog = "This program" xor(0x01-0xFF)
     condition:
         any of them
 }
-*/
 
 rule smtp_message
 {
