@@ -14,6 +14,11 @@ All options below may be set by:
 - [`stoq` command](https://stoq-framework.readthedocs.io/en/latest/gettingstarted.html#plugin-options)
 - [`Stoq` class](https://stoq-framework.readthedocs.io/en/latest/dev/core.html?highlight=plugin_opts#using-providers)
 
+#### Module performance
+
+The speed of the `UnicodeDammit` decoder from `BeautifulSoup` module is much faster when the `cchardet` module is installed,
+but will fall back to the `chardet` module if it is not installed.
+
 ### Options
 
 - `omit_body` [`True`/`False`]: Save body of e-mail (text or html) to the results.
