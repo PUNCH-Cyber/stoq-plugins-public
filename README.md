@@ -71,4 +71,5 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | [xdpcarve](xdpcarve)              | Carve and decode streams from XDP documents                                    | Worker                              |
 | [xordecode](xordecode/)           | Decode XOR encoded payloads                                                    | Worker                              |
 | [xorsearch](xorsearch/)           | Scan a payload using xorsearch                                                 | Worker                              |
+| [xyz](xyz/)                       | Extract Zip file metadata                                                      | Worker                              |
 | [yara](yara/)                     | Process a payload using yara                                                   | Worker, Dispatcher                  |
