@@ -21,13 +21,13 @@ Processes a payload using ExifTool
 """
 
 import json
+
+from typing import List
 from asyncio.subprocess import PIPE
 from asyncio import create_subprocess_exec
-from typing import Dict, List, Optional
 
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
-from stoq.exceptions import StoqPluginException
 from stoq import Error, Payload, Request, WorkerResponse
 
 
@@ -43,8 +43,12 @@ class ExifToolPlugin(WorkerPlugin):
         """
         errors: List[Error] = []
         try:
-            p = await create_subprocess_exec(self.bin, '-j', '-n', '-', stdout=PIPE, stdin=PIPE)
-            out, _ = await p.communicate(input=payload.content)
+            p = await create_subprocess_exec(
+                self.bin, '-j', '-n', '-', stdout=PIPE, stdin=PIPE, stderr=PIPE
+            )
+            out, err = await p.communicate(input=payload.content)
+            if err:
+                self.log.debug(err)
             results = json.loads(out)[0]
         except Exception as err:
             errors.append(
