@@ -23,9 +23,10 @@ Process a payload using yara
 
 import os
 import yara
+
 from pathlib import Path
+from typing import Dict, Generator
 from inspect import currentframe, getframeinfo
-from typing import Dict, Generator, List, Optional
 
 from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
@@ -77,7 +78,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
             if match['meta'].get('save', '').lower().strip() == 'false':
                 payload.results.payload_meta.should_archive = False
             plugin_names = self._extract_plugin_names(match)
-            if 'xor' in plugin_names:
+            if 'xordecode' in plugin_names:
                 self._plugin_xor_extract_key(match)
             for name in plugin_names:
                 dr.plugin_names.append(name)
@@ -133,7 +134,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
                 elif key:
                     xor_info.append((offset, label, key))
             if xor_info:
-                match['meta']['xor_info'] = repr(xor_info)
+                match['meta']['xor_info'] = xor_info
 
     def _xor_extract_key(self, ct_bytes, pt_bytes) -> bytes:
         key_list = bytearray(a ^ b for (a, b) in zip(pt_bytes, ct_bytes))

@@ -50,6 +50,7 @@ rule ole_file
         $ole at 0
 }
 
+/*
 rule ole_package_stream
 {
     meta:
@@ -60,6 +61,7 @@ rule ole_package_stream
     condition:
         $ole at 4
 }
+*/
 
 rule ole_with_vba
 {
@@ -132,13 +134,27 @@ rule ace_file
 rule xor_This_program
 {
     meta:
-        plugin = "xor"
+        plugin = "xordecode"
         save = "True"
-        xor_pt_this_prog = "This program"
+        xor_plaintext_this_prog = "This program"
         // xorkey = "Only extract first XOR key as str by yarascan.py, if xor_first_match is True"
-        // xor_info = "Extract XOR keys as repr of list of tuples by yarascan.py, if xor_first_match is False"
+        // xor_info = "Extract XOR keys as a list of tuples, if xor_first_match is False"
     strings:
         $this_prog = "This program" xor(0x01-0xFF)
     condition:
         any of them
+}
+
+rule smtp_message
+{
+    meta:
+        plugin = "smtp"
+        save = "True"
+    strings:
+        $empty_line = { 0D 0A 0D 0A }
+        // Values required in the email header per RFC 5322 3.6
+        $hdr_orig_date = /\nDate[ \t]{0,1000}:/ nocase
+        $hdr_originator = /\nFrom[ \t]{0,1000}:/ nocase
+    condition:
+        for all of ($hdr_*) : ( @[1] < @crlf2[1] )
 }

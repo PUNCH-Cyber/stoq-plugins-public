@@ -30,6 +30,7 @@ from configparser import ConfigParser
 from typing import Dict, Set, Optional, List
 from ipaddress import ip_address, ip_network
 from inspect import currentframe, getframeinfo
+from bs4 import UnicodeDammit
 
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
@@ -133,11 +134,11 @@ class IOCExtract(WorkerPlugin):
         if ioctype == 'all':
             for ioc in self.compiled_re:
                 if self.compiled_re[ioc]:
-                    matches = self.compiled_re[ioc].findall(payload.content.decode())
+                    matches = self.compiled_re[ioc].findall(UnicodeDammit(payload.content).unicode_markup)
                     if matches:
                         results[ioc] = list(set(matches))
         elif self.compiled_re[ioctype]:
-            matches = self.compiled_re[ioctype].findall(payload.content.decode())
+            matches = self.compiled_re[ioctype].findall(UnicodeDammit(payload.content).unicode_markup)
             if matches:
                 results[ioctype] = list(set(matches))
 

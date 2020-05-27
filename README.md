@@ -69,5 +69,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | [vtmis-filefeed](vtmis-filefeed/) | Process VTMIS File Feed                                                        | Provider, Worker                    |
 | [vtmis-search](vtmis-search/)     | Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin | Worker, Dispatcher                  |
 | [xdpcarve](xdpcarve)              | Carve and decode streams from XDP documents                                    | Worker                              |
+| [xordecode](xordecode/)           | Decode XOR encoded payloads                                                    | Worker                              |
 | [xorsearch](xorsearch/)           | Scan a payload using xorsearch                                                 | Worker                              |
+| [xyz](xyz/)                       | Extract Zip file metadata                                                      | Worker                              |
 | [yara](yara/)                     | Process a payload using yara                                                   | Worker, Dispatcher                  |

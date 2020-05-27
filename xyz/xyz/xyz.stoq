@@ -13,23 +13,20 @@
 #   limitations under the License.
 
 [Core]
-Name = opswat
-Module = opswat
+Name = xyz
+Module = xyz
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 3.0.1
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Scan payloads using OPSWAT MetaDefender
+Description = Extract Zip file metadata
 
 [options]
-# opswat_url =
-# apikey =
+# Decompress files within zip and store metadata
+# Default: True
+# decompress_files = True
 
-# Time in seconds to wait between checking for completed results
-# Default: 30
-# delay = 30
-
-# Maximum amount of attempts to retrieve results
-# Default: 10
-# max_attempts = 10
+# Calculate the deflate level
+# Default: True
+# derive_deflate_level = True

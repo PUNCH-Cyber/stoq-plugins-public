@@ -20,6 +20,7 @@ install:
   - pip install -r hash_ssdeep/requirements.txt
   # - pip install -r javaclass/requirements.txt
   - pip install -r mimetype/requirements.txt
+  - pip install -r xordecode/requirements.txt
   - pip install -r yara/requirements.txt
 
 script:
@@ -29,5 +30,6 @@ script:
   - python hash_ssdeep/setup.py test
   # - python javaclass/setup.py test
   - python mimetype/setup.py test
+  - python xordecode/setup.py test
   - python xorsearch/setup.py test
   - python yara/setup.py test
