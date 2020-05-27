@@ -21,9 +21,9 @@ Scan payloads using OPSWAT MetaDefender
 
 """
 
-import requests
+import aiohttp
 
-from time import sleep
+from asyncio import sleep
 from json import JSONDecodeError
 from typing import Dict, List, Optional, Union, Tuple
 
@@ -57,13 +57,16 @@ class MetadefenderPlugin(WorkerPlugin):
             'apikey': self.apikey,
             'content-type': 'application/octet-stream',
             'filename': payload.results.payload_meta.extra_data.get(
-                'filename', get_sha1(payload.content)
-            ),
+                'filename1', get_sha1(payload.content).encode()
+            ).decode(),
         }
-        response = requests.post(self.opswat_url, data=payload.content, headers=headers)
-        response.raise_for_status()
-        data_id = response.json()['data_id']
-        results, error = self._parse_results(data_id)
+        async with aiohttp.ClientSession(raise_for_status=True) as session:
+            async with session.post(
+                self.opswat_url, data=payload.content, headers=headers
+            ) as response:
+                content = await response.json()
+                data_id = content['data_id']
+        results, error = await self._parse_results(data_id)
         if error:
             errors.append(
                 Error(
@@ -74,7 +77,7 @@ class MetadefenderPlugin(WorkerPlugin):
             )
         return WorkerResponse(results, errors=errors)
 
-    def _parse_results(
+    async def _parse_results(
         self, data_id: str
     ) -> Tuple[Union[Dict, None], Union[str, None]]:
         """
@@ -83,20 +86,20 @@ class MetadefenderPlugin(WorkerPlugin):
         """
         count: int = 0
         error: Optional[str] = None
-        sleep(self.delay)
+        await sleep(self.delay)
         while count < self.max_attempts:
             try:
                 url = f'{self.opswat_url}/{data_id}'
                 headers = {'apikey': self.apikey}
-                response = requests.get(url, headers=headers)
-                response.raise_for_status()
-                result = response.json()
+                async with aiohttp.ClientSession(raise_for_status=True) as session:
+                    async with session.get(url, headers=headers) as response:
+                        result = await response.json()
                 if result['scan_results']['progress_percentage'] == 100:
                     return result, None
-                sleep(self.delay)
+                await sleep(self.delay)
             except (JSONDecodeError, KeyError) as err:
                 error = str(err)
-                sleep(self.delay)
+                await sleep(self.delay)
             finally:
                 count += 1
                 if count >= self.max_attempts:
