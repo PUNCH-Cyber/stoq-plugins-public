@@ -57,12 +57,15 @@ class MetadefenderPlugin(WorkerPlugin):
             'apikey': self.apikey,
             'content-type': 'application/octet-stream',
             'filename': payload.results.payload_meta.extra_data.get(
-                'filename', get_sha1(payload.content)
-            ),
+                'filename1', get_sha1(payload.content).encode()
+            ).decode(),
         }
         async with aiohttp.ClientSession(raise_for_status=True) as session:
-            async with session.post(self.opswat_url, data=payload.content, headers=headers) as response:
-                data_id = response.json()['data_id']
+            async with session.post(
+                self.opswat_url, data=payload.content, headers=headers
+            ) as response:
+                content = await response.json()
+                data_id = content['data_id']
         results, error = await self._parse_results(data_id)
         if error:
             errors.append(
@@ -88,9 +91,9 @@ class MetadefenderPlugin(WorkerPlugin):
             try:
                 url = f'{self.opswat_url}/{data_id}'
                 headers = {'apikey': self.apikey}
-                async with aiohttp.ClientSesion(raise_for_status=True) as session:
+                async with aiohttp.ClientSession(raise_for_status=True) as session:
                     async with session.get(url, headers=headers) as response:
-                        result = response.json()
+                        result = await response.json()
                 if result['scan_results']['progress_percentage'] == 100:
                     return result, None
                 await sleep(self.delay)
