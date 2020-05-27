@@ -22,10 +22,10 @@ Handle file and directory interactions
 
 import os
 import hashlib
+
 from pathlib import Path
 from asyncio import Queue
 from datetime import datetime
-from typing import Dict, Optional
 
 from stoq import helpers
 from stoq.helpers import StoqConfigParser
@@ -58,33 +58,33 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         """
         if not self.source_dir:
             raise StoqPluginException('Source directory not defined')
-        if os.path.isdir(self.source_dir):
+        source_path = Path(self.source_dir).resolve()
+        if source_path.is_dir:
             if self.recursive:
-                for root_path, subdirs, files in os.walk(self.source_dir):
-                    for entry in files:
-                        path = os.path.join(root_path, entry)
-                        await self._queue(path, queue)
+                for path in source_path.rglob('**/*'):
+                    await self._queue(path, queue)
             else:
-                for entry in os.scandir(self.source_dir):
-                    if not entry.name.startswith('.') and entry.is_file():
-                        path = os.path.join(self.source_dir, entry.name)
-                        await self._queue(path, queue)
-        elif os.path.isfile(self.source_dir):
-            await self._queue(self.source_dir, queue)
+                for path in source_path.glob('*'):
+                    await self._queue(path, queue)
+        else:
+            await self._queue(source_path, queue)
 
-    async def _queue(self, path: str, queue: Queue) -> None:
+    async def _queue(self, path: Path, queue: Queue) -> None:
         """
         Publish payload to stoQ queue
 
         """
-        meta = PayloadMeta(
-            extra_data={
-                'filename': os.path.basename(path),
-                'source_dir': os.path.dirname(path),
-            }
-        )
-        with open(path, "rb") as f:
-            await queue.put(Payload(f.read(), meta))
+        if path.is_file() and not path.name.startswith('.'):
+            meta = PayloadMeta(
+                extra_data={
+                    'filename': str(path.name),
+                    'source_dir': str(path.parent),
+                }
+            )
+            with open(path, "rb") as f:
+                await queue.put(Payload(f.read(), meta))
+        else:
+            self.log.debug(f'Skipping {path}, does not exist or is invalid')
 
     async def save(self, response: StoqResponse) -> None:
         """
@@ -92,14 +92,14 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
 
         """
 
-        path = self.results_dir
-        filename = response.scan_id
+        path = Path(self.results_dir).resolve()
         if self.date_mode:
             now = datetime.now().strftime(self.date_format)
-            path = f'{path}/{now}'
-        path = os.path.abspath(path)
-        Path(path).mkdir(parents=True, exist_ok=True)
-        with open(f'{path}/{filename}', 'x') as outfile:
+            path = path.joinpath(now)
+        path.mkdir(parents=True, exist_ok=True)
+
+        filename = response.scan_id
+        with open(path.joinpath(filename), 'x') as outfile:
             outfile.write(f'{helpers.dumps(response, compactly=self.compactly)}\n')
 
     async def archive(self, payload: Payload, request: Request) -> ArchiverResponse:
@@ -107,29 +107,29 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         Archive payload to disk
 
         """
-        path = self.archive_dir
+        path = Path(self.archive_dir).resolve()
         filename = payload.results.payload_id
         if self.use_sha:
             filename = hashlib.sha1(payload.content).hexdigest()
-            path = f'{path}/{"/".join(list(filename[:5]))}'
+            path = path.joinpath("/".join(list(filename[:5])))
         elif self.date_mode:
             now = datetime.now().strftime(self.date_format)
-            path = f'{path}/{now}'
-        path = os.path.abspath(path)
-        Path(path).mkdir(parents=True, exist_ok=True)
+            path = path.joinpath(now)
+        path.mkdir(parents=True, exist_ok=True)
         try:
-            with open(f'{path}/{filename}', 'xb') as outfile:
+            with open(path.joinpath(filename), 'xb') as outfile:
                 outfile.write(payload.content)
         except FileExistsError:
             pass
-        return ArchiverResponse({'path': f'{path}/{filename}'})
+        return ArchiverResponse({'path': str(path.joinpath(filename))})
 
     async def get(self, task: ArchiverResponse) -> Payload:
         """
         Retrieve archived payload from disk
 
         """
-        path = os.path.abspath(task.results['path'])
+        path = Path(task.results['path']).resolve()
         meta = PayloadMeta(extra_data=task.results)
+        self.log.debug(f'got task: {task}, path: {path}, meta: {meta}')
         with open(path, 'rb') as f:
             return Payload(f.read(), meta)
