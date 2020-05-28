@@ -4,6 +4,7 @@ language: python
 python:
   - 3.6
   - 3.7
+  - 3.8
 
 before_install:
   - sudo apt-get -yq install software-properties-common
@@ -24,6 +25,7 @@ install:
   - pip install -r yara/requirements.txt
 
 script:
+  - python b64decode/setup.py test
   - python entropy/setup.py test
   - python exif/setup.py test
   - python hash/setup.py test
