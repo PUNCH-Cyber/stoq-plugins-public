@@ -57,7 +57,7 @@ class MetadefenderPlugin(WorkerPlugin):
             'apikey': self.apikey,
             'content-type': 'application/octet-stream',
             'filename': payload.results.payload_meta.extra_data.get(
-                'filename1', get_sha1(payload.content).encode()
+                'filename', get_sha1(payload.content).encode()
             ).decode(),
         }
         async with aiohttp.ClientSession(raise_for_status=True) as session:
