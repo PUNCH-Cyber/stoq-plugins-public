@@ -33,6 +33,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 
 | Plugin Name                       | Description                                                                    | Plugin Type                         |
 | --------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
+| [b64decode](b64decode/)           | Decode base64 encoded payloads                                                 | Worker                              |
 | [decompress](decompress/)         | Extract content from a multitude of archive formats                            | Worker                              |
 | [dirmon](dirmon/)                 | Monitor a directory for newly created files for processing                     | Provider                            |
 | [entropy](entropy/)               | Calculate shannon entropy of a payload                                         | Worker                              |
