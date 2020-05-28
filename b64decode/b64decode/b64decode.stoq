@@ -13,15 +13,11 @@
 #   limitations under the License.
 
 [Core]
-Name = xorsearch
-Module = xorsearch
+Name = b64decode
+Module = b64decode
 
 [Documentation]
 Author = Marcus LaFerrera
-Version = 3.1.1
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Scan a payload using xorsearch
-
-[options]
-# bin = xorsearch
-# terms = terms.txt
+Description = Decode base64 encoded payloads

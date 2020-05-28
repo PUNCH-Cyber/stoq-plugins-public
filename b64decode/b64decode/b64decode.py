@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #   Copyright 2014-present PUNCH Cyber Analytics Group
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +14,22 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-[Core]
-Name = xorsearch
-Module = xorsearch
+"""
+Overview
+========
 
-[Documentation]
-Author = Marcus LaFerrera
-Version = 3.1.1
-Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Scan a payload using xorsearch
+Decode base64 encoded payloads
 
-[options]
-# bin = xorsearch
-# terms = terms.txt
+"""
+
+import base64
+
+from stoq.plugins import WorkerPlugin
+from stoq import ExtractedPayload, Payload, Request, WorkerResponse
+
+
+class B64Decode(WorkerPlugin):
+    async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
+        decoded_content = base64.b64decode(payload.content)
+        extracted = [ExtractedPayload(decoded_content)]
+        return WorkerResponse(extracted=extracted)
