@@ -21,15 +21,16 @@ Scan a payload using xorsearch
 """
 
 import os
+import tempfile
 
+from typing import Dict
 from pathlib import Path
-from typing import Dict, Optional
-from subprocess import Popen, PIPE
+from asyncio.subprocess import PIPE
+from asyncio import create_subprocess_exec
 from inspect import currentframe, getframeinfo
 
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
-from stoq.exceptions import StoqPluginException
 from stoq import Payload, Request, WorkerResponse
 
 
@@ -52,11 +53,13 @@ class XorSearchPlugin(WorkerPlugin):
         """
         result: Dict = {}
 
-        cmd = [self.bin, '-f', self.terms, '-']
-        p = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=PIPE)
-        out, err = p.communicate(input=payload.content)
-        process_results = out.splitlines()
-        for line in process_results:
+        with tempfile.NamedTemporaryFile() as temp_file:
+            temp_file.write(payload.content)
+            temp_file.flush()
+            cmd = [self.bin, '-f', self.terms, temp_file.name]
+            p = await create_subprocess_exec(*cmd, stdout=PIPE, stderr=PIPE)
+            out, err = await p.communicate()
+        for line in out.splitlines():
             _, _, key, _, pos, hit = line.decode().split(maxsplit=5)
             # We are going to skip over hits that are not xor'd
             if key != '00':
