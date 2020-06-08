@@ -158,3 +158,19 @@ rule smtp_message
     condition:
         for all of ($hdr_*) : ( @[1] < @empty_line[1] )
 }
+
+/*
+rule smtp_message_invalid_line_ending
+{
+    meta:
+        plugin = "smtp"
+        save = "True"
+    strings:
+        $invalid_empty_line = { 0A 0A }  // Explicitly invalid according to all SMTP RFCs
+        // Values required in the email header per RFC 5322 3.6
+        $hdr_orig_date = /\nDate[ \t]{0,1000}:/ nocase
+        $hdr_originator = /\nFrom[ \t]{0,1000}:/ nocase
+    condition:
+        for all of ($hdr_*) : ( @[1] < @invalid_empty_line[1] )
+}
+*/
