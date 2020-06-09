@@ -23,11 +23,27 @@ Generate a ssdeep hash of payload
 """
 
 import ssdeep
+from asyncio import sleep
 
 from stoq.plugins import WorkerPlugin
 from stoq import Payload, Request, WorkerResponse
 
 
-class HashSsdeep(WorkerPlugin):
+class HashSSDeep(WorkerPlugin):
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
-        return WorkerResponse(results={'ssdeep': ssdeep.hash(payload.content)})
+        secure_hashes = {
+            'ssdeep': ssdeep.Hash(),
+        }
+        block_size = 2 ** 24  # Pass control back to asyncio loop every 16MB
+        for block_index in range(0, len(payload.content), block_size):
+            for function in secure_hashes.keys():
+                secure_hashes[function].update(payload.content[block_index:block_index + block_size])
+                await sleep(0)
+        for function in secure_hashes.keys():
+            if hasattr(secure_hashes[function], 'hexdigest'):
+                secure_hashes[function] = secure_hashes[function].hexdigest()
+            else:
+                secure_hashes[function] = secure_hashes[function].digest()
+        return WorkerResponse(
+            results=secure_hashes
+        )

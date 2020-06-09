@@ -22,7 +22,9 @@ Decode base64 encoded payloads
 
 """
 
-import base64
+from asyncio import sleep
+from base64 import b64decode
+from re import sub
 
 from stoq.plugins import WorkerPlugin
 from stoq import ExtractedPayload, Payload, Request, WorkerResponse
@@ -30,6 +32,23 @@ from stoq import ExtractedPayload, Payload, Request, WorkerResponse
 
 class B64Decode(WorkerPlugin):
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
-        decoded_content = base64.b64decode(payload.content)
+        decoded_content = b''
+        remainder = b''
+        block_size = 2 ** 24  # Pass control back to asyncio loop every 16MB
+        for block_index in range(0, len(payload.content), block_size):
+            block = remainder + sub(rb'[^A-Za-z0-9+/=]', b'', payload.content[block_index:block_index + block_size])
+            remainder_index = - (len(block) % 4)
+            if remainder_index:
+                decoded_content += b64decode(block[:remainder_index])
+                remainder = block[remainder_index:]
+            else:
+                decoded_content += b64decode(block)
+                remainder = b''
+            if b'=' in block:
+                break
+            await sleep(0)
+        if remainder:
+            remainder = remainder.ljust(len(remainder)//4 + 4, b'=')
+            decoded_content += b64decode(remainder)
         extracted = [ExtractedPayload(decoded_content)]
         return WorkerResponse(extracted=extracted)

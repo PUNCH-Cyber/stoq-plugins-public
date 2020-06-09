@@ -22,6 +22,7 @@ Hash a payload
 
 """
 
+from asyncio import sleep
 from hashlib import md5, sha1, sha256
 
 from stoq.plugins import WorkerPlugin
@@ -30,10 +31,22 @@ from stoq import Payload, Request, WorkerResponse
 
 class Hash(WorkerPlugin):
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
+        secure_hashes = {
+            'md5': md5(),
+            'sha1': sha1(),
+            'sha256': sha256(),
+        }
+        block_size = 2 ** 24  # Pass control back to asyncio loop every 16MB
+        for block_index in range(0, len(payload.content), block_size):
+            for function in secure_hashes.keys():
+                secure_hashes[function].update(payload.content[block_index:block_index + block_size])
+                await sleep(0)
+        for function in secure_hashes.keys():
+            if hasattr(secure_hashes[function], 'hexdigest'):
+                secure_hashes[function] = secure_hashes[function].hexdigest()
+            else:
+                secure_hashes[function] = secure_hashes[function].digest()
+
         return WorkerResponse(
-            results={
-                'sha256': sha256(payload.content).hexdigest(),
-                'md5': md5(payload.content).hexdigest(),
-                'sha1': sha1(payload.content).hexdigest(),
-            }
+            results=secure_hashes
         )
