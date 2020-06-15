@@ -152,9 +152,13 @@ rule smtp_message
         save = "True"
     strings:
         $empty_line = { 0D 0A 0D 0A }
+        $empty_line_lf = { 0A 0A }  // Observed in files but not RFC compliant
         // Values required in the email header per RFC 5322 3.6
         $hdr_orig_date = /\nDate[ \t]{0,1000}:/ nocase
         $hdr_originator = /\nFrom[ \t]{0,1000}:/ nocase
     condition:
-        for all of ($hdr_*) : ( @[1] < @empty_line[1] )
+        for all of ($hdr_*) : (
+            @[1] < @empty_line[1] or
+            @[1] < @empty_line_lf[1]
+        )
 }
