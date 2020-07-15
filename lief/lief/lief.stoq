@@ -18,7 +18,7 @@ Module = lief
 
 [Documentation]
 Author = Duarte Silva
-Version = 3.0.0
+Version = 3.0.1
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Parse and abstract PE, ELF and MachO files using LIEF
 

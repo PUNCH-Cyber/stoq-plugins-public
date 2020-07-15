@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="lief",
-    version="3.0.0",
+    version="3.0.1",
     author="Duarte Silva (@serializingme)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",

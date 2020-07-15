@@ -34,7 +34,7 @@ class LiefPlugin(WorkerPlugin):
     def __init__(self, config: StoqConfigParser) -> None:
         super().__init__(config)
 
-        self.abstract = config.getbool('options', 'abstract', fallback=True)
+        self.abstract = config.getboolean('options', 'abstract', fallback=True)
 
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         """
