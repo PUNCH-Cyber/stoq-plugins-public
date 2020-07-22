@@ -11,16 +11,3 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
-[Core]
-Name = lief
-Module = lief
-
-[Documentation]
-Author = Duarte Silva
-Version = 3.0.1
-Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Parse and abstract PE, ELF and MachO files using LIEF
-
-[options]
-# abstract = True

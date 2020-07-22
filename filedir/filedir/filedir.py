@@ -59,7 +59,7 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         if not self.source_dir:
             raise StoqPluginException('Source directory not defined')
         source_path = Path(self.source_dir).resolve()
-        if source_path.is_dir:
+        if source_path.is_dir():
             if self.recursive:
                 for path in source_path.rglob('**/*'):
                     await self._queue(path, queue)

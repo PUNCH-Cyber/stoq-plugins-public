@@ -13,14 +13,29 @@
 #   limitations under the License.
 
 [Core]
-Name = lief
-Module = lief
+Name = azure_blob
+Module = azure_blob
 
 [Documentation]
-Author = Duarte Silva
-Version = 3.0.1
+Author = Kiran Pradhan (@kiranpradhan01)
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Parse and abstract PE, ELF and MachO files using LIEF
+Description = Save results and archive payloads with Azure Blob Storage
 
 [options]
-# abstract = True
+# Azure Storage Connection string
+# conn_str =
+
+# Blob container where payload will be archived
+# archive_container =
+
+# Blob container where response will be saved
+# results_container =
+
+# Use the first five characters of the sha1 hash as the directory structure
+# Note: This option will precede use_datetime if both are True
+# use_sha = True
+
+# Use the currentt date (YYYY/MM/DD) as the directory structure  
+# Note: This option will be preceded by use_sha if both are True
+# use_datetime = False
