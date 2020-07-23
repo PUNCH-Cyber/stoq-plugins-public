@@ -21,23 +21,28 @@ Send reults to Azure Sentinel (Log Analytics Workspace) within a webhook (http) 
 prerequisites: Setup and configure Azure Logic App webhook listener
 
 """
-
-import requests
+import aiohttp
 
 from typing import Dict, Optional
-
 from stoq.plugins import ConnectorPlugin
 from stoq.helpers import StoqConfigParser
 from stoq.data_classes import StoqResponse
 
-class ExampleConnector(ConnectorPlugin):
+class SentinelConnector(ConnectorPlugin):
+    
     def __init__(self, config: StoqConfigParser) -> None:
         super().__init__(config)
-
+        
         self.conn_str = config.get('options', 'conn_str', fallback=None)
         if not self.conn_str:
             raise StoqPluginException('conn_str has not been defined')
-
+            
     async def save(self, response: StoqResponse) -> None:
-        with open(f'{self.output_file}', 'w') as result:
-            await requests.post(conn_str, json=response)
+        
+        async with aiohttp.ClientSession(raise_for_status=True) as session:
+            
+            async with session.post(self.conn_str, data=str(response)) as r:
+                
+                result = await r.text()
+                
+                
