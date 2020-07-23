@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="Azure_Sentinel",
-    version="1.0.0",
+    version="3.0.0",
     author="Joe Stahl (@happy-jo)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
