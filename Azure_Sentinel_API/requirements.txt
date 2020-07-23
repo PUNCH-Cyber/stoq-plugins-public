@@ -1,0 +1,6 @@
+requests~=2.24.0
+json
+datetime~=4.3
+hashlib~=20081119
+hmac~=20101005
+pybase64~=1.0.1
