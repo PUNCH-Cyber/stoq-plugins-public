@@ -14,6 +14,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import asyncio
 import os
 import yara
 import asynctest
@@ -31,7 +32,8 @@ class TestCore(asynctest.TestCase):
         self.base_dir = Path(os.path.realpath(__file__)).parent
         self.data_dir = os.path.join(self.base_dir, 'data')
         self.plugin_dir = os.path.join(self.base_dir.parent, 'yarascan')
-        self.generic_data = b'testtesttest'
+        self.generic_data = b'testtesttest' + b'_stoQ_' * 10000
+        self.large_data = self.generic_data * 1000
 
     def tearDown(self) -> None:
         pass
@@ -48,6 +50,21 @@ class TestCore(asynctest.TestCase):
         response = await plugin.scan(payload, Request())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual('test_scan_rule', response.results['matches'][0]['rule'])
+
+    async def test_scan_async(self) -> None:
+        s = Stoq(
+            plugin_dir_list=[self.plugin_dir],
+            plugin_opts={
+                self.plugin_name: {'worker_rules': f'{self.data_dir}/scan_rules.yar'}
+            },
+        )
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(self.large_data)
+        tasks = [plugin.scan(payload, Request()) for i in range(10)]
+        results = await asyncio.gather(*tasks)
+        for result in results:
+            self.assertIsInstance(result, WorkerResponse)
+            self.assertEqual('test_scan_rule', result.results['matches'][0]['rule'])
 
     async def test_scan_strings_limit(self) -> None:
         s = Stoq(

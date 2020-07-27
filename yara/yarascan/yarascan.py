@@ -21,11 +21,15 @@ Process a payload using yara
 
 """
 
+import asyncio
+import functools
 import os
 import yara
+import concurrent.futures
 
 from pathlib import Path
-from typing import Dict, Generator
+
+from typing import AsyncGenerator, Dict
 from inspect import currentframe, getframeinfo
 
 from stoq.helpers import StoqConfigParser
@@ -65,7 +69,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         results = {
             'matches': [
-                m for m in self._yara_matches(payload.content, self.worker_rules)
+                m async for m in self._yara_matches(payload.content, self.worker_rules)
             ]
         }
         return WorkerResponse(results=results)
@@ -74,7 +78,7 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
         self, payload: Payload, request: Request
     ) -> DispatcherResponse:
         dr = DispatcherResponse()
-        for match in self._yara_matches(payload.content, self.dispatch_rules):
+        async for match in self._yara_matches(payload.content, self.dispatch_rules):
             if match['meta'].get('save', '').lower().strip() == 'false':
                 payload.results.payload_meta.should_archive = False
             plugin_names = self._extract_plugin_names(match)
@@ -94,8 +98,13 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
         else:
             return yara.compile(filepath=filepath)
 
-    def _yara_matches(self, content: bytes, rules: yara) -> Generator[Dict, None, None]:
-        matches = rules.match(data=content, timeout=self.timeout)
+    async def _yara_matches(self, content: bytes, rules: yara) -> AsyncGenerator[Dict, None]:
+        loop = asyncio.get_event_loop()
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            matches = await loop.run_in_executor(
+                pool,
+                functools.partial(rules.match, data=content, timeout=self.timeout)
+            )
         for match in matches:
             yield {
                 'tags': match.tags,
