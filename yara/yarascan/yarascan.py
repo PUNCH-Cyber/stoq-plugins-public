@@ -25,8 +25,10 @@ import asyncio
 import functools
 import os
 import yara
+import concurrent.futures
 
 from pathlib import Path
+
 from typing import AsyncGenerator, Dict
 from inspect import currentframe, getframeinfo
 
@@ -98,10 +100,11 @@ class YaraPlugin(WorkerPlugin, DispatcherPlugin):
 
     async def _yara_matches(self, content: bytes, rules: yara) -> AsyncGenerator[Dict, None]:
         loop = asyncio.get_event_loop()
-        matches = await loop.run_in_executor(
-            None,
-            functools.partial(rules.match, data=content, timeout=self.timeout)
-        )
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            matches = await loop.run_in_executor(
+                pool,
+                functools.partial(rules.match, data=content, timeout=self.timeout)
+            )
         for match in matches:
             yield {
                 'tags': match.tags,
