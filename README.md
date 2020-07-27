@@ -61,6 +61,7 @@ Below is a listing of all public stoQ plugins, a description, and their respecti
 | [redis-queue](redis-queue/)       | Interact with Redis server                                                     | Archiver, Connector, Provider       |
 | [rtf](rtf/)                       | Extract objects from RTF payloads                                              | Worker                              |
 | [s3](s3/)                         | Read and write data to Amazon S3 buckets                                       | Archiver, Connector                 |
+| [sentinel](sentinel/)             | Save results to Azure Sentinel                                                 | Connector                           |
 | [smtp](smtp/)                     | SMTP Parser Worker                                                             | Worker                              |
 | [stdout](stdout/)                 | Sends results to STDOUT                                                        | Connector                           |
 | [swfcarve](swfcarve/)             | Carve and decompress SWF files from payloads                                   | Worker                              |
