@@ -71,7 +71,7 @@ class SentinelConnector(ConnectorPlugin):
     async def save(self, response: StoqResponse) -> None:
         date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
         content = str(response)
-        content_length = len(data)
+        content_length = len(content)
         headers = {
             'content-type': self.CONTENT_TYPE,
             'Authorization': self.build_signature(content, content_length),
