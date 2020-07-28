@@ -74,7 +74,7 @@ class SentinelConnector(ConnectorPlugin):
         content_length = len(content)
         headers = {
             'content-type': self.CONTENT_TYPE,
-            'Authorization': self.build_signature(content, content_length),
+            'Authorization': self.build_signature(date, content_length),
             'Log-Type': self.logtype,
             'x-ms-date': date,
         }
