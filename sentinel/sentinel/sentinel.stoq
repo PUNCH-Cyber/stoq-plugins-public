@@ -18,7 +18,7 @@ Module = sentinel
 
 [Documentation]
 Author = Joe Stahl (@happy-jo)
-Version = 3.0.1
+Version = 3.0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Send reults to Azure Sentinel (Log Analytics Workspace) using the Azure Log Analytics API
 
