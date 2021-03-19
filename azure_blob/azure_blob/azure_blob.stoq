@@ -13,34 +13,29 @@
 #   limitations under the License.
 
 [Core]
-Name = decompress
-Module = decompress
+Name = azure_blob
+Module = azure_blob
 
 [Documentation]
-Author = Marcus LaFerrera
-Version = 3.0.3
+Author = Kiran Pradhan (@kiranpradhan01)
+Version = 3.0.0
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Extract content from a multitude of archive formats
+Description = Save results and archive payloads with Azure Blob Storage
 
 [options]
-min_stoq_version = 3.0.0
+# Azure Storage Connection string
+# conn_str =
 
-# Passwords to iterate over when decompressing a file
-# Default: -
-# passwords = -,infected,password
+# Blob container where payload will be archived
+# archive_container =
 
-# Maximum size of payloads to process (original compressed file and extracted files)
-# Default: 50MB
-# maximum_size = 50000000
+# Blob container where response will be saved
+# results_container =
 
-# How long (in seconds) to wait for decompression to finish
-# Default: 45
-# timeout = 45
-#
-# Always dispatch extracted files to these plugins
-# Default: Empty List
-# always_dispatch = yara, exif
-#
-# Always erchive extracted files
-# Default: True
-# archive_extracted = True
+# Use the first five characters of the sha1 hash as the directory structure
+# Note: This option will precede use_datetime if both are True
+# use_sha = True
+
+# Use the currentt date (YYYY/MM/DD) as the directory structure  
+# Note: This option will be preceded by use_sha if both are True
+# use_datetime = False

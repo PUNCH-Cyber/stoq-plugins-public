@@ -29,10 +29,11 @@ Details on how to install these plugins can be found [here](https://stoq-framewo
 
 # Plugin List
 
-Below is a listing of all public stoQ plugins, a description, and thier respective plugin class.
+Below is a listing of all public stoQ plugins, a description, and their respective plugin class.
 
 | Plugin Name                       | Description                                                                    | Plugin Type                         |
 | --------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
+| [azure_blob](azure_blob/)         | Save results and archive payloads with Azure Blob Storage                      | Archiver, Connector                 |
 | [b64decode](b64decode/)           | Decode base64 encoded payloads                                                 | Worker                              |
 | [decompress](decompress/)         | Extract content from a multitude of archive formats                            | Worker                              |
 | [dirmon](dirmon/)                 | Monitor a directory for newly created files for processing                     | Provider                            |
@@ -60,6 +61,7 @@ Below is a listing of all public stoQ plugins, a description, and thier respecti
 | [redis-queue](redis-queue/)       | Interact with Redis server                                                     | Archiver, Connector, Provider       |
 | [rtf](rtf/)                       | Extract objects from RTF payloads                                              | Worker                              |
 | [s3](s3/)                         | Read and write data to Amazon S3 buckets                                       | Archiver, Connector                 |
+| [sentinel](sentinel/)             | Save results to Azure Sentinel                                                 | Connector                           |
 | [smtp](smtp/)                     | SMTP Parser Worker                                                             | Worker                              |
 | [stdout](stdout/)                 | Sends results to STDOUT                                                        | Connector                           |
 | [swfcarve](swfcarve/)             | Carve and decompress SWF files from payloads                                   | Worker                              |

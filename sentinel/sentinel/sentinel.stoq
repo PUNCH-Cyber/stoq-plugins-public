@@ -13,34 +13,21 @@
 #   limitations under the License.
 
 [Core]
-Name = decompress
-Module = decompress
+Name = sentinel
+Module = sentinel
 
 [Documentation]
-Author = Marcus LaFerrera
-Version = 3.0.3
+Author = Joe Stahl (@happy-jo)
+Version = 3.0.2
 Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
-Description = Extract content from a multitude of archive formats
+Description = Send reults to Azure Sentinel (Log Analytics Workspace) using the Azure Log Analytics API
 
 [options]
-min_stoq_version = 3.0.0
+# Azure Log Analytics Workspace ID Connection string
+# workspaceid =
 
-# Passwords to iterate over when decompressing a file
-# Default: -
-# passwords = -,infected,password
+# Azure Log Analytics Workspace Key Connection string
+# workspacekey =
 
-# Maximum size of payloads to process (original compressed file and extracted files)
-# Default: 50MB
-# maximum_size = 50000000
-
-# How long (in seconds) to wait for decompression to finish
-# Default: 45
-# timeout = 45
-#
-# Always dispatch extracted files to these plugins
-# Default: Empty List
-# always_dispatch = yara, exif
-#
-# Always erchive extracted files
-# Default: True
-# archive_extracted = True
+# Azure Sentinel Log Table Name string
+# logType = stoQ

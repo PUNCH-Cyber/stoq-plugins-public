@@ -23,10 +23,11 @@ Parse SMTP sessions
 
 from email import policy
 from bs4 import UnicodeDammit  # type: ignore
+from typing import List, Dict
 from email.parser import Parser
 from urllib.parse import unquote
 from email.message import Message
-from typing import List, Dict, Optional
+from dateutil.parser import parse as dtparse
 
 from stoq.plugins import WorkerPlugin
 from stoq.helpers import StoqConfigParser
@@ -61,6 +62,15 @@ class SMTPPlugin(WorkerPlugin):
         ioc_content: str = ''
         session = UnicodeDammit(payload.content).unicode_markup
         message = Parser(policy=policy.default).parsestr(session)
+
+        try:
+            # Check for invalid date string
+            # https://bugs.python.org/issue30681
+            message.get('Date')
+        except TypeError:
+            date_header = [d[1] for d in message._headers if d[0] == 'Date'][0]
+            date_header = dtparse(date_header).strftime('%c %z')
+            message.replace_header('Date', date_header)
 
         # Create a dict of the SMTP headers
         for header, value in message.items():

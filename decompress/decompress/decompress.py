@@ -85,11 +85,11 @@ class Decompress(WorkerPlugin):
         'application/x-xz': '7z',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '7z',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.template': '7z',
-        'application/vnd.openxmlformats-officedocument.spreadsheetm1.sheet': '7z',
-        'application/vnd.openxmlformats-officedocument.spreadsheetm1.template': '7z',
-        'application/vnd.openxmlformats-officedocument.presentationm1.presentation': '7z',
-        'application/vnd.openxmlformats-officedocument.presentationm1.template': '7z',
-        'application/vnd.openxmlformats-officedocument.presentationm1.slideshow': '7z',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '7z',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.template': '7z',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': '7z',
+        'application/vnd.openxmlformats-officedocument.presentationml.template': '7z',
+        'application/vnd.openxmlformats-officedocument.presentationml.slideshow': '7z',
     }
 
     ARCHIVE_CMDS = {

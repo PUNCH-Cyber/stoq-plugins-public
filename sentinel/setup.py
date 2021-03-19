@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="decompress",
-    version="3.0.3",
-    author="Marcus LaFerrera (@mlaferrera)",
+    name="sentinel",
+    version="3.0.2",
+    author="Joe Stahl (@happy-jo)",
     url="https://github.com/PUNCH-Cyber/stoq-plugins-public",
     license="Apache License 2.0",
-    description="Extract content from a multitude of archive formats",
+    description="Send reults to Azure Sentinel (Log Analytics Workspace) using the Azure Log Analytics API",
     packages=find_packages(),
     include_package_data=True,
 )
