@@ -9,12 +9,12 @@ fi
 
 for rd in $(find ${RUNDIR} -name 'requirements-dev.txt'); do
     echo ${rd}
-    echo virtualenv venv_temp
-    echo source venv_temp/bin/activate
-    echo pip install -r ${rd}
-    echo deactivate
-    echo rm -rf venv_temp
-    echo '*****'
+    virtualenv venv_temp
+    source venv_temp/bin/activate
+    pip install -r ${rd}
+    pip freeze > $(dirname ${rd})/requirements.txt
+    deactivate
+    rm -rf venv_temp
 
 #    if [[ ! -d ${f} ]]; then
 #        continue
