@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ssdeep',
+    name='hash_ssdeep',
     version='3.0.0',
     author='Marcus LaFerrera (@mlaferrera)',
     url='https://github.com/PUNCH-Cyber/stoq-plugins-public',
