@@ -99,8 +99,8 @@ class FileDirPlugin(ProviderPlugin, ConnectorPlugin, ArchiverPlugin):
         path.mkdir(parents=True, exist_ok=True)
 
         filename = response.scan_id
-        with open(path.joinpath(filename), 'x') as outfile:
-            outfile.write(f'{helpers.dumps(response, compactly=self.compactly)}\n')
+        with open(path.joinpath(filename), 'xb') as outfile:
+            outfile.write(f'{helpers.dumps(response, compactly=self.compactly)}\n'.encode())
 
     async def archive(self, payload: Payload, request: Request) -> ArchiverResponse:
         """
