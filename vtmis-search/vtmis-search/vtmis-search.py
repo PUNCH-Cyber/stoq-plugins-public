@@ -22,7 +22,7 @@ Search VTMIS for sha1 hash of a payload or from results of `iocextract` plugin
 """
 
 import requests
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from stoq.exceptions import StoqPluginException
 from stoq.helpers import get_sha1, StoqConfigParser
@@ -55,7 +55,7 @@ class VTMISSearchPlugin(WorkerPlugin, DispatcherPlugin):
         seen: Set[str] = set()
 
         if 'iocextract' in payload.results.workers:
-            for key, iocs in worker_result['iocextract'].items():
+            for key, iocs in payload.results.workers['iocextract'].items():
                 for ioc in iocs:
                     if key in self.ENDPOINTS and ioc not in seen:
                         response = self._query_api(ioc, key)
