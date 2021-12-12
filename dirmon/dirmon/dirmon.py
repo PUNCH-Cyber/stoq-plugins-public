@@ -26,7 +26,7 @@ from asyncio import Queue
 from watchgod import awatch
 from typing import Dict, Optional
 
-from stoq import Payload, PayloadMeta
+from stoq import Payload, PayloadMeta, Request, RequestMeta
 from stoq.plugins import ProviderPlugin
 from stoq.helpers import StoqConfigParser
 from stoq.exceptions import StoqPluginException
@@ -57,12 +57,17 @@ class DirmonPlugin(ProviderPlugin):
                 # Only handle Change.added
                 if event != 1:
                     continue
-                meta = PayloadMeta(
+                payload_meta = PayloadMeta(
                     extra_data={
-                        'filename': os.path.basename(src_path),
+                        'filename': os.path.basename(src_path)
+                    }
+                )
+                request_meta = RequestMeta(
+                    extra_data={
                         'source_dir': os.path.dirname(src_path),
                     }
                 )
                 with open(src_path, 'rb') as f:
-                    payload = Payload(f.read(), meta)
-                    await queue.put(payload)
+                    payload = Payload(f.read(), payload_meta)
+                    request = Request([payload], request_meta)
+                    await queue.put(request)
