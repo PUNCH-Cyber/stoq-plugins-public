@@ -1,0 +1,62 @@
+#   Copyright 2014-2018 PUNCH Cyber Analytics Group
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+[Core]
+Name = acce
+Module = acce
+
+[Documentation]
+Author = Cipher Tech Solutions
+Version = 3.0.0
+Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
+Description = Scan payloads using ACCE
+
+[options]
+acce_root_url = https://free.acce.ciphertechsolutions.com/
+api_key = 
+
+# Wait for results to complete
+# Default: True
+wait_for_results = True
+
+# Time in seconds to wait between checking for completed results
+# Default: 10
+delay = 10
+
+# Maximum amount of attempts to retrieve results
+# Default: 30 (5 minutes)
+max_attempts = 30
+
+# Get artifacts produced by the original payload
+# Default: True
+get_artifacts = True
+
+# Sets PayloadMeta.should_archive to <value> for any payloads extracted by ACCE
+# Archives payload if destination archiver is defined
+# Requires get_artifacts to be True
+should_archive_extracted = True
+
+# Sets PayloadMeta.dispatch_to <value1,value2,value3,...> for any payloads extracted by ACCE
+# Force payload to be dispatched to specified plugins
+# Requires get_artifacts to be True
+dispatch_extracted_to = 
+
+# Forces safe encoding of characters on Windows systems as results may have characters not supported by the default Windows encoding cp1252
+# Setting this to true encodes all strings to cp1252 using backslash replace for any invalid characters.
+# This ensures the results are safe for any subsequent plugins, but results in less readable data (or completely unreadable)
+windows_safe_encoding = True
+
+# Retrieve results from MWCP in the legacy format
+# All results are stored on ACCE in the new MWCP format, but can be converted to legacy when retrieved
+use_mwcp_legacy = False

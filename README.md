@@ -33,6 +33,7 @@ Below is a listing of all public stoQ plugins, a description, and their respecti
 
 | Plugin Name                       | Description                                                                    | Plugin Type                         |
 | --------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
+| [acce](acce/)                     | Scan payloads using ACCE                                                       | Worker                              |
 | [azure_blob](azure_blob/)         | Save results and archive payloads with Azure Blob Storage                      | Archiver, Connector                 |
 | [b64decode](b64decode/)           | Decode base64 encoded payloads                                                 | Worker                              |
 | [decompress](decompress/)         | Extract content from a multitude of archive formats                            | Worker                              |
