@@ -5,6 +5,8 @@
 ACCE is recommended to run against all files and will determine if the provided file should be processed further based on internal yara rule mappings.
 ACCE quota usage is based on yara matches, so only submissions where ACCE does subsequent processing is done will be counted
 
+Contact acce.support@ciphertechsolutions.com for questions, comments, improvements, or fixes related to this plugin or about ACCE in general
+
 ## Plugin Classes
 
 - [Worker](https://stoq-framework.readthedocs.io/en/latest/dev/workers.html)
