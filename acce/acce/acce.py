@@ -43,7 +43,7 @@ class AccePlugin(WorkerPlugin):
         self.acce_root_url = config.get(
             "options",
             "acce_root_url",
-            fallback="https://free.acce.ciphertechsolutions.com/",
+            fallback="https://research.acce.ciphertechsolutions.com/",
         )
 
         self.api_key = config.get("options", "api_key", fallback=None)

@@ -23,7 +23,7 @@ Website = https://github.com/PUNCH-Cyber/stoq-plugins-public
 Description = Scan payloads using ACCE
 
 [options]
-acce_root_url = https://free.acce.ciphertechsolutions.com/
+acce_root_url = https://research.acce.ciphertechsolutions.com/
 api_key = 
 
 # Wait for results to complete
