@@ -21,6 +21,7 @@ Calculate shannon entropy of a payload
 """
 
 import math
+from asyncio import sleep
 from typing import Dict
 from collections import Counter
 
@@ -28,12 +29,16 @@ from stoq.plugins import WorkerPlugin
 from stoq import Payload, Request, WorkerResponse
 
 
-class Hash(WorkerPlugin):
+class Entropy(WorkerPlugin):
     async def scan(self, payload: Payload, request: Request) -> WorkerResponse:
         entropy: float = 0.0
         results: Dict[str, float] = {}
         if payload.content:
-            occurences = Counter(bytearray(payload.content))
+            occurences = Counter()
+            block_size = 2**24  # Pass control back to asyncio loop every 16MB
+            for block_index in range(0, len(payload.content), block_size):
+                occurences.update(payload.content[block_index:block_index+block_size])
+                await sleep(0)
             for bc in occurences.values():
                 b = float(bc) / len(payload.content)
                 entropy -= b * math.log(b, 2)

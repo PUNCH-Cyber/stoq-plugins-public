@@ -15,8 +15,8 @@
 #   limitations under the License.
 
 import os
-import base64
 import asynctest
+from base64 import b64encode
 
 from pathlib import Path
 
@@ -38,8 +38,17 @@ class TestCore(asynctest.TestCase):
     async def test_scan(self) -> None:
         s = Stoq(plugin_dir_list=[str(self.plugin_dir)])
         plugin = s.load_plugin(self.plugin_name)
-        payload = Payload(base64.b64encode(self.generic_data))
+        payload = Payload(b64encode(self.generic_data))
         response = await plugin.scan(payload, RequestMeta())
         self.assertIsInstance(response, WorkerResponse)
         self.assertEqual(1, len(response.extracted))
         self.assertEqual(self.generic_data, response.extracted[0].content)
+
+    async def test_scan_invalid(self) -> None:
+        s = Stoq(plugin_dir_list=[str(self.plugin_dir)])
+        plugin = s.load_plugin(self.plugin_name)
+        payload = Payload(b64encode(self.generic_data)[:-1])
+        response = await plugin.scan(payload, RequestMeta())
+        self.assertIsInstance(response, WorkerResponse)
+        self.assertEqual(1, len(response.extracted))
+        self.assertEqual(self.generic_data[:-1], response.extracted[0].content)
