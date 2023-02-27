@@ -102,7 +102,7 @@ class IOCExtract(WorkerPlugin):
         self.ioctypes[
             'ipv6'
         ] = r"(?:(?:(?:\b|::)(?:(?:[\dA-F]{1,4}(?::|::)){1,7})(?:[\dA-F]{1,4}))(?:(?:(?:\.\d{1,3})?){3})(?:::|\b))|(?:[\dA-F]{1,4}::)|(?:::[\dA-F]{1,4}(?:(?:(?:\.\d{1,3})?){3}))"
-        self.ioctypes['mac_address'] = r"\b(?i)(?:[0-9A-F]{2}[:-]){5}(?:[0-9A-F]{2})\b"
+        self.ioctypes['mac_address'] = r"(?i)\b(?:[0-9A-F]{2}[:-]){5}(?:[0-9A-F]{2})\b"
         self.ioctypes['email'] = "{0}{1}{2}".format(
             r"\b[A-Z0-9\.\_\%\+\-]+", self.helpers['at'], self.helpers['fqdn']
         )
